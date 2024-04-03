@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(lldb) Debug Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Debug/FirstExecutableFolder/FirstExecutable",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}", //"${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "(lldb) Release Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Release//FirstExecutableFolder/FirstExecutable",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}", //"${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        }
+    ]
+}
