@@ -1,60 +1,64 @@
-#cmake_minimum_required(VERSION 3.5)
-#project(MyProgram)
-#
-#add_executable(MyProgram main.cpp)
 
+# https://github.com/SFML/cmake-sfml-project/blob/imgui-sfml/CMakeLists.txt
 
-#cmake_minimum_required(VERSION 3.5)
-#project(MyProgram)
+cmake_minimum_required(VERSION 3.5)
 
-# Create an executable target named FirstExecutable
-#add_executable(FirstExecutable main.cpp)
+project(MyProgram
+  VERSION 1.0
+  LANGUAGES CXX
+)
 
-# Set the output directory for the FirstExecutable target
-#set_target_properties(FirstExecutable PROPERTIES
-#    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/FirstExecutableFolder"
-#)
-
-# Create another executable target named SecondExecutable
-#add_executable(SecondExecutable main.cpp)
-
-# Set the output directory for the SecondExecutable target
-#set_target_properties(SecondExecutable PROPERTIES
-#    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/SecondExecutableFolder"
-#)
-
-
-cmake_minimum_required(VERSION 3.11)
-project(MyProgram)
+# Check for & fetch dependencies
 
 include(FetchContent)
 
-# Use FetchContent to download and include SFML
+# Fetch SFML
 FetchContent_Declare(
   SFML
   GIT_REPOSITORY https://github.com/SFML/SFML.git
-  GIT_TAG master # 2.5.1 # Use a stable release tag instead of 'master'
+  GIT_TAG 2.6.x
 )
 FetchContent_MakeAvailable(SFML)
 
-# Create an executable target named FirstExecutable
-add_executable(FirstExecutable main.cpp)
+# Fetch STB
+FetchContent_Declare(
+	stb
+	GIT_REPOSITORY https://github.com/nothings/stb.git
+)
+FetchContent_MakeAvailable(stb)
 
-# Set the output directory for the FirstExecutable target
-set_target_properties(FirstExecutable PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/FirstExecutableFolder"
+# Fetch Dear ImGui
+FetchContent_Declare(ImGui
+    GIT_REPOSITORY https://github.com/ocornut/imgui
+    GIT_TAG v1.89.9)
+FetchContent_MakeAvailable(ImGui)
+FetchContent_GetProperties(ImGui SOURCE_DIR IMGUI_DIR)
+
+# Fetch ImGui-SFML
+set(IMGUI_SFML_FIND_SFML OFF)
+FetchContent_Declare(ImGui-SFML
+    GIT_REPOSITORY https://github.com/SFML/imgui-sfml
+    GIT_TAG 2.6.x)
+FetchContent_MakeAvailable(ImGui-SFML)
+
+# Include directories for ImGui and ImGui-SFML
+include_directories(
+    ${ImGui_SOURCE_DIR}
+    ${ImGui-SFML_SOURCE_DIR}
 )
 
-# Link FirstExecutable against SFML
-target_link_libraries(FirstExecutable PRIVATE sfml-graphics sfml-window sfml-system)
+# Create targets
 
-# Create another executable target named SecondExecutable
-add_executable(SecondExecutable main.cpp)
-
-# Set the output directory for the SecondExecutable target
-set_target_properties(SecondExecutable PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/SecondExecutableFolder"
+# Module1
+add_executable(Module1 main.cpp)
+set_target_properties(Module1 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module1"
 )
+target_link_libraries(Module1 PRIVATE sfml-graphics sfml-window sfml-system ImGui-SFML::ImGui-SFML)
 
-# Link SecondExecutable against SFML
-target_link_libraries(SecondExecutable PRIVATE sfml-graphics sfml-window sfml-system)
+# Module2
+add_executable(Module2 main.cpp)
+set_target_properties(Module2 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module2"
+)
+target_link_libraries(Module2 PRIVATE sfml-graphics sfml-window sfml-system ImGui-SFML::ImGui-SFML)
