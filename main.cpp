@@ -1,13 +1,27 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Audio.hpp>
 #include <imgui.h>
 #include <imgui-SFML.h>
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML + ImGui");
+    //sf::RenderWindow window(sf::VideoMode(800, 600), "SFML + ImGui");
+    auto window = sf::RenderWindow {sf::VideoMode { 1920u, 1080u }, "SFML Project"};
+    window.setFramerateLimit(144);
 
-    // Setup ImGui binding
+    // Setup ImGui
     ImGui::SFML::Init(window);
+
+    sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("/Users/ag1498/GitHub/eduEngine/assets/sound/Juhani Junkala [Retro Game Music Pack] Title Screen.wav")) {
+        // Error loading the sound file
+    }
+
+    // Sound test
+    sf::Sound sound;
+    sound.setBuffer(buffer);
+    sound.play();
+    //while (sound.getStatus() == sf::Sound::Playing) {} // Wait for sound to finishes
 
     // Main loop
     while (window.isOpen()) {
