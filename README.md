@@ -4,10 +4,15 @@ MAU::DA367B
 C++17
 
 SDL2
+
+bgfx (Minecraft)  
+
 SFML  
 Dear ImGui   
 Imgui-SFML  
-GLM  
-STB (Minecraft)  
-Entt (Minecraft)  
-BGFX (Minecraft)  
+
+glm  
+  
+stb (Minecraft)  
+entt (Minecraft)  
+
