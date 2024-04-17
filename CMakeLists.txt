@@ -10,6 +10,10 @@ project(DA376B_Labs
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Check this
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/vec)
+
 find_package(OpenGL REQUIRED)
 find_package (Git REQUIRED)
 include(FetchContent)
@@ -36,6 +40,7 @@ include_directories(${sdl_SOURCE_DIR}/include)
 #FetchContent_MakeAvailable(SFML)
 
 # Fetch Assimp
+# Note: v5.0.1 (200112) seems to be the latest version of assimp that works with Mixamo models (https://github.com/assimp/assimp/issues/4620)
 #FetchContent_Declare(
 #    assimp
 #    GIT_REPOSITORY https://github.com/assimp/assimp.git
@@ -59,7 +64,7 @@ else()
     FetchContent_Declare(
         assimp
         GIT_REPOSITORY https://github.com/assimp/assimp.git
-        GIT_TAG v5.4.0 # (240408) 5.3.0 (230923) fixes issues with vsprintf and other deprecated stuff
+        GIT_TAG v5.0.1 # v5.4.0 # (240408) 5.3.0 (230923) fixes issues with vsprintf and other deprecated stuff
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(assimp)
@@ -74,6 +79,7 @@ FetchContent_Declare(
 	GIT_REPOSITORY https://github.com/nothings/stb.git
 )
 FetchContent_MakeAvailable(stb)
+include_directories(${stb_SOURCE_DIR})
 
 #Fetch GLM
 #FetchContent_Declare(
@@ -101,10 +107,7 @@ FetchContent_MakeAvailable(imgui)
 #FetchContent_MakeAvailable(ImGui-SFML)
 
 # Include directories for ImGui and ImGui-SFML
-include_directories(
-    ${imgui_SOURCE_DIR}
-    #${ImGui-SFML_SOURCE_DIR}
-)
+include_directories(${imgui_SOURCE_DIR})
 
 # Create targets
 
@@ -117,7 +120,13 @@ add_executable(Module1
     ${imgui_SOURCE_DIR}/imgui_demo.cpp
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderableMesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/mat.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/vec.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/quat.cpp
+    )
 
 set_target_properties(Module1 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module1"
