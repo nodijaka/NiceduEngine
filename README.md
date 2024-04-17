@@ -16,10 +16,8 @@ MAU::DA367B
 
 ## Potential additions
 
-- [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog) 0.6.5 (May 2023)
-
-- [EnTT](https://github.com/skypjack/entt) 3.10.3 (August 2022)
-  - Release [3.12.0](https://github.com/skypjack/entt/releases/tag/v3.12.0) (230615) has breaking changes in the snapshot saver & loader
+- [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
+- [EnTT](https://github.com/skypjack/entt)
 - [nlohmann-json](https://github.com/nlohmann/json)
 
 ## Credits
