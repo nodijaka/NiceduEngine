@@ -207,7 +207,7 @@ inline v3f to_v3f(const aiVector3D &aiv)
     return {aiv.x, aiv.y, aiv.z};
 }
 
-void xiMesh::vertex_skindata_t::add_weight(unsigned bone_index, float bone_weight)
+void RenderableMesh::vertex_skindata_t::add_weight(unsigned bone_index, float bone_weight)
 {
     nbr_added++;
 
@@ -240,7 +240,7 @@ void xiMesh::vertex_skindata_t::add_weight(unsigned bone_index, float bone_weigh
     // assert(0);
 }
 
-xiMesh::xiMesh()
+RenderableMesh::RenderableMesh()
 {
     //    loggertest();
 
@@ -248,7 +248,7 @@ xiMesh::xiMesh()
 }
 
 // Legacy
-void xiMesh::load(const std::string &file, bool append_animations)
+void RenderableMesh::load(const std::string &file, bool append_animations)
 {
     unsigned xiflags = (append_animations ? xi_load_animations : (xi_load_meshes | xi_load_animations));
 
@@ -276,7 +276,7 @@ void xiMesh::load(const std::string &file, bool append_animations)
     load(file, xiflags, aiflags);
 }
 
-void xiMesh::load(const std::string &file,
+void RenderableMesh::load(const std::string &file,
                   unsigned xiflags,
                   unsigned aiflags)
 
@@ -378,7 +378,7 @@ void xiMesh::load(const std::string &file,
     mSceneAABB = measure_scene(aiscene); // Only captures bind pose.
 }
 
-bool xiMesh::load_scene(const aiScene *aiscene, const std::string &filename)
+bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filename)
 {
     unsigned scene_nbr_meshes = aiscene->mNumMeshes;
     unsigned scene_nbr_mtl = aiscene->mNumMaterials;
@@ -588,7 +588,7 @@ bool xiMesh::load_scene(const aiScene *aiscene, const std::string &filename)
     // return GLCheckError();
 }
 
-void xiMesh::load_mesh(uint meshindex,
+void RenderableMesh::load_mesh(uint meshindex,
                        const aiMesh *aimesh,
                        std::vector<v3f> &scene_positions,
                        std::vector<v3f> &scene_normals,
@@ -648,7 +648,7 @@ void xiMesh::load_mesh(uint meshindex,
     }
 }
 
-AABB_t xiMesh::measure_scene(const aiScene *aiscene)
+AABB_t RenderableMesh::measure_scene(const aiScene *aiscene)
 {
     AABB_t aabb;
     measure_node(aiscene, aiscene->mRootNode, linalg::m4f_1, aabb);
@@ -656,7 +656,7 @@ AABB_t xiMesh::measure_scene(const aiScene *aiscene)
     return aabb;
 }
 
-void xiMesh::measure_node(const aiScene *aiscene,
+void RenderableMesh::measure_node(const aiScene *aiscene,
                           const aiNode *pNode,
                           const m4f &M_roottfm,
                           AABB_t &aabb)
@@ -682,7 +682,7 @@ void xiMesh::measure_node(const aiScene *aiscene,
     }
 }
 
-void xiMesh::measure_mesh(const aiMesh *pMesh,
+void RenderableMesh::measure_mesh(const aiMesh *pMesh,
                           const m4f &M_roottfm,
                           AABB_t &aabb)
 {
@@ -694,7 +694,7 @@ void xiMesh::measure_mesh(const aiMesh *pMesh,
 }
 
 // Load node hierarchy and link nodes to bones & meshes
-void xiMesh::load_nodes(aiNode *ainode_root)
+void RenderableMesh::load_nodes(aiNode *ainode_root)
 {
     // Load node hierarchy recursively from root
     load_node(ainode_root);
@@ -740,7 +740,7 @@ void xiMesh::load_nodes(aiNode *ainode_root)
         m_nodehash[m_nodetree.nodes[i].name] = i;
 }
 
-void xiMesh::load_node(aiNode *ainode)
+void RenderableMesh::load_node(aiNode *ainode)
 {
     // Node data
     std::string node_name;   //
@@ -763,7 +763,7 @@ void xiMesh::load_node(aiNode *ainode)
     }
 }
 
-void xiMesh::load_bones(uint mesh_index,
+void RenderableMesh::load_bones(uint mesh_index,
                         const aiMesh *aimesh,
                         std::vector<vertex_skindata_t> &scene_skindata)
 {
@@ -814,7 +814,7 @@ void xiMesh::load_bones(uint mesh_index,
     }
 }
 
-int xiMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type, const std::string &local_filepath)
+int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type, const std::string &local_filepath)
 {
     // Load all textures of a certain type from a material
     // Allow multiple texture of the same type?
@@ -919,7 +919,7 @@ int xiMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type, const 
 // http://assimp.sourceforge.net/lib_html/material_8h.html#a7dd415ff703a2cc53d1c22ddbbd7dde0
 
 // bool SkinnedMesh::InitMaterials(const aiScene* pScene, const string& Filename)
-void xiMesh::load_materials(const aiScene *aiscene, const std::string &file)
+void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &file)
 {
     // Extract the directory part from the file name
     //    string::size_type SlashIndex = Filename.find_last_of("/");
@@ -1066,7 +1066,7 @@ void xiMesh::load_materials(const aiScene *aiscene, const std::string &file)
     // return Ret;
 }
 
-void xiMesh::load_animations(const aiScene *scene)
+void RenderableMesh::load_animations(const aiScene *scene)
 {
     log << priority(STRICT) << "Loading animations..." << std::endl;
 
@@ -1156,7 +1156,7 @@ inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
 // }
 
 // get_key_tfm_at_time
-m4f xiMesh::blend_transform_at_time(const animation_t *anim,
+m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
                                     const node_animation_t &nodeanim,
                                     float time) const
 {
@@ -1175,7 +1175,7 @@ m4f xiMesh::blend_transform_at_time(const animation_t *anim,
     return blend_transform_at_frac(anim, nodeanim, animtime_nrm);
 }
 
-m4f xiMesh::blend_transform_at_frac(const animation_t *anim,
+m4f RenderableMesh::blend_transform_at_frac(const animation_t *anim,
                                     const node_animation_t &nodeanim,
                                     float frac) const
 {
@@ -1244,7 +1244,7 @@ float m4f_maxdiff(const m4f &m0, const m4f &m1)
     return maxdiff;
 }
 
-void xiMesh::animate(int anim_index,
+void RenderableMesh::animate(int anim_index,
                      float time,
                      std::vector<m4f> &bone_transforms)
 {
@@ -1411,7 +1411,7 @@ inline m4f m4f_subtract(const m4f &m0, const m4f &m1)
     return M;
 }
 
-void xiMesh::render(const m4f &PROJ_VIEW,
+void RenderableMesh::render(const m4f &PROJ_VIEW,
                     const m4f &WORLD,
                     double time,
                     int anim_index,
@@ -1431,7 +1431,7 @@ void xiMesh::render(const m4f &PROJ_VIEW,
     render(PROJ_VIEW, WORLD, bone_array, lightpos, eyepos, cubemap, shader);
 }
 
-void xiMesh::render(const m4f &PROJ_VIEW,
+void RenderableMesh::render(const m4f &PROJ_VIEW,
                     const m4f &WORLD,
                     const std::vector<m4f> &bone_array,
                     const v3f &lightpos,
@@ -1558,12 +1558,12 @@ void xiMesh::render(const m4f &PROJ_VIEW,
     glUseProgram(0);
 }
 
-unsigned xiMesh::get_nbr_animations() const
+unsigned RenderableMesh::get_nbr_animations() const
 {
     return (unsigned)m_animations.size();
 }
 
-std::string xiMesh::get_animation_name(unsigned i) const
+std::string RenderableMesh::get_animation_name(unsigned i) const
 {
     return (i < get_nbr_animations() ? m_animations[i].name : "");
 }
@@ -1647,7 +1647,7 @@ void xiMesh::render_node_tags(glyph_renderer_t* glyphrenderer) const
 }
 */
 
-xiMesh::~xiMesh()
+RenderableMesh::~RenderableMesh()
 {
     for (auto &t : m_textures)
         t.free();

@@ -167,11 +167,11 @@ int main(int argc, char *argv[])
         }
     */
 
-    xiMesh *grassMesh = new xiMesh();
-    // grassMesh->load("assets/grass/grass.fbx", false);
+    auto grassMesh = std::make_shared<RenderableMesh>();
+    auto characterMesh = std::make_shared<RenderableMesh>();
+
     grassMesh->load("assets/grass/grass_trees.fbx", false);
 
-    xiMesh *treemesh = new xiMesh();
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
     // treemesh->load("assets/Leela.fbx", false);
     // treemesh->load("assets/Character.fbx", false);
@@ -183,10 +183,10 @@ int main(int argc, char *argv[])
 #endif
 #if 1
     // Amy
-    treemesh->load("assets/Amy/Ch46_nonPBR.fbx");
-    treemesh->load("assets/Amy/Walking.fbx", true);
-    treemesh->load("assets/Amy/Talking.fbx", true);
-    treemesh->load("assets/Amy/Warrior Idle.fbx", true);
+    characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
+    characterMesh->load("assets/Amy/Walking.fbx", true);
+    characterMesh->load("assets/Amy/Talking.fbx", true);
+    characterMesh->load("assets/Amy/Warrior Idle.fbx", true);
 #endif
 #if 0
             // EVE - Mixamo Pro Rifle Pack
@@ -337,12 +337,12 @@ int main(int argc, char *argv[])
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
         linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
-        treemesh->render(P * V, W, time_s * ANIM_SPEED, 0, lightPos, eye);
+        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 0, lightPos, eye);
 
         W = mat4f::TRS({20, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
-        treemesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
+        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
         W = mat4f::TRS({40, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
-        treemesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
+        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
 
         // Animate & render grass
         W = mat4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});

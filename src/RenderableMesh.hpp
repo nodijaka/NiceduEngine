@@ -59,9 +59,6 @@ const int NUM_BONES_PER_VERTEX = 4;
 const int NO_MATERIAL = -1;
 const int NO_TEXTURE = -1;
 
-//#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
-
-// https://stackoverflow.com/questions/49454005/how-to-get-an-array-size-at-compile-time
 template<std::size_t N, class T>
 constexpr std::size_t numelem(T(&)[N]) { return N; }
 
@@ -85,10 +82,10 @@ enum xiContentFlags
     xi_load_animations = 0x2
 };
 
-class xiMesh
+class RenderableMesh
 {
-    friend class AnimController;
-    friend class ClipNode;
+//    friend class AnimController;
+//    friend class ClipNode;
     
 private:
     
@@ -238,9 +235,9 @@ public:
     
     AABB_t mSceneAABB;
     
-    xiMesh();
+    RenderableMesh();
     
-    ~xiMesh();
+    ~RenderableMesh();
     
     void load(const std::string& file,
               bool just_animations = false);
