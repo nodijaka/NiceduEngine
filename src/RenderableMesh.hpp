@@ -55,6 +55,10 @@ using namespace logstreamer;
 //using namespace gl_batch_renderer;
 //class glyph_renderer_t;
 
+// Padding keyframes to nodes may take some extra space
+// but eliminates the need to hash keyframes to nodes
+#define PadKeyframesToNodes
+
 const int NUM_BONES_PER_VERTEX = 4;
 const int NO_MATERIAL = -1;
 const int NO_TEXTURE = -1;
@@ -154,8 +158,10 @@ private:
         std::string name;
         float duration_ticks = 0;
         float tps = 1;
-        std::vector<node_animation_t> node_animations; // 'channels'
+        std::vector<node_animation_t> node_animations;
+#ifndef PadKeyframesToNodes
         std::unordered_map<std::string, unsigned> node_animation_hash;
+#endif
     };
     
     // GL stuff

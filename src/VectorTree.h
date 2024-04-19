@@ -108,6 +108,14 @@ public:
     seqtree_t() { }
     
 #if 1
+    int find_node_index(const std::string& node_name) 
+    {
+        auto it = std::find_if(nodes.begin(), nodes.end(),
+                                [&node_name](const NodeType& node){ return !node.name.compare(node_name); });
+        if (it == nodes.end()) return -1;
+        return (int)std::distance(nodes.begin(), it);
+    }
+    
     NodeType* find_node(const std::string& node_name)
     {
         auto it = std::find_if(nodes.begin(), nodes.end(),

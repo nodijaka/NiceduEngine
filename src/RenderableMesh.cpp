@@ -262,7 +262,7 @@ void RenderableMesh::load(const std::string &file, bool append_animations)
     //    aiflags |= aiProcess_FlipUVs;
     //    aiflags |= aiProcess_CalcTangentSpace;
 
-    //aiflags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
+    // aiflags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
 
     aiflags =
         aiProcess_CalcTangentSpace |
@@ -277,8 +277,8 @@ void RenderableMesh::load(const std::string &file, bool append_animations)
 }
 
 void RenderableMesh::load(const std::string &file,
-                  unsigned xiflags,
-                  unsigned aiflags)
+                          unsigned xiflags,
+                          unsigned aiflags)
 
 {
     // Plan is to utilize xiflags with more detail
@@ -295,7 +295,7 @@ void RenderableMesh::load(const std::string &file,
     // Prepare the logs
     if (!append_animations)
     {
-        log.add_ostream(std::cout, STRICT);
+        // log.add_ostream(std::cout, STRICT);
         log.add_ofstream(filepath + filename + "_log.txt", VERBOSE);
     }
 
@@ -589,14 +589,14 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
 }
 
 void RenderableMesh::load_mesh(uint meshindex,
-                       const aiMesh *aimesh,
-                       std::vector<v3f> &scene_positions,
-                       std::vector<v3f> &scene_normals,
-                       std::vector<v3f> &scene_tangents,
-                       std::vector<v3f> &scene_binormals,
-                       std::vector<v2f> &scene_texcoords,
-                       std::vector<vertex_skindata_t> &scene_skindata,
-                       std::vector<unsigned int> &scene_indices)
+                               const aiMesh *aimesh,
+                               std::vector<v3f> &scene_positions,
+                               std::vector<v3f> &scene_normals,
+                               std::vector<v3f> &scene_tangents,
+                               std::vector<v3f> &scene_binormals,
+                               std::vector<v2f> &scene_texcoords,
+                               std::vector<vertex_skindata_t> &scene_skindata,
+                               std::vector<unsigned int> &scene_indices)
 {
     log << priority(VERBOSE);
     log << "Loading mesh " << aimesh->mName.C_Str() << std::endl;
@@ -657,9 +657,9 @@ AABB_t RenderableMesh::measure_scene(const aiScene *aiscene)
 }
 
 void RenderableMesh::measure_node(const aiScene *aiscene,
-                          const aiNode *pNode,
-                          const m4f &M_roottfm,
-                          AABB_t &aabb)
+                                  const aiNode *pNode,
+                                  const m4f &M_roottfm,
+                                  AABB_t &aabb)
 {
     m4f M_identity = linalg::m4f_1;
     m4f M_nodetfm = M_roottfm * to_m4f(pNode->mTransformation);
@@ -683,8 +683,8 @@ void RenderableMesh::measure_node(const aiScene *aiscene,
 }
 
 void RenderableMesh::measure_mesh(const aiMesh *pMesh,
-                          const m4f &M_roottfm,
-                          AABB_t &aabb)
+                                  const m4f &M_roottfm,
+                                  AABB_t &aabb)
 {
     for (int i = 0; i < pMesh->mNumVertices; i++)
     {
@@ -764,8 +764,8 @@ void RenderableMesh::load_node(aiNode *ainode)
 }
 
 void RenderableMesh::load_bones(uint mesh_index,
-                        const aiMesh *aimesh,
-                        std::vector<vertex_skindata_t> &scene_skindata)
+                                const aiMesh *aimesh,
+                                std::vector<vertex_skindata_t> &scene_skindata)
 {
     // Fetch mesh's bones and add them to the m_bones vector
     // bone_t contains bone-offset and final transformation
@@ -1027,10 +1027,10 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
             mtl.Ks = {aic.r, aic.g, aic.b};
         pMaterial->Get(AI_MATKEY_SHININESS, mtl.shininess);
 
-        std::cout << "Ka, Kd, Ks, shininess:"
-                  << mtl.Ka << ", " << mtl.Kd << ", " << mtl.Ks << ", " << mtl.shininess << std::endl;
-        //        if ( pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, mtl.Kd) == AI_SUCCESS )
-        //            std::cout << "HAS DIFFUSE " << mtlname.data << std::endl;
+        // std::cout << "Ka, Kd, Ks, shininess:"
+        //           << mtl.Ka << ", " << mtl.Kd << ", " << mtl.Ks << ", " << mtl.shininess << std::endl;
+        //         if ( pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, mtl.Kd) == AI_SUCCESS )
+        //             std::cout << "HAS DIFFUSE " << mtlname.data << std::endl;
 
         // Fetch common textures
         log << "Loading textures..." << std::endl;
@@ -1078,14 +1078,8 @@ void RenderableMesh::load_animations(const aiScene *scene)
         anim.name = std::string(aianim->mName.C_Str());
         anim.duration_ticks = aianim->mDuration;
         anim.tps = aianim->mTicksPerSecond;
-
-#if 0
-        // DEV - "normalize" animation speed & duration
-        // The UE4 mannequin clips uses normalized speed & duration,
-        // and additional clips used with it has to be normalized to blend
-        // properly
-        anim.duration_ticks /= anim.tps;
-        anim.tps = 1;
+#ifdef PadKeyframesToNodes
+        anim.node_animations.resize(m_nodetree.nodes.size());
 #endif
 
         log << priority(STRICT)
@@ -1101,14 +1095,12 @@ void RenderableMesh::load_animations(const aiScene *scene)
             node_animation_t node_anim;
             node_anim.name = std::string(ainode_anim->mNodeName.C_Str());
 
-#if 1
             log << priority(VERBOSE)
                 << "\tLoading channel " << node_anim.name
                 << ", nbr pos keys  " << ainode_anim->mNumPositionKeys
                 << ", nbr scale keys  " << ainode_anim->mNumScalingKeys
                 << ", nbr rot keys  " << ainode_anim->mNumRotationKeys
                 << std::endl;
-#endif
 
             for (int k = 0; k < ainode_anim->mNumPositionKeys; k++)
             {
@@ -1125,19 +1117,21 @@ void RenderableMesh::load_animations(const aiScene *scene)
                 quatf rot_key = to_quatf(ainode_anim->mRotationKeys[k].mValue);
                 node_anim.rot_keys.push_back(rot_key);
             }
+
+#ifdef PadKeyframesToNodes
+            auto index = m_nodetree.find_node_index(node_anim.name);
+            // index == -1 means that no node corresponds to this set of keys
+            if (index > -1)
+                anim.node_animations[index] = node_anim;
+#else
             anim.node_animations.push_back(node_anim);
+#endif
         }
 
-        // Build node-animation hash for this animation
+#ifndef PadKeyframesToNodes
         for (int i = 0; i < anim.node_animations.size(); i++)
             anim.node_animation_hash[anim.node_animations[i].name] = i;
-
-        // DEV: remove xz pos keys for a (root) node
-        //        std::vector<v3f>& pos_keys = anim.node_animations[anim.node_animation_hash["Mutant:Hips"]].pos_keys;
-        //        std::vector<v3f>& pos_keys = anim.node_animations[anim.node_animation_hash["mixamorig:Hips"]].pos_keys;
-        //        std::vector<v3f>& pos_keys = anim.node_animations[anim.node_animation_hash["Hips"]].pos_keys;
-        //        for (auto& pk : pos_keys) pk = {0,pk.y,0};
-        //
+#endif
 
         m_animations.push_back(anim);
     }
@@ -1157,8 +1151,8 @@ inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
 
 // get_key_tfm_at_time
 m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
-                                    const node_animation_t &nodeanim,
-                                    float time) const
+                                            const node_animation_t &nodeanim,
+                                            float time) const
 {
     float dur_ticks = anim->duration_ticks; /**/ // dur_ticks *= (float)(91-5)/292;
     float animdur_sec = dur_ticks / (anim->tps * 1);
@@ -1176,8 +1170,8 @@ m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
 }
 
 m4f RenderableMesh::blend_transform_at_frac(const animation_t *anim,
-                                    const node_animation_t &nodeanim,
-                                    float frac) const
+                                            const node_animation_t &nodeanim,
+                                            float frac) const
 {
     // Translation
     float pos_indexf = frac * (nodeanim.pos_keys.size() - 1);
@@ -1245,8 +1239,8 @@ float m4f_maxdiff(const m4f &m0, const m4f &m1)
 }
 
 void RenderableMesh::animate(int anim_index,
-                     float time,
-                     std::vector<m4f> &bone_transforms)
+                             float time,
+                             std::vector<m4f> &bone_transforms)
 {
     // TRAVERSE & TRANSFORM NODE nodes
     // Use either node or (if available) keyframe transformations
@@ -1273,12 +1267,18 @@ void RenderableMesh::animate(int anim_index,
         // If an animation key is available, use it to replace the node tfm
         if (anim)
         {
+#ifdef PadKeyframesToNodes
+            const auto &node_anim = anim->node_animations[node_index];
+            if (node_anim.name.size())
+                node_tfm = blend_transform_at_time(anim, node_anim, time);
+#else
             auto animit = anim->node_animation_hash.find(m_nodetree.nodes[node_index].name);
             if (animit != anim->node_animation_hash.end())
             {
-                node_animation_t &na = anim->node_animations[animit->second];
+                const node_animation_t &na = anim->node_animations[animit->second];
                 node_tfm = blend_transform_at_time(anim, na, time);
             }
+#endif
         }
 
         global_tfm = m_nodetree.nodes[node_index].global_tfm * node_tfm;
@@ -1412,13 +1412,13 @@ inline m4f m4f_subtract(const m4f &m0, const m4f &m1)
 }
 
 void RenderableMesh::render(const m4f &PROJ_VIEW,
-                    const m4f &WORLD,
-                    double time,
-                    int anim_index,
-                    const v3f &lightpos,
-                    const v3f &eyepos,
-                    gl_cubemap_t *cubemap,
-                    GLuint shader)
+                            const m4f &WORLD,
+                            double time,
+                            int anim_index,
+                            const v3f &lightpos,
+                            const v3f &eyepos,
+                            gl_cubemap_t *cubemap,
+                            GLuint shader)
 {
     std::vector<m4f> bone_array;
 
@@ -1432,12 +1432,12 @@ void RenderableMesh::render(const m4f &PROJ_VIEW,
 }
 
 void RenderableMesh::render(const m4f &PROJ_VIEW,
-                    const m4f &WORLD,
-                    const std::vector<m4f> &bone_array,
-                    const v3f &lightpos,
-                    const v3f &eyepos,
-                    gl_cubemap_t *cubemap,
-                    GLuint shader)
+                            const m4f &WORLD,
+                            const std::vector<m4f> &bone_array,
+                            const v3f &lightpos,
+                            const v3f &eyepos,
+                            gl_cubemap_t *cubemap,
+                            GLuint shader)
 {
     // Fix when a better shader system is in place
     if (!shader)
