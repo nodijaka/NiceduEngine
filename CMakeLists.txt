@@ -20,16 +20,16 @@ include(FetchContent)
 
 # Fetch SDL
 FetchContent_Declare(
-    SDL
+    sdl2
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG        release-2.30.2 # Replace this with the desired version/tag
 )
-FetchContent_GetProperties(SDL)
-if(NOT SDL_POPULATED)
-    FetchContent_Populate(SDL)
-    add_subdirectory(${sdl_SOURCE_DIR} ${sdl_BINARY_DIR})
+FetchContent_GetProperties(sdl2)
+if(NOT sdl2_POPULATED)
+    FetchContent_Populate(sdl2)
+    add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
 endif()
-include_directories(${sdl_SOURCE_DIR}/include)
+include_directories(${sdl2_SOURCE_DIR}/include)
 
 # Fetch SFML
 #FetchContent_Declare(
@@ -40,19 +40,6 @@ include_directories(${sdl_SOURCE_DIR}/include)
 #FetchContent_MakeAvailable(SFML)
 
 # Fetch Assimp
-# Note: v5.0.1 (200112) seems to be the latest version of assimp that works with Mixamo models (https://github.com/assimp/assimp/issues/4620)
-#FetchContent_Declare(
-#    assimp
-#    GIT_REPOSITORY https://github.com/assimp/assimp.git
-#    GIT_TAG        v5.1.0 # Replace this with the desired version/tag
-#)
-#FetchContent_GetProperties(assimp)
-#if(NOT assimp_POPULATED)
-#    FetchContent_Populate(assimp)
-#    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE)
-#    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Disable Assimp tools" FORCE)
-#    add_subdirectory(${assimp_SOURCE_DIR} ${assimp_BINARY_DIR})
-#endif()
 set(ASSIMP_BUILD_ZLIB ON)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_TESTS OFF)
@@ -69,6 +56,7 @@ else()
     )
     FetchContent_MakeAvailable(assimp)
 endif()
+include_directories(${assimp_SOURCE_DIR})
 #if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_COMPILER_ID STREQUAL "GNU")
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-unused-but-set-variable")
 #endif()
@@ -97,16 +85,6 @@ FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui
     GIT_TAG v1.89.9)
 FetchContent_MakeAvailable(imgui)
-#FetchContent_GetProperties(imgui SOURCE_DIR IMGUI_DIR)
-
-# Fetch ImGui-SFML
-#set(IMGUI_SFML_FIND_SFML OFF)
-#FetchContent_Declare(ImGui-SFML
-#    GIT_REPOSITORY https://github.com/SFML/imgui-sfml
-#    GIT_TAG 2.6.x)
-#FetchContent_MakeAvailable(ImGui-SFML)
-
-# Include directories for ImGui and ImGui-SFML
 include_directories(${imgui_SOURCE_DIR})
 
 # Create targets
@@ -134,27 +112,17 @@ set_target_properties(Module1 PROPERTIES
 target_link_libraries(Module1 SDL2 assimp ${OPENGL_LIBRARIES}) #SDL2main SDL assimp)
 target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR})
 target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR}/backends)
-#target_compile_features(Module1 PRIVATE cxx_std_17)
-# Copy OpenAL DLL to the target directory on Windows
-#if(WIN32)
-#    add_custom_command(
-#        TARGET Module1
-#        COMMENT "Copy OpenAL DLL"
-#        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:Module1>
-#        VERBATIM)
-#endif()
+# Copy SDL2 DLL to the build directory (for Windows)
+add_custom_command(TARGET Module1 POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:SDL2>
+        $<TARGET_FILE_DIR:Module1>
+)
 
-# Module2
-#add_executable(Module2
-#    main.cpp 
-#    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
-#    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
-#set_target_properties(Module2 PROPERTIES
-#    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module2"
-#)
-#target_link_libraries(Module2 SDL2 assimp ${OPENGL_LIBRARIES}) #SDL2main SDL2 assimp)
-#target_include_directories(Module2 PRIVATE ${imgui_SOURCE_DIR})
-#target_include_directories(Module2 PRIVATE ${imgui_SOURCE_DIR}/backends)
+# Module2 ...
+
+# Set the startup project for Visual Studio
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Module1)
 
 # For 'make install'
 #install(TARGETS Module1 Module2)
