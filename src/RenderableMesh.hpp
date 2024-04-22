@@ -27,7 +27,7 @@
 #endif
 #include "glerror.h"
 // Assimp
-#include <assimp/cimport.h>
+//#include <assimp/cimport.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -55,8 +55,8 @@ using namespace logstreamer;
 //using namespace gl_batch_renderer;
 //class glyph_renderer_t;
 
-// Padding keyframes to nodes may take some extra space
-// but eliminates the need to hash keyframes to nodes
+// Padding keyframes to nodes will eliminate the need for a hash between them,
+// potentially leading to better play performance at the cost of extra space
 #define PadKeyframesToNodes
 
 const int NUM_BONES_PER_VERTEX = 4;
