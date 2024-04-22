@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <GL/gl.h>
 #endif
+
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <iostream>
@@ -171,7 +173,7 @@ int main(int argc, char *argv[])
     auto characterMesh = std::make_shared<RenderableMesh>();
 
     grassMesh->load("assets/grass/grass_trees.fbx", false);
-
+//
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
     // treemesh->load("assets/Leela.fbx", false);
     // treemesh->load("assets/Character.fbx", false);
