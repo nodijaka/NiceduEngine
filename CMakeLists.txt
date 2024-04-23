@@ -1,7 +1,7 @@
 
 # https://github.com/SFML/cmake-sfml-project/blob/imgui-sfml/CMakeLists.txt
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 
 project(DA376B_Labs
   VERSION 1.0
@@ -127,9 +127,15 @@ add_custom_command(TARGET Module1 POST_BUILD
         $<TARGET_FILE_DIR:Module1>
 )
 
+# Set working directory for Visual Studio
+set_property(TARGET Module1 PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Module2 ...
 
-# Set the startup project for Visual Studio
+
+
+
+# Set startup project for Visual Studio
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Module1)
 
 # For 'make install'
