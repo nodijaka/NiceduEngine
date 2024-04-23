@@ -31,13 +31,20 @@ if(NOT sdl2_POPULATED)
 endif()
 include_directories(${sdl2_SOURCE_DIR}/include)
 
-# Fetch SFML
-#FetchContent_Declare(
-#  SFML
-#  GIT_REPOSITORY https://github.com/SFML/SFML.git
-#  GIT_TAG 2.6.x
-#)
-#FetchContent_MakeAvailable(SFML)
+# Fetch glew
+# https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
+include(FetchContent)
+FetchContent_Declare(
+  glew
+  GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
+  GIT_TAG        origin/master
+)
+FetchContent_GetProperties(glew)
+if(NOT glew_POPULATED)
+  FetchContent_Populate(glew)
+
+  add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # Fetch Assimp
 set(ASSIMP_BUILD_ZLIB ON)
@@ -101,6 +108,7 @@ add_executable(Module1
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderableMesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/mat.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/vec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/quat.cpp
@@ -109,7 +117,7 @@ add_executable(Module1
 set_target_properties(Module1 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module1"
 )
-target_link_libraries(Module1 SDL2 assimp ${OPENGL_LIBRARIES}) #SDL2main SDL assimp)
+target_link_libraries(Module1 SDL2 assimp libglew_static ${OPENGL_LIBRARIES})
 target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR})
 target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR}/backends)
 # Copy SDL2 DLL to the build directory (for Windows)

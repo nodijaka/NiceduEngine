@@ -69,7 +69,7 @@ void Texture2D::load_from_memory(const std::string& name,
         throw std::runtime_error("Error loading texture " + name + "\n");
     }
     
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
     load_image(name, image, w, h, channels);
     stbi_image_free(image);
 }
@@ -88,7 +88,7 @@ void Texture2D::load_image(const std::string& name,
     else if (channels == 3) { internal_format = GL_RGB8; format = GL_RGB; }
     else if (channels == 4) { internal_format = GL_RGBA8; format = GL_RGBA; }
     else throw std::runtime_error("Unsupported texture format, number of channels " + std::to_string(channels) + "\n");
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
 
     load_to_VRAM(name, image, w, h, internal_format, format);
 }
@@ -115,7 +115,7 @@ void Texture2D::load_to_VRAM(const std::string& name,
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
 }
 
 void Texture2D::bind(GLenum p_texture_slot)
@@ -154,7 +154,7 @@ void gl_cubemap_t::load_from_files(const std::string filepaths[])
 //    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
     
     for (int i=0; i<6; i++)
         load_from_file(filepaths[i], GL_TEXTURE_CUBE_MAP_POSITIVE_X+i);
@@ -162,7 +162,7 @@ void gl_cubemap_t::load_from_files(const std::string filepaths[])
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
 }
 
 void gl_cubemap_t::load_from_file(const std::string& fullpath,

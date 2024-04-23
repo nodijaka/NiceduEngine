@@ -9,13 +9,14 @@
 #ifndef LOADSHADER_H
 #define LOADSHADER_H
 
+#include "glcommon.h"
 //#include <GLUT/glut.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <windows.h>
-#include <GL/gl.h>
-#endif
+// #ifdef __APPLE__
+// #include <OpenGL/gl.h>
+// #else
+// #include <windows.h>
+// #include <GL/gl.h>
+// #endif
 
 #include <cstdlib>
 #include <iostream>
@@ -54,7 +55,7 @@ static void printShaderLog(GLuint obj, GLuint shader)
 static GLuint createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource)
 {
     // Make sure GL-errors has not already been thrown elsewhere
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
     
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);

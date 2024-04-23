@@ -184,7 +184,7 @@ GLuint create_checker_texture(void)
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
     return texture_id;
 }
 
@@ -582,7 +582,7 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(scene_indices[0]) * scene_indices.size(), &scene_indices[0], GL_STATIC_DRAW);
 
-    ThrowGLErrors();
+    CheckAndThrowGLErrors();
     return true;
 
     // return GLCheckError();

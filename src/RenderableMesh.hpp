@@ -17,15 +17,16 @@
 #include <fstream>
 #include <string> // std::to_string
 // GL
+#include "glcommon.h"
 //#include "GL/glew.h"
 //#include <GLFW/glfw3.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <windows.h>
-#include <GL/gl.h>
-#endif
-#include "glerror.h"
+// #ifdef __APPLE__
+// #include <OpenGL/gl.h>
+// #else
+// #include <windows.h>
+// #include <GL/gl.h>
+// #endif
+
 // Assimp
 //#include <assimp/cimport.h>
 #include <assimp/Importer.hpp>

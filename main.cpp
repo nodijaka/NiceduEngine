@@ -1,19 +1,24 @@
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <windows.h>
-#include <GL/gl.h>
+
+#include "config.h"
+#include "glcommon.h"
+// #include <GL/glew.h>
+// #ifdef __APPLE__
+// #include <OpenGL/gl.h>
+// #else
+// #include <windows.h>
+// #include <GL/gl.h>
+// #endif
+
+// OpenGL debug message callback requires 4.3
+#ifdef EENG_GLVERSION_43
+#include "GLDebugMessageCallback.h"
 #endif
 
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_opengl.h>
+
 #include <iostream>
-
-// #include <assimp/Importer.hpp>
-// #include <assimp/scene.h>
-// #include <assimp/postprocess.h>
-
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
@@ -79,6 +84,21 @@ int main(int argc, char *argv[])
         SDL_Quit();
         return 1;
     }
+
+    // Initialize GLEW
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+    {
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        return 1;
+    }
+
+    // OpenGL debug output callback
+#ifdef EENG_GLVERSION_43
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(GLDebugMessageCallback, nullptr);
+#endif
 
     // Check for OpenGL errors before initializing ImGui
     GLenum error = glGetError();
@@ -174,9 +194,9 @@ int main(int argc, char *argv[])
 
     grassMesh->load("assets/grass/grass_trees.fbx", false);
 //
-    // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
-    // treemesh->load("assets/Leela.fbx", false);
-    // treemesh->load("assets/Character.fbx", false);
+// treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
+// treemesh->load("assets/Leela.fbx", false);
+// treemesh->load("assets/Character.fbx", false);
 #if 0
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Models/characterLargeFemale.fbx", false);
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/idle.fbx", true);
