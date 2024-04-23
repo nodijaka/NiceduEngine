@@ -55,6 +55,7 @@ using namespace linalg;
 using namespace logstreamer;
 //using namespace gl_batch_renderer;
 //class glyph_renderer_t;
+using uint = uint32_t;
 
 // Padding keyframes to nodes will eliminate the need for a hash between them,
 // potentially leading to better play performance at the cost of extra space
