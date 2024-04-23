@@ -103,7 +103,7 @@ namespace logstreamer
         }
     };
     
-    enum { VERBOSE = 0, STRICT };
+    enum { PRTVERBOSE = 0, PRTSTRICT };
     using priority = logstreamer_t::priority_t;
     
 }

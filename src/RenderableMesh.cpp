@@ -296,19 +296,19 @@ void RenderableMesh::load(const std::string &file,
     if (!append_animations)
     {
         // log.add_ostream(std::cout, STRICT);
-        log.add_ofstream(filepath + filename + "_log.txt", VERBOSE);
+        log.add_ofstream(filepath + filename + "_log.txt", PRTVERBOSE);
     }
 
     // Log misc stuff
-    log << priority(STRICT) << "Assimp about to open file:\n"
+    log << priority(PRTSTRICT) << "Assimp about to open file:\n"
         << file << std::endl;
     // File support
     aiString supported_list;
     aiimporter.GetExtensionList(supported_list);
-    log << priority(VERBOSE) << "Assimp supported formats: \n"
+    log << priority(PRTVERBOSE) << "Assimp supported formats: \n"
         << supported_list.C_Str() << std::endl;
     bool ext_supported = aiimporter.IsExtensionSupported(fileext);
-    log << priority(VERBOSE) << "Format " << fileext << " supported: " << (ext_supported ? "YES" : "NO") << std::endl;
+    log << priority(PRTVERBOSE) << "Format " << fileext << " supported: " << (ext_supported ? "YES" : "NO") << std::endl;
 
     // ASSIMP POST-PROCESS FLAGS
     // http://assimp.sourceforge.net/lib_html/postprocess_8h.html
@@ -318,19 +318,19 @@ void RenderableMesh::load(const std::string &file,
 
     if (!aiscene)
         throw std::runtime_error(aiimporter.GetErrorString());
-    log << priority(STRICT) << "Assimp load OK\n";
+    log << priority(PRTSTRICT) << "Assimp load OK\n";
 
     // Load animations to a previously loaded model
     if (append_animations)
     {
-        log << priority(STRICT) << "Appending animations... \n";
+        log << priority(PRTSTRICT) << "Appending animations... \n";
 
         if (!m_meshes.size())
             throw std::runtime_error("Cannot append animations to an empty model\n");
 
         load_animations(aiscene);
 
-        log << priority(STRICT) << "Done appending animations.\n";
+        log << priority(PRTSTRICT) << "Done appending animations.\n";
         return;
     }
 
@@ -362,7 +362,7 @@ void RenderableMesh::load(const std::string &file,
     load_nodes(aiscene->mRootNode /*, file*/);
     // Debug-print node hierarchy to file
     // m_nodetree.debug_print( logstreamer_t(filepath+filename+"_nodetree.txt", VERBOSE) );
-    m_nodetree.debug_print({filepath + filename + "_nodetree.txt", VERBOSE});
+    m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
 
     load_animations(aiscene);
 
@@ -386,7 +386,7 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
     unsigned scene_nbr_indices = 0;
 
     // Print some debug info
-    log << priority(STRICT) << "Scene overview" << std::endl;
+    log << priority(PRTSTRICT) << "Scene overview" << std::endl;
     //    std::cout << "\thas meshes: " << (pScene->HasMeshes()?"yes":"no") << std::endl;
     //    std::cout << "\thas materials: " << (pScene->HasMaterials()?"yes":"no") << std::endl;
     //    std::cout << "\thas embedded textures: " << (pScene->HasTextures()?"yes":"no") << std::endl;
@@ -474,7 +474,7 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
                   scene_indices);
     }
 
-    log << priority(STRICT);
+    log << priority(PRTSTRICT);
     log << "Scene total vertices " << scene_nbr_vertices << ", triangles " << scene_nbr_indices / 3 << std::endl;
     log << "Bone mapping contains " << m_bonehash.size() << " bones in total\n";
 
@@ -598,7 +598,7 @@ void RenderableMesh::load_mesh(uint meshindex,
                                std::vector<vertex_skindata_t> &scene_skindata,
                                std::vector<unsigned int> &scene_indices)
 {
-    log << priority(VERBOSE);
+    log << priority(PRTVERBOSE);
     log << "Loading mesh " << aimesh->mName.C_Str() << std::endl;
     log << "\t" << aimesh->mNumVertices << " vertices" << std::endl;
     log << "\t" << aimesh->mNumFaces << " faces" << std::endl;
@@ -634,7 +634,7 @@ void RenderableMesh::load_mesh(uint meshindex,
         min_nbr_weights = fmin(min_nbr_weights, b.nbr_added);
         max_nbr_weights = fmax(max_nbr_weights, b.nbr_added);
     }
-    log << priority(VERBOSE) << "\tNbr of bone weights, min " << min_nbr_weights << ", max " << max_nbr_weights << std::endl;
+    log << priority(PRTVERBOSE) << "\tNbr of bone weights, min " << min_nbr_weights << ", max " << max_nbr_weights << std::endl;
     // \\
 
     // Populate the index buffer
@@ -775,7 +775,7 @@ void RenderableMesh::load_bones(uint mesh_index,
 
     // Each BONE then keeps its own set of WEIGHTS = {weight, vertex index}
 
-    log << priority(VERBOSE) << aimesh->mNumBones << " bones (nbr weights):\n";
+    log << priority(PRTVERBOSE) << aimesh->mNumBones << " bones (nbr weights):\n";
 
     for (uint i = 0; i < aimesh->mNumBones; i++)
     {
@@ -857,7 +857,7 @@ int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type
     if (sscanf(texpath.c_str(), "*%d", &embedded_texture_index) == 1)
     {
         texture_index = m_embedded_textures_ofs + embedded_texture_index;
-        log << priority(STRICT) << "\tUsing indexed embedded texture: " << embedded_texture_index << std::endl;
+        log << priority(PRTSTRICT) << "\tUsing indexed embedded texture: " << embedded_texture_index << std::endl;
     }
     // Texture is a separate file
     else
@@ -865,8 +865,8 @@ int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type
         std::string tex_filename = get_filename(texpath);
         std::string local_file = local_filepath + tex_filename;
 
-        log << priority(VERBOSE) << "\traw path: " << texpath << std::endl;
-        log << priority(VERBOSE) << "\tlocal file: " << local_file << std::endl;
+        log << priority(PRTVERBOSE) << "\traw path: " << texpath << std::endl;
+        log << priority(PRTVERBOSE) << "\tlocal file: " << local_file << std::endl;
 
         // Look for non-embedded textures (filepath + filename)
         auto tex_it = m_texturehash.find(local_file);
@@ -881,7 +881,7 @@ int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type
             // New texture found: create & hash it
             Texture2D texture;
             texture.load_from_file(tex_filename, local_file);
-            log << priority(STRICT) << "Loaded texture " << texture << std::endl;
+            log << priority(PRTSTRICT) << "Loaded texture " << texture << std::endl;
             texture_index = (unsigned)m_textures.size();
             m_textures.push_back(texture);
             m_texturehash[local_file] = texture_index;
@@ -937,7 +937,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
 
     std::string local_filepath = get_parentdir(file);
 
-    log << priority(STRICT) << "Loading materials...\n";
+    log << priority(PRTSTRICT) << "Loading materials...\n";
     log << "\tNum materials " << aiscene->mNumMaterials << std::endl;
     log << "\tParent dir: " << local_filepath << std::endl;
 
@@ -946,7 +946,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
     // extension (which it really shouldn't), there will be a conflict in the
     // name hash.
     log << "Embedded textures: " << aiscene->mNumTextures << std::endl;
-    log << priority(VERBOSE);
+    log << priority(PRTVERBOSE);
 
     m_embedded_textures_ofs = (unsigned)m_textures.size();
     for (int i = 0; i < aiscene->mNumTextures; i++)
@@ -964,7 +964,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
                                aitexture->mWidth,
                                aitexture->mHeight,
                                4);
-            log << priority(STRICT) << "Loaded uncompressed embedded texture " << texture << std::endl;
+            log << priority(PRTSTRICT) << "Loaded uncompressed embedded texture " << texture << std::endl;
         }
         else
         {
@@ -972,7 +972,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
             texture.load_from_memory(filename,
                                      (unsigned char *)aitexture->pcData,
                                      sizeof(aiTexel) * (aitexture->mWidth));
-            log << priority(STRICT) << "Loaded compressed embedded texture " << texture << std::endl;
+            log << priority(PRTSTRICT) << "Loaded compressed embedded texture " << texture << std::endl;
         }
         // texture.load_from_memory(filename, aitexture);
 
@@ -981,7 +981,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
 
         // std::cout << "\t\tLoaded embedded texture: " << filename << ", " << aitexture->mFilename.data << std::endl;
     }
-    log << priority(STRICT) << "Loaded " << aiscene->mNumTextures << " embedded textures\n";
+    log << priority(PRTSTRICT) << "Loaded " << aiscene->mNumTextures << " embedded textures\n";
 
     //    bool Ret = true;
 
@@ -993,7 +993,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
 
         aiString mtlname;
         pMaterial->Get(AI_MATKEY_NAME, mtlname);
-        log << priority(VERBOSE);
+        log << priority(PRTVERBOSE);
         log << "Loading material '" << mtlname.C_Str() << "', index " << i << "..." << std::endl;
         log << "Available textures:" << std::endl;
         log << "\tNone " << pMaterial->GetTextureCount(aiTextureType_NONE) << std::endl;
@@ -1050,12 +1050,12 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
     }
     log << "Done loading materials" << std::endl;
 
-    log << priority(STRICT) << "Num materials " << m_materials.size() << std::endl;
+    log << priority(PRTSTRICT) << "Num materials " << m_materials.size() << std::endl;
     //    for (auto& t : m_materials)
     //        std::cout << "\t" << t.diffuse_texture_index << std::endl;
 
-    log << priority(STRICT) << "Num textures " << m_textures.size() << std::endl;
-    log << priority(VERBOSE);
+    log << priority(PRTSTRICT) << "Num textures " << m_textures.size() << std::endl;
+    log << priority(PRTVERBOSE);
     for (auto &t : m_textures)
         log << "\t" << t.m_name << std::endl;
 
@@ -1068,7 +1068,7 @@ void RenderableMesh::load_materials(const aiScene *aiscene, const std::string &f
 
 void RenderableMesh::load_animations(const aiScene *scene)
 {
-    log << priority(STRICT) << "Loading animations..." << std::endl;
+    log << priority(PRTSTRICT) << "Loading animations..." << std::endl;
 
     for (int i = 0; i < scene->mNumAnimations; i++)
     {
@@ -1082,7 +1082,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
         anim.node_animations.resize(m_nodetree.nodes.size());
 #endif
 
-        log << priority(STRICT)
+        log << priority(PRTSTRICT)
             << "Loading animation '" << anim.name
             << "', dur in ticks " << anim.duration_ticks
             << ", tps " << anim.tps
@@ -1095,7 +1095,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
             node_animation_t node_anim;
             node_anim.name = std::string(ainode_anim->mNodeName.C_Str());
 
-            log << priority(VERBOSE)
+            log << priority(PRTVERBOSE)
                 << "\tLoading channel " << node_anim.name
                 << ", nbr pos keys  " << ainode_anim->mNumPositionKeys
                 << ", nbr scale keys  " << ainode_anim->mNumScalingKeys
@@ -1136,7 +1136,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
         m_animations.push_back(anim);
     }
 
-    log << priority(STRICT) << "Animations in total " << m_animations.size() << std::endl;
+    log << priority(PRTSTRICT) << "Animations in total " << m_animations.size() << std::endl;
 }
 
 inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
