@@ -1,6 +1,3 @@
-
-# https://github.com/SFML/cmake-sfml-project/blob/imgui-sfml/CMakeLists.txt
-
 cmake_minimum_required(VERSION 3.8)
 
 project(DA376B_Labs
@@ -22,7 +19,7 @@ include(FetchContent)
 FetchContent_Declare(
     sdl2
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG        release-2.30.2 # Replace this with the desired version/tag
+    GIT_TAG        release-2.30.2 # April 2nd 2024
 )
 FetchContent_GetProperties(sdl2)
 if(NOT sdl2_POPULATED)
@@ -42,7 +39,6 @@ FetchContent_Declare(
 FetchContent_GetProperties(glew)
 if(NOT glew_POPULATED)
   FetchContent_Populate(glew)
-
   add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
@@ -58,15 +54,12 @@ else()
     FetchContent_Declare(
         assimp
         GIT_REPOSITORY https://github.com/assimp/assimp.git
-        GIT_TAG v5.0.1 # v5.4.0 # (240408) 5.3.0 (230923) fixes issues with vsprintf and other deprecated stuff
+        GIT_TAG v5.0.1
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(assimp)
 endif()
 include_directories(${assimp_SOURCE_DIR})
-#if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_COMPILER_ID STREQUAL "GNU")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-unused-but-set-variable")
-#endif()
 
 # Fetch STB
 FetchContent_Declare(
@@ -124,6 +117,12 @@ target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR}/backends)
 add_custom_command(TARGET Module1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:SDL2>
+        $<TARGET_FILE_DIR:Module1>
+)
+# Copy SDL2 DLL to the build directory (for Windows)
+add_custom_command(TARGET Module1 POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "$<TARGET_FILE_DIR:assimp>"
         $<TARGET_FILE_DIR:Module1>
 )
 
