@@ -5,6 +5,7 @@
 
 [Bb]uild/
 assets/
+doxygen/
 
 # User-specific files
 *.rsuser
