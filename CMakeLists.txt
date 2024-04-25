@@ -119,7 +119,7 @@ add_custom_command(TARGET Module1 POST_BUILD
         $<TARGET_FILE:SDL2>
         $<TARGET_FILE_DIR:Module1>
 )
-# Copy SDL2 DLL to the build directory (for Windows)
+# Copy assimp DLL to the build directory (for Windows)
 add_custom_command(TARGET Module1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "$<TARGET_FILE_DIR:assimp>"
