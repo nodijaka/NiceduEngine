@@ -186,7 +186,7 @@ public:
     m4f M_global, M_global_inverse;
 
     // Node hierarchy
-    seqtree_t<SkeletonNode>     m_nodetree;
+    VectorTree<SkeletonNode>     m_nodetree;
     std::vector<bone_t>         m_bones;
     // Geometry & materials
     std::vector<mesh_t>         m_meshes;
