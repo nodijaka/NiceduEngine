@@ -14,10 +14,6 @@
 #include <stdlib.h>
 #include <cmath>
 #include <algorithm>
-
-#ifndef DEBUG
-#define NDEBUG          /* NDEBUG will disable assert */
-#endif
 #include <cassert>
 
 #define fPI			3.141592653f

@@ -3,13 +3,20 @@
 #define CONFIG_H
 #pragma once
 
+#include <iostream>
+#include <string_view>
+#include <format>
+
+// Misc global defines
+#define EENG_NULL_INDEX -1
+
 // Platform
 #ifdef _WIN32
 #define EENG_PLATFORM_WINDOWS
 #else
 #define EENG_PLATFORM_UNIX
 #define EENG_PLATFORM_LINUX
-#define XI_PLATFORM_APPLE
+#define EENG_PLATFORM_APPLE
 #endif
 
 // Compiler
@@ -29,15 +36,48 @@
 #define EENG_ENABLE_ASSERTS
 #endif
 
+// Debug break
+#ifdef EENG_PLATFORM_WINDOWS
+#define EENG_DEBUG_BREAK() __debugbreak()
+#else
+#if defined(__ARM_ARCH) || defined(__aarch64__)
+#define EENG_DEBUG_BREAK() __asm__ volatile("svc #0")
+#elif defined(__x86_64__) || defined(__i386__)
+#define EENG_DEBUG_BREAK() __asm__ volatile("int $0x03")
+#else
+#error "Unsupported architecture"
+#endif
+#endif
+
+// Assert
+#ifdef EENG_ENABLE_ASSERTS
+template <class... Args>
+static void EENG_ERROR(std::string_view fmt, Args &&...args)
+{
+    auto msg = std::vformat(fmt, std::make_format_args(args...));
+    std::cerr << "Error: " << msg << std::endl;
+}
+#define EENG_ASSERT(x, ...)          \
+    {                                \
+        if (!(x))                    \
+        {                            \
+            EENG_ERROR(__VA_ARGS__); \
+            EENG_DEBUG_BREAK();      \
+        }                            \
+    }
+#else
+#define EENG_ASSERT(x, ...)
+#endif
+
 // GL version
-#ifdef XI_PLATFORM_APPLE
+#ifdef EENG_PLATFORM_APPLE
 #define EENG_GLVERSION_MAJOR 4
 #define EENG_GLVERSION_MINOR 1
 #else
 #define EENG_GLVERSION_MAJOR 4
 #define EENG_GLVERSION_MINOR 3
 #endif
-// 
+//
 #if EENG_GLVERSION_MAJOR >= 4
 #if EENG_GLVERSION_MINOR >= 1
 #define EENG_GLVERSION_41
