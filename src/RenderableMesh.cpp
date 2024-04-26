@@ -734,6 +734,8 @@ void RenderableMesh::load_nodes(aiNode *ainode_root)
         }
     }
 
+    // m_nodetree.reduce();
+
     // Build node name<->index hash
     // Note: Not currently used, though seems sensical to have.
     for (int i = 0; i < m_nodetree.nodes.size(); i++)
@@ -1281,10 +1283,9 @@ void RenderableMesh::animate(int anim_index,
 #endif
         }
 
+#if 0
         global_tfm = m_nodetree.nodes[node_index].global_tfm * node_tfm;
-
         m_nodetree.nodes[node_index].global_tfm = global_tfm;
-        // node_tfm = m_nodetree.nodes[node_index].global_tfm;
 
         int child_index = node_index + 1;
         for (int i = 0; i < m_nodetree.nodes[node_index].m_nbr_children; i++)
@@ -1292,23 +1293,18 @@ void RenderableMesh::animate(int anim_index,
             m_nodetree.nodes[child_index].global_tfm = m_nodetree.nodes[child_index].global_tfm * global_tfm;
             child_index += m_nodetree.nodes[child_index].m_branch_stride;
         }
+#else
+        // Apply parent transform
+        const auto parent_ofs = m_nodetree.nodes[node_index].m_parent_ofs;
+        if (parent_ofs)
+        {
+            const auto &parent_tfm = m_nodetree.nodes[node_index - parent_ofs].global_tfm;
+            node_tfm = parent_tfm * node_tfm;
+        }
+        m_nodetree.nodes[node_index].global_tfm = node_tfm;
+#endif
         node_index++;
     }
-
-#if 0
-    // DEV NODE MANIP
-    sequentialgraph_t::node_t* shouldernode = m_scenegraph.find_node("LArmUpper1");
-    if (shouldernode) {
-        //std::cout << angle << " ";
-        angle += fPI/160;
-        v3f axis = linalg::normalize(v3f(1,0.2,0));
-        v3f nodepos = {shouldernode->global_tfm.m14,shouldernode->global_tfm.m24,shouldernode->global_tfm.m34};
-        m4f M = m4f::translation(nodepos) * m4f::rotation(angle, axis) * m4f::translation(10,0,0) * m4f::translation(-nodepos);
-        shouldernode->global_tfm = M * shouldernode->global_tfm;
-    }
-#endif
-
-    // TRANSFORM BONES FROM HIERARCHY [use separate array directly?]
 
     m_model_aabb.reset();
     for (int i = 0; i < m_bones.size(); i++)
@@ -1330,7 +1326,6 @@ void RenderableMesh::animate(int anim_index,
             continue;
         if (m_meshes[i].is_skinned)
             continue;
-        // if (i != 4) continue;
 
         if (m_meshes[i].node_index > -1)
         {
@@ -1343,72 +1338,9 @@ void RenderableMesh::animate(int anim_index,
         m_model_aabb.grow(m_mesh_aabbs_pose[i]);
     }
 
-#if 0
-    for (int i=0; i<m_nodetree.nodes.size(); i++)
-    {
-        int bone_index = m_nodetree.nodes[i].bone_index;
-        if (bone_index > -1)
-            m_bones[bone_index].global_tfm = m_nodetree.nodes[i].global_tfm * m_bones[bone_index].inversebind_tfm;
-
-#if 0
-        // assuming we're in bind pose (anim_nbr = -1),
-        // is the inverse of the global tfm of the node (at bind) = bone's localTfm?
-        // It seems: YES
-        if (bone_index > -1) {
-            float maxdiff = m4f_maxdiff( m_scenegraph.nodes[i].global_tfm.inverse(), m_bones[bone_index].localTfm);
-            if (maxdiff > 0.1) std::cout << "maxdiff " << maxdiff << std::endl;
-        }
-#endif
-    }
-#endif
-
-    // EXPORT BONES
-
     bone_transforms.resize(m_bones.size());
     for (uint i = 0; i < m_bones.size(); i++)
         bone_transforms[i] = m_bones[i].global_tfm;
-
-    // EXPORT HIERARCHY TO MESHES
-
-    // ...
-}
-
-#if 0
-/*
- This code renders the STATIC node (MESH?) hierarchy - the BIND POSE
- If the model is rendered with skinning OFF, then the model matches the hierarchy
- 
- As of now, if bones & animation is considered, then the tfm below (node->mTransformation)
- is REPLACED by the ANIMATION TFM * bone->offsetMatrix
- */
-void render_nodes(float AnimationTime,
-                  const aiNode* pNode,
-                  const m4f& ParentTransform,
-                  const v3f& parent_point,
-                  gl_batch_renderer::glDebugBatchRenderer* dbgrenderer)
-{
-//    float TicksPerSecond = (float)(m_pScene->mAnimations[ANIMNBR]->mTicksPerSecond != 0 ? m_pScene->mAnimations[ANIMNBR]->mTicksPerSecond : 25.0f);
-//    float TimeInTicks = TimeInSeconds * TicksPerSecond;
-    
-    m4f Mnode = ParentTransform * m4f_from_aiMatrix4x4( pNode->mTransformation );
-    v3f p = {Mnode.m14,Mnode.m24,Mnode.m34}; // (Mnode * parent_point.xyz1()).xyz();
-    
-    dbgrenderer->push_line(parent_point, p, {1,1,0});
-    
-    for (uint i = 0 ; i < pNode->mNumChildren ; i++)
-    {
-        render_nodes(AnimationTime, pNode->mChildren[i], Mnode, p, dbgrenderer);
-        //read_node_heirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
-    }
-}
-#endif
-
-inline m4f m4f_subtract(const m4f &m0, const m4f &m1)
-{
-    m4f M;
-    for (int i = 0; i < 16; i++)
-        M.array[i] = m0.array[i] - m1.array[i];
-    return M;
 }
 
 void RenderableMesh::render(const m4f &PROJ_VIEW,
