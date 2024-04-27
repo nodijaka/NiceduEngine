@@ -57,10 +57,6 @@ using namespace logstreamer;
 //class glyph_renderer_t;
 using uint = uint32_t;
 
-// Padding keyframes to nodes will eliminate the need for a hash between them,
-// potentially leading to better play performance at the cost of extra space
-#define PadKeyframesToNodes
-
 const int NUM_BONES_PER_VERTEX = 4;
 const int NO_MATERIAL = -1;
 const int NO_TEXTURE = -1;
@@ -147,9 +143,9 @@ private:
     // Keyframe sequence for a particular node and animation
     // The number of scaling/rotation/translation channels
     // are not necessarily equal.
-    struct node_animation_t
+    struct node_animation_t // NodeKeyframes ???
     {
-        std::string name; // node_name
+        bool is_used = false;
         std::vector<v3f> pos_keys;
         std::vector<v3f> scale_keys;
         std::vector<quatf> rot_keys;
@@ -161,9 +157,6 @@ private:
         float duration_ticks = 0;
         float tps = 1;
         std::vector<node_animation_t> node_animations;
-#ifndef PadKeyframesToNodes
-        std::unordered_map<std::string, unsigned> node_animation_hash;
-#endif
     };
     
     // GL stuff

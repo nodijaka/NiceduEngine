@@ -18,6 +18,14 @@
 
 using linalg::dualquatf;
 
+namespace
+{
+    inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
+    {
+        return v0 * (1.0f - t) + v1 * t;
+    }
+}
+
 /* Note:
  100 bone transformations amount to 1600 floats.
  GL_MAX_VERTEX_UNIFORM_COMPONENTS is 4096 (eg floats) on my AMD M370X (2015 Macbook Pro)
@@ -56,7 +64,8 @@ const std::string vshader =
     "               BoneTfms[BoneIDs.w] * BoneWeights.w;"
     "   } "
     "    if (BoneWeights.x+BoneWeights.y+BoneWeights.z+BoneWeights.w < 0.01)"
-    "    B = mat4(1.0);"
+    "       B = mat4(1.0);"
+    //    "       B = BoneTfms[0];"
     ""
     "   wpos = (WORLD * B * vec4(attr_Position, 1)).xyz;"
     "   texcoord = attr_Texcoord;"
@@ -504,7 +513,7 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
                 }
             }
         }
-        else // if ( m_meshes[i].node_index > -1 )
+        else // if ( m_meshes[i].node_index != EENG_NULL_INDEX )
         {
             for (int j = mesh.base_vertex; j < mesh.base_vertex + mesh.nbr_vertices; j++)
                 m_mesh_aabbs_bind[i].grow(scene_positions[j]);
@@ -627,6 +636,7 @@ void RenderableMesh::load_mesh(uint meshindex,
 
     load_bones(meshindex, aimesh, scene_skindata);
 
+#if 0
     // DBG: check min & max nbr of weights per bone
     int min_nbr_weights = 100, max_nbr_weights = 0;
     for (auto &b : scene_skindata)
@@ -635,7 +645,7 @@ void RenderableMesh::load_mesh(uint meshindex,
         max_nbr_weights = fmax(max_nbr_weights, b.nbr_added);
     }
     log << priority(PRTVERBOSE) << "\tNbr of bone weights, min " << min_nbr_weights << ", max " << max_nbr_weights << std::endl;
-    // \\
+#endif
 
     // Populate the index buffer
     for (uint i = 0; i < aimesh->mNumFaces; i++)
@@ -710,8 +720,8 @@ void RenderableMesh::load_nodes(aiNode *ainode_root)
     }
 #endif
 
-    // EXPERIMENTAL: link each node to bone (0 or 1) & meshes (0+)
-    // Move to a separate function link_nodes
+    // Link nodes to bones (0 or 1) and meshes (0+)
+    // Link bones to nodes (1)
     for (int i = 0; i < m_nodetree.nodes.size(); i++)
     {
         // Link node<->meshes (re-retrieve the original assimp node by name)
@@ -855,7 +865,7 @@ int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type
     // Embedded textures are named *[N], where N is an index. Embedded  textures
     // are already loaded at this point, so if we ecounter this format we
     // extract N and use it (plus a buffer offset) as our index.
-    int embedded_texture_index = -1;
+    int embedded_texture_index = EENG_NULL_INDEX;
     if (sscanf(texpath.c_str(), "*%d", &embedded_texture_index) == 1)
     {
         texture_index = m_embedded_textures_ofs + embedded_texture_index;
@@ -1080,9 +1090,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
         anim.name = std::string(aianim->mName.C_Str());
         anim.duration_ticks = aianim->mDuration;
         anim.tps = aianim->mTicksPerSecond;
-#ifdef PadKeyframesToNodes
         anim.node_animations.resize(m_nodetree.nodes.size());
-#endif
 
         log << priority(PRTSTRICT)
             << "Loading animation '" << anim.name
@@ -1095,10 +1103,11 @@ void RenderableMesh::load_animations(const aiScene *scene)
         {
             aiNodeAnim *ainode_anim = aianim->mChannels[j];
             node_animation_t node_anim;
-            node_anim.name = std::string(ainode_anim->mNodeName.C_Str());
+            node_anim.is_used = true;
+            auto name = std::string(ainode_anim->mNodeName.C_Str());
 
             log << priority(PRTVERBOSE)
-                << "\tLoading channel " << node_anim.name
+                << "\tLoading channel " << name
                 << ", nbr pos keys  " << ainode_anim->mNumPositionKeys
                 << ", nbr scale keys  " << ainode_anim->mNumScalingKeys
                 << ", nbr rot keys  " << ainode_anim->mNumRotationKeys
@@ -1120,36 +1129,16 @@ void RenderableMesh::load_animations(const aiScene *scene)
                 node_anim.rot_keys.push_back(rot_key);
             }
 
-#ifdef PadKeyframesToNodes
-            auto index = m_nodetree.find_node_index(node_anim.name);
-            // index == -1 means that no node corresponds to this set of keys
-            if (index > -1)
+            auto index = m_nodetree.find_node_index(name);
+            if (index != EENG_NULL_INDEX)
                 anim.node_animations[index] = node_anim;
-#else
-            anim.node_animations.push_back(node_anim);
-#endif
         }
-
-#ifndef PadKeyframesToNodes
-        for (int i = 0; i < anim.node_animations.size(); i++)
-            anim.node_animation_hash[anim.node_animations[i].name] = i;
-#endif
 
         m_animations.push_back(anim);
     }
 
     log << priority(PRTSTRICT) << "Animations in total " << m_animations.size() << std::endl;
 }
-
-inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
-{
-    return v0 * (1.0f - t) + v1 * t;
-}
-
-// quatf lerp_quatf(const v3r& v0, const v3f& v1, float t)
-//{
-//
-// }
 
 // get_key_tfm_at_time
 m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
@@ -1269,31 +1258,11 @@ void RenderableMesh::animate(int anim_index,
         // If an animation key is available, use it to replace the node tfm
         if (anim)
         {
-#ifdef PadKeyframesToNodes
             const auto &node_anim = anim->node_animations[node_index];
-            if (node_anim.name.size())
+            if (node_anim.is_used)
                 node_tfm = blend_transform_at_time(anim, node_anim, time);
-#else
-            auto animit = anim->node_animation_hash.find(m_nodetree.nodes[node_index].name);
-            if (animit != anim->node_animation_hash.end())
-            {
-                const node_animation_t &na = anim->node_animations[animit->second];
-                node_tfm = blend_transform_at_time(anim, na, time);
-            }
-#endif
         }
 
-#if 0
-        global_tfm = m_nodetree.nodes[node_index].global_tfm * node_tfm;
-        m_nodetree.nodes[node_index].global_tfm = global_tfm;
-
-        int child_index = node_index + 1;
-        for (int i = 0; i < m_nodetree.nodes[node_index].m_nbr_children; i++)
-        {
-            m_nodetree.nodes[child_index].global_tfm = m_nodetree.nodes[child_index].global_tfm * global_tfm;
-            child_index += m_nodetree.nodes[child_index].m_branch_stride;
-        }
-#else
         // Apply parent transform
         const auto parent_ofs = m_nodetree.nodes[node_index].m_parent_ofs;
         if (parent_ofs)
@@ -1302,7 +1271,7 @@ void RenderableMesh::animate(int anim_index,
             node_tfm = parent_tfm * node_tfm;
         }
         m_nodetree.nodes[node_index].global_tfm = node_tfm;
-#endif
+
         node_index++;
     }
 
@@ -1327,7 +1296,7 @@ void RenderableMesh::animate(int anim_index,
         if (m_meshes[i].is_skinned)
             continue;
 
-        if (m_meshes[i].node_index > -1)
+        if (m_meshes[i].node_index > EENG_NULL_INDEX)
         {
             m4f M = m_nodetree.nodes[m_meshes[i].node_index].global_tfm; // * boneIB_tfm;
             m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(M.column(3).xyz(), M.get_3x3());
@@ -1416,7 +1385,7 @@ void RenderableMesh::render(const m4f &PROJ_VIEW,
     {
         // Append hierarchical transform to meshes linked to nodes
         // Note: exclude skinned meshes (i.e. meshes linked to bones)
-        if (m_meshes[i].node_index > -1 && !m_meshes[i].is_skinned)
+        if (m_meshes[i].node_index != EENG_NULL_INDEX && !m_meshes[i].is_skinned)
         {
             MESHW = WORLD * m_nodetree.nodes[m_meshes[i].node_index].global_tfm;
             glUniformMatrix4fv(glGetUniformLocation(shader, "WORLD"), 1, 0, MESHW.array);
@@ -1499,85 +1468,6 @@ std::string RenderableMesh::get_animation_name(unsigned i) const
 {
     return (i < get_nbr_animations() ? m_animations[i].name : "");
 }
-
-/*
-void xiMesh::render_nodes(gl_batch_renderer::glDebugBatchRenderer* dbgrenderer,
-                          const m4f& worldMx,
-                          bool render_basis_arrows,
-                          float basis_arrow_scale) const
-{
-    const ArrowDescriptor arrdesc = {
-        .cone_fraction = 0.1f,
-        .cone_radius = basis_arrow_scale/50,
-        .cylinder_radius = basis_arrow_scale/150 };
-    const v3f nlcol = v3f(0.5,0.5,1);   // node line color
-    const v3f blcol = v3f(1,1,0);       // bone line color
-    DBGCOLOR bccol = DBGCOLOR::BLUE;    // bone cone color
-
-    auto node = m_nodetree.nodes.begin();
-    while(node != m_nodetree.nodes.end())
-    {
-        m4f nodeMx = worldMx*node->global_tfm;
-        v3f p0 = extract_translation(nodeMx);
-        bool is_bone = node->bone_index > -1;
-
-        dbgrenderer->push_point(p0, (is_bone ? blcol : nlcol), 4);
-
-        if (render_basis_arrows)
-        {
-            const mat3f wbasis = nodeMx.get_3x3()*basis_arrow_scale;
-            dbgrenderer->push_arrow(p0, p0+wbasis.col[0], RED, arrdesc);
-            dbgrenderer->push_arrow(p0, p0+wbasis.col[1], LIME, arrdesc);
-            dbgrenderer->push_arrow(p0, p0+wbasis.col[2], BLUE, arrdesc);
-        }
-
-        // Draw connections to child nodes
-        auto cnode = node+1;
-        for (int i=0; i<node->m_nbr_children; i++)
-        {
-            m4f cnodeMx = worldMx*cnode->global_tfm;
-            v3f p1 = extract_translation(cnodeMx);
-            bool child_is_bone = cnode->bone_index > -1;
-
-            if (is_bone && child_is_bone)
-            {
-                dbgrenderer->push_line(p0, p1, blcol);
-                dbgrenderer->push_cone(p0, p1, 1, bccol);
-            }
-            else
-                dbgrenderer->push_line(p0, p1, nlcol);
-
-            cnode += cnode->m_branch_stride;
-        }
-        node++;
-    }
-}
-*/
-
-/*
-void xiMesh::render_node_tags(glyph_renderer_t* glyphrenderer) const
-{
-    const v3f ncol = v3f(0,0,0);
-    const v3f bcol = v3f(0,0,1);
-    const v4f bgcol = v4f(1,1,1,0.75);
-
-    for (int i = 0; i < m_nodetree.nodes.size(); i++)
-//    for (auto& node: m_nodetree.nodes)
-    {
-        auto& node = m_nodetree.nodes[i];
-        v3f t = extract_translation(node.global_tfm);
-        std::string str = "[" + std::to_string(i) + "] ";
-        str += node.name;
-        if (node.bone_index > -1)
-            str += " (" + std::to_string(node.bone_index) + ")";
-        glyphrenderer->add_paragraph_at(str,
-                                        t,
-                                        false,
-                                        (node.bone_index > -1? bcol : ncol),
-                                        bgcol);
-    }
-}
-*/
 
 RenderableMesh::~RenderableMesh()
 {
