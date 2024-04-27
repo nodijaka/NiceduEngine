@@ -34,6 +34,8 @@ bool SOUND_PLAY = false;
 
 int main(int argc, char *argv[])
 {
+    //    EENG_ASSERT(false, "Debug break test {0}", 123);
+
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
 
@@ -193,10 +195,11 @@ int main(int argc, char *argv[])
     auto characterMesh = std::make_shared<RenderableMesh>();
 
     grassMesh->load("assets/grass/grass_trees.fbx", false);
-//
-// treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
-// treemesh->load("assets/Leela.fbx", false);
-// treemesh->load("assets/Character.fbx", false);
+    //
+    // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
+    // characterMesh->load("assets/Leela.fbx", false);
+    // characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
+    // characterMesh->load("assets/Ultimate Platformer Pack/Enemies/Bee.fbx", false);
 #if 0
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Models/characterLargeFemale.fbx", false);
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/idle.fbx", true);
@@ -212,12 +215,12 @@ int main(int argc, char *argv[])
 #endif
 #if 0
             // EVE - Mixamo Pro Rifle Pack
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/eve_j_gonzales.fbx");
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/idle.fbx", true);
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward.fbx", true);
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk right.fbx", true);
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward right.fbx", true);
-            treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips_extra/IdleReload.fbx", true);
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/eve_j_gonzales.fbx");
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/idle.fbx", true);
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward.fbx", true);
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk right.fbx", true);
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward right.fbx", true);
+            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips_extra/IdleReload.fbx", true);
 #endif
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/SK_Mannequin_tex.FBX");
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/clips_animpack/Aim_Space_Ironsights_PreviewMesh.fbx", true);
@@ -355,16 +358,17 @@ int main(int argc, char *argv[])
 
         // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.5f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f * 0, {1,0,0}, {0.25f,0.25f,0.25f}); // Manneq
-        // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.5f, {0,1,0}, {0.25f,0.25f,0.25f}); // Character
+        //linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
         linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 0, lightPos, eye);
-
-        W = mat4f::TRS({20, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
+#if 1
+        W = mat4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
-        W = mat4f::TRS({40, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
+        W = mat4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
+#endif
 
         // Animate & render grass
         W = mat4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
