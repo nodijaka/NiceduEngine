@@ -110,12 +110,13 @@ const std::string fshader =
     "out vec4 fragcolor;\n"
     "void main()"
     "{"
-    //    "   fragcolor = vec4(1,0,0,1); return;"
+        // "   fragcolor = vec4(Ks,1); return;"
     "   vec3 N = normal;"
     "   vec2 texflip = vec2(texcoord.x, texcoord.y);"
     "   vec3 V = normalize(eyepos - wpos);"
     "   vec3 L = normalize(lightpos - wpos);"
     "   vec3 C = Kd;"
+    "   vec3 S = Ks;"
     "   "
     "   if (has_opacitytex > 0)"
     "   {"
@@ -128,6 +129,12 @@ const std::string fshader =
     "       C = texture(diffuseTexture, texflip).rgb;"
     "   }"
     "   "
+    "   if (has_speculartexture > 0)"
+    "   {"
+    "       S = texture(specularTexture, texflip).rgb;"
+    // "       fragcolor = vec4(S,1); return;"
+    "   }"
+    "   "
     "   if (has_normaltexture > 0)"
     "   {"
     "       mat3 TBN = mat3(tangent, binormal, normal);"
@@ -136,7 +143,9 @@ const std::string fshader =
     //"      fragcolor = vec4(bnormal*0.5+0.5,1); return;" // normal
     "   }"
     ""
-    "   float ldot = max( 0.0, dot(N, L) );"
+    "vec3 R = reflect(-L, N);"
+    "float ldot = max(0.0, dot(N, L));"
+    "float rdot = max(0.0, dot(R, V));"
     ""
     "   if (has_reflectivetex > 0 && has_cubemap > 0)"
     "   {"
@@ -145,9 +154,10 @@ const std::string fshader =
     //"       vec3 cubec = textureLod(cubeTexture, reflect(-V, N), 2).xyz;"
     "       C = cubec*refl + C*(1.0-refl);"
     "   }"
-    "   C = C*(0.5+0.5*ldot);"
     ""
-    "   fragcolor = vec4(C, 1);"
+    "   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 10) * vec3(1,1,1);"
+    //"   C = C*(0.5+0.5*ldot);"
+    "   fragcolor = vec4(CC, 1);"
     //
     //    "float gamma = 2.2;"
     //    "fragcolor.rgb = pow(fragcolor.rgb, vec3(1.0/gamma));"
@@ -1423,7 +1433,7 @@ void RenderableMesh::render(const m4f &PROJ_VIEW,
         bool has_speculartex = (m_materials[m_meshes[i].mtl_index].specular_texture_index != NO_TEXTURE);
         if (has_speculartex)
             m_textures[m_materials[m_meshes[i].mtl_index].specular_texture_index].bind(GL_TEXTURE2);
-        glUniform1i(glGetUniformLocation(shader, "has_speculartex"), (int)has_speculartex);
+        glUniform1i(glGetUniformLocation(shader, "has_speculartexture"), (int)has_speculartex);
 
         // Reflectiveness texture
         bool has_reflectivetex = (m_materials[m_meshes[i].mtl_index].reflective_texture_index != NO_TEXTURE);
