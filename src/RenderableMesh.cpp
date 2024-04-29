@@ -7,10 +7,7 @@
 //
 
 #include "RenderableMesh.hpp"
-
-// #define STBI_NO_HDR
-// #include "stb/stb_image.c"
-
+#include <assimp/version.h>
 #include "interp.h"
 #include "loadshader.h"
 #include "parseutil.h"
@@ -110,7 +107,7 @@ const std::string fshader =
     "out vec4 fragcolor;\n"
     "void main()"
     "{"
-        // "   fragcolor = vec4(Ks,1); return;"
+    // "   fragcolor = vec4(Ks,1); return;"
     "   vec3 N = normal;"
     "   vec2 texflip = vec2(texcoord.x, texcoord.y);"
     "   vec3 V = normalize(eyepos - wpos);"
@@ -155,7 +152,7 @@ const std::string fshader =
     "       C = cubec*refl + C*(1.0-refl);"
     "   }"
     ""
-    "   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 10) * vec3(1,1,1);"
+    "   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 20) * vec3(1,1,1);"
     //"   C = C*(0.5+0.5*ldot);"
     "   fragcolor = vec4(CC, 1);"
     //
@@ -320,6 +317,10 @@ void RenderableMesh::load(const std::string &file,
     }
 
     // Log misc stuff
+    log << priority(PRTSTRICT) << "Assimp version: "
+        << aiGetVersionMajor() << "."
+        << aiGetVersionMinor() << "."
+        << aiGetVersionRevision() << std::endl;
     log << priority(PRTSTRICT) << "Assimp about to open file:\n"
         << file << std::endl;
     // File support
@@ -329,9 +330,6 @@ void RenderableMesh::load(const std::string &file,
         << supported_list.C_Str() << std::endl;
     bool ext_supported = aiimporter.IsExtensionSupported(fileext);
     log << priority(PRTVERBOSE) << "Format " << fileext << " supported: " << (ext_supported ? "YES" : "NO") << std::endl;
-
-    // ASSIMP POST-PROCESS FLAGS
-    // http://assimp.sourceforge.net/lib_html/postprocess_8h.html
 
     // Load
     const aiScene *aiscene = aiimporter.ReadFile(file, aiflags);
@@ -354,48 +352,37 @@ void RenderableMesh::load(const std::string &file,
         return;
     }
 
-    //    aiMatrix4x4 id;
-    //    aiIdentityMatrix4( &id );
-    //    //aiMatrix4x4::Scaling({10,10,10}, id);
-    //    m_pScene->mRootNode->mTransformation = id;
-
-    M_global = to_m4f(aiscene->mRootNode->mTransformation);
-
-    aiMatrix4x4 aiM_global_inverse = aiscene->mRootNode->mTransformation;
-    aiM_global_inverse.Inverse();
-    M_global_inverse = to_m4f(aiM_global_inverse);
-
-    //    std::cout << "global tfm & inverse\n";
-    //    std::cout << M_global << "\n" << M_global_inverse << "\n";
-
-    // std::cout << "\tNbr mesh animations found: " << m_pScene->mNumM << ":\n";
-
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
     glGenBuffers(numelem(m_Buffers), m_Buffers);
-
     load_scene(aiscene, filepath);
-
     glBindVertexArray(0);
 
-    // Load nodes
-    load_nodes(aiscene->mRootNode /*, file*/);
-    // Debug-print node hierarchy to file
-    // m_nodetree.debug_print( logstreamer_t(filepath+filename+"_nodetree.txt", VERBOSE) );
+    load_nodes(aiscene->mRootNode);
     m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
 
     load_animations(aiscene);
 
     default_shader = createShaderProgram(vshader.c_str(), fshader.c_str());
     placeholder_texture = create_checker_texture();
-    // test_texture = load_texture_from_file("/Users/ag1498/Dropbox/dev/assets/meshes/ArmyPilot/Tex/head01.png");
-
-    // Walk the Tree of Scene Nodes
-    // auto index = filename.find_last_of("/");
-    // if (!scene) fprintf(stderr, "%s\n", importer.GetErrorString());
-    // else parse(filename.substr(0, index), scene->mRootNode, scene);
 
     mSceneAABB = measure_scene(aiscene); // Only captures bind pose.
+}
+
+void RenderableMesh::remove_translation_keys(const std::string &node_name)
+{
+    remove_translation_keys(m_nodetree.find_node_index(node_name));
+}
+
+void RenderableMesh::remove_translation_keys(int node_index)
+{
+    for (auto &anim : m_animations)
+    {
+        EENG_ASSERT(node_index <= anim.node_animations.size(), "{0} is not a valid node index", node_index);
+        auto &pos_keys = anim.node_animations[node_index].pos_keys;
+        for (auto &pk : pos_keys)
+            pk = {0, pk.y, 0};
+    }
 }
 
 bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filename)
@@ -1144,6 +1131,15 @@ void RenderableMesh::load_animations(const aiScene *scene)
             if (index != EENG_NULL_INDEX)
                 anim.node_animations[index] = node_anim;
         }
+
+#if 0
+        // DEV: remove xz pos keys for a (root) node
+        auto& pos_keys = anim.node_animations[1].pos_keys;
+        //std::vector<v3f> &pos_keys = anim.node_animations[anim.node_animation_hash["mixamorig:Hips"]].pos_keys;
+        //std::vector<v3f> &pos_keys = anim.node_animations[anim.node_animation_hash["Hips"]].pos_keys;
+        for (auto &pk : pos_keys)
+            pk = {0, pk.y, 0};
+#endif
 
         m_animations.push_back(anim);
     }
