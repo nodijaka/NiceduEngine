@@ -15,7 +15,7 @@ MAU::DA367B
 - [glm](https://github.com/g-truc/glm)
 - [stb](https://github.com/nothings/stb)
 
-## Potential additions
+## Under consideration
 
 - [EnTT](https://github.com/skypjack/entt)
 - [ozz-animation](https://guillaumeblanc.github.io/ozz-animation/)
@@ -23,7 +23,11 @@ MAU::DA367B
 - [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
 - sol2
 
+## Example
+
+![example](example1.png)
+
 ## Credits
 - GLDebugMessageCallback by [Plasmoxy](https://gist.github.com/Plasmoxy/aec637b85e306f671339dcfd509efc82) and [liam-middlebrook](https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f)
 
-Updated 240426  
+Updated 240430  
