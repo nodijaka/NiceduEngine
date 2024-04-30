@@ -11,7 +11,8 @@
             "cwd": "${workspaceFolder}", //"${fileDirname}",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "lldb"
+            "MIMode": "lldb",
+            "preLaunchTask": "make: Debug Build"
         },
         {
             "name": "(lldb) Release Launch",
@@ -23,7 +24,8 @@
             "cwd": "${workspaceFolder}", //"${fileDirname}",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "lldb"
+            "MIMode": "lldb",
+            "preLaunchTask": "make: Release Build"
         }
     ]
 }
