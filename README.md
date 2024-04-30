@@ -23,9 +23,47 @@ MAU::DA376B
 - [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
 - sol2
 
-## Building
+## Building Instructions
 
+### Windows
 
+```sh
+# Clone the repository
+git clone https://github.com/cjgribel/eduEngine.git
+
+# Navigate to the project directory
+cd eduEngine
+
+# Debug Build
+cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build Debug
+
+# Release Build
+cmake -B Release -DCMAKE_BUILD_TYPE=Release
+cmake --build Release
+```
+
+After successful build, you can find the executables in the respective directories (`Debug` or `Release`).
+
+### macOS
+
+```sh
+# Clone the repository
+git clone https://github.com/cjgribel/eduEngine.git
+
+# Navigate to the project directory
+cd eduEngine
+
+# Debug Build
+cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build Debug
+
+# Release Build
+cmake -B Release -DCMAKE_BUILD_TYPE=Release
+cmake --build Release
+```
+
+After successful build, you can find the executables in the respective directories (`Debug` or `Release`).
 
 ## Example
 
