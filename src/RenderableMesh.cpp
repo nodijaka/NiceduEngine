@@ -224,7 +224,7 @@ inline v3f to_v3f(const aiVector3D &aiv)
     return {aiv.x, aiv.y, aiv.z};
 }
 
-void RenderableMesh::vertex_skindata_t::add_weight(unsigned bone_index, float bone_weight)
+void RenderableMesh::SkinData::add_weight(unsigned bone_index, float bone_weight)
 {
     nbr_added++;
 
@@ -434,7 +434,7 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
     std::vector<v3f> scene_tangents;
     std::vector<v3f> scene_binormals;
     std::vector<v2f> scene_texcoords;
-    std::vector<vertex_skindata_t> scene_skinweights;
+    std::vector<SkinData> scene_skinweights;
     std::vector<uint> scene_indices;
 
     // Count vertices and indices of the whole scene
@@ -582,9 +582,9 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
     glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_skinweights[0]) * scene_skinweights.size(), &scene_skinweights[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(BONE_INDEX_LOCATION);
-    glVertexAttribIPointer(BONE_INDEX_LOCATION, 4, GL_UNSIGNED_INT, sizeof(vertex_skindata_t), (const GLvoid *)0);
+    glVertexAttribIPointer(BONE_INDEX_LOCATION, 4, GL_UNSIGNED_INT, sizeof(SkinData), (const GLvoid *)0);
     glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
-    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(vertex_skindata_t), (const GLvoid *)16);
+    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(SkinData), (const GLvoid *)16);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(scene_indices[0]) * scene_indices.size(), &scene_indices[0], GL_STATIC_DRAW);
@@ -602,7 +602,7 @@ void RenderableMesh::load_mesh(uint meshindex,
                                std::vector<v3f> &scene_tangents,
                                std::vector<v3f> &scene_binormals,
                                std::vector<v2f> &scene_texcoords,
-                               std::vector<vertex_skindata_t> &scene_skindata,
+                               std::vector<SkinData> &scene_skindata,
                                std::vector<unsigned int> &scene_indices)
 {
     log << priority(PRTVERBOSE);
@@ -775,10 +775,10 @@ void RenderableMesh::load_node(aiNode *ainode)
 
 void RenderableMesh::load_bones(uint mesh_index,
                                 const aiMesh *aimesh,
-                                std::vector<vertex_skindata_t> &scene_skindata)
+                                std::vector<SkinData> &scene_skindata)
 {
     // Fetch mesh's bones and add them to the m_bones vector
-    // bone_t contains bone-offset and final transformation
+    // Bone contains bone-offset and final transformation
     //
     // Bones may be part of multiple meshes (I assume), so hash those already handled
     // m_bonehash maps bones names (str) with index in m_bones vector
@@ -802,7 +802,7 @@ void RenderableMesh::load_bones(uint mesh_index,
             // Generate an index for a new bone
             bone_index = (unsigned)m_bones.size();
             // Create bone from its inverse bind-pose transform
-            bone_t bi;
+            Bone bi;
             m_bones.push_back(bi);
             m_bones[bone_index].inversebind_tfm = to_m4f(aimesh->mBones[i]->mOffsetMatrix);
             // Hash bone w.r.t. its name
@@ -1084,7 +1084,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
     {
         aiAnimation *aianim = scene->mAnimations[i];
 
-        animation_t anim;
+        AnimationClip anim;
         anim.name = std::string(aianim->mName.C_Str());
         anim.duration_ticks = aianim->mDuration;
         anim.tps = aianim->mTicksPerSecond;
@@ -1100,7 +1100,7 @@ void RenderableMesh::load_animations(const aiScene *scene)
         for (int j = 0; j < aianim->mNumChannels; j++)
         {
             aiNodeAnim *ainode_anim = aianim->mChannels[j];
-            node_animation_t node_anim;
+            NodeKeyframes node_anim;
             node_anim.is_used = true;
             auto name = std::string(ainode_anim->mNodeName.C_Str());
 
@@ -1148,8 +1148,8 @@ void RenderableMesh::load_animations(const aiScene *scene)
 }
 
 // get_key_tfm_at_time
-m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
-                                            const node_animation_t &nodeanim,
+m4f RenderableMesh::blend_transform_at_time(const AnimationClip *anim,
+                                            const NodeKeyframes &nodeanim,
                                             float time) const
 {
     float dur_ticks = anim->duration_ticks; /**/ // dur_ticks *= (float)(91-5)/292;
@@ -1167,8 +1167,8 @@ m4f RenderableMesh::blend_transform_at_time(const animation_t *anim,
     return blend_transform_at_frac(anim, nodeanim, animtime_nrm);
 }
 
-m4f RenderableMesh::blend_transform_at_frac(const animation_t *anim,
-                                            const node_animation_t &nodeanim,
+m4f RenderableMesh::blend_transform_at_frac(const AnimationClip *anim,
+                                            const NodeKeyframes &nodeanim,
                                             float frac) const
 {
     // Translation
@@ -1243,7 +1243,7 @@ void RenderableMesh::animate(int anim_index,
     // TRAVERSE & TRANSFORM NODE nodes
     // Use either node or (if available) keyframe transformations
 
-    animation_t *anim = nullptr;
+    AnimationClip *anim = nullptr;
     // float TimeInTicks = 0;
     if (anim_index >= 0 && anim_index < get_nbr_animations())
     {

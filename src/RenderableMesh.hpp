@@ -102,7 +102,10 @@ private:
         NUM_VBs
     };
 
-    struct mesh_t
+    /**
+     * 
+     */
+    struct Submesh
     {
         unsigned base_index = 0;
         unsigned nbr_indices = 0;
@@ -114,24 +117,20 @@ private:
         bool is_skinned = false;
     };
 
-    struct bone_t
+    /**
+     * Per-bone data
+     */
+    struct Bone
     {
-        m4f inversebind_tfm = m4f_1; // Inverse bind-pose transform
+        m4f inversebind_tfm = m4f_1; //!< Inverse of the associated node in bind pose
         m4f global_tfm = m4f_1;      // Built during traversal * reduntant, use bone array directly for final bone transforms *
-        int node_index = -1;         // EXPERIMENTAL
-                                     //        AABB_t aabb;
+        int node_index = -1;         //!< Node associated with this bone
     };
-    // This is probably how things should look for bones:
-    // std::vector<m4f> bone_array -> in AnimationController
-    // std::vector<m4f> bone_inversebinds
-    // std::vector<aabb_t> bone_aabbs
-    //
-    // And something like this for nodes (pull out from seqtree_t::node_t):
-    // std::vector<m4f> localTfm // mTransformation
-    // std::vector<m4f> globalTfm // travsersal
-    // + name strings and perhaps other node stuff
 
-    struct vertex_skindata_t
+    /**
+     * Bone indices and weights for a vertex
+     */
+    struct SkinData
     {
         unsigned bone_indices[NUM_BONES_PER_VERTEX] = {0};
         float bone_weights[NUM_BONES_PER_VERTEX] = {0};
@@ -140,10 +139,10 @@ private:
         void add_weight(unsigned bone_index, float bone_weight);
     };
 
-    // Keyframe sequence for a particular node and animation
-    // The number of scaling/rotation/translation channels
-    // are not necessarily equal.
-    struct node_animation_t // NodeKeyframes ???
+    /**
+     * Keyframe sequence for a node and an animation.
+     */
+    struct NodeKeyframes // NodeKeyframes ???
     {
         bool is_used = false;
         std::vector<v3f> pos_keys;
@@ -151,12 +150,15 @@ private:
         std::vector<quatf> rot_keys;
     };
 
-    struct animation_t
+    /**
+     * Data related to an animation clip, including keyframes for all nodes.
+     */
+    struct AnimationClip
     {
         std::string name;
         float duration_ticks = 0;
         float tps = 1;
-        std::vector<node_animation_t> node_animations;
+        std::vector<NodeKeyframes> node_animations;
     };
 
     // GL stuff
@@ -180,9 +182,9 @@ public:
 
     // Node hierarchy
     VectorTree<SkeletonNode> m_nodetree;
-    std::vector<bone_t> m_bones;
+    std::vector<Bone> m_bones;
     // Geometry & materials
-    std::vector<mesh_t> m_meshes;
+    std::vector<Submesh> m_meshes;
     std::vector<xiDefaultMaterial> m_materials;
     std::vector<Texture2D> m_textures;
     // Bounding volumes
@@ -192,29 +194,8 @@ public:
     std::vector<AABB_t> m_mesh_aabbs_pose; // Per-mesh pose AABB's – intermediary, used for visualization
     AABB_t m_model_aabb;                   // AABB for the entire model
     // Animations
-    std::vector<animation_t> m_animations;
+    std::vector<AnimationClip> m_animations;
 
-    // DEV
-    ////    std::vector<v3f> points;
-    ////    AABB_t points_AABB;
-    //    // ANIM DEV
-    //    // bi-blend
-    //    float tickA = 0, tickB = 0;
-    //    float animfrac = 0;
-    //    // quad blend
-    //    float tick0 = 0;
-    //    float l, m;
-    //    float b0, b1, b2, b3;
-    ////    float fracA = 0, fracB = 0;
-    //    std::vector<m4f> DEV_additiveTfm;
-    //    std::vector<m4f> DEV_additiveTfmExport;
-    ////    std::vector<m4f> DEV_renderBoneArray;
-    //    //
-    //    int current_anim_tick = 0;
-    //    int current_anim_totticks = 0;
-    //    float current_anim_frac = 0;
-
-    // private:
 public:
     unsigned m_embedded_textures_ofs = 0;
 
@@ -244,7 +225,7 @@ public:
               unsigned xiflags,
               unsigned aiflags = 0);
 
-    void remove_translation_keys(const std::string& node_name);
+    void remove_translation_keys(const std::string &node_name);
 
     void remove_translation_keys(int node_index);
 
@@ -282,7 +263,7 @@ private:
                    std::vector<v3f> &Tangents,
                    std::vector<v3f> &Binormals,
                    std::vector<v2f> &TexCoords,
-                   std::vector<vertex_skindata_t> &Bones,
+                   std::vector<SkinData> &Bones,
                    std::vector<unsigned int> &Indices);
 
     void compute_bind_aabbs(); // not implemented. where?
@@ -295,7 +276,7 @@ private:
     ///
     void load_bones(uint mesh_index,
                     const aiMesh *aimesh,
-                    std::vector<vertex_skindata_t> &scene_skindata);
+                    std::vector<SkinData> &scene_skindata);
 
     void load_materials(const aiScene *aiscene,
                         const std::string &file);
@@ -305,11 +286,11 @@ private:
                      const std::string &local_filepath);
 
     void load_animations(const aiScene *scene);
-    m4f blend_transform_at_time(const animation_t *anim,
-                                const node_animation_t &nodeanim,
+    m4f blend_transform_at_time(const AnimationClip *anim,
+                                const NodeKeyframes &nodeanim,
                                 float time) const;
-    m4f blend_transform_at_frac(const animation_t *anim,
-                                const node_animation_t &nodeanim,
+    m4f blend_transform_at_frac(const AnimationClip *anim,
+                                const NodeKeyframes &nodeanim,
                                 float frac) const;
 
     AABB_t measure_scene(const aiScene *aiscene);
@@ -322,7 +303,6 @@ private:
                       AABB_t &aabb);
 
 public:
-
     inline vec3f color_heatmap(const float &x)
     {
         if (x < 0.25f)

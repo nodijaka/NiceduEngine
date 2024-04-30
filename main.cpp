@@ -206,12 +206,54 @@ int main(int argc, char *argv[])
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/run.fbx", true);
     treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/walk.fbx", true);
 #endif
+
+#if 0
+    // Dragon
+    // Requires MaxBones = 151;
+    // https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f
+    // characterMesh->load("assets/tarisland-dragon-high-poly/M_B_44_Qishilong_skin_Skeleton.FBX");
+#endif
+#if 0
+    // ExoRed 5.0.1 PACK FBX, 60fps, No keyframe reduction
+    characterMesh->load("assets/Eve/dae/exored/exo_red.fbx");
+    characterMesh->load("assets/Eve/dae/exored/idle (2).fbx", true);
+    characterMesh->load("assets/Eve/dae/exored/walking.fbx", true);
+    characterMesh->remove_translation_keys("mixamorig:Hips");
+#endif
 #if 1
+    // Amy 5.0.1 PACK FBX
+    characterMesh->load("assets/Eve/dae/amy3/Ch46_nonPBR.fbx");
+    characterMesh->load("assets/Eve/dae/amy3/idle.fbx", true);
+    characterMesh->load("assets/Eve/dae/amy3/walking.fbx", true);
+    characterMesh->remove_translation_keys(1);
+#endif
+#if 0
+    // Eve 5.0.1 PACK FBX
+    characterMesh->load("assets/Eve/dae/eve2/Eve By J.Gonzales.fbx");
+    characterMesh->load("assets/Eve/dae/eve2/idle.fbx", true);
+    characterMesh->load("assets/Eve/dae/eve2/walking.fbx", true);
+    characterMesh->remove_translation_keys(1);
+#endif
+
+#if 0
+    // Amy DAE
+    characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/Ch46_nonPBR.dae");
+    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/idle.dae", true);
+    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/jump.dae", true);
+    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/walking.dae", true);
+#endif
+#if 0
     // Amy
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/Walking.fbx", true);
     characterMesh->load("assets/Amy/Talking.fbx", true);
     characterMesh->load("assets/Amy/Warrior Idle.fbx", true);
+#endif
+#if 0
+    characterMesh->load("assets/Eve/dae/amy2/Ch46_nonPBR.dae");
+    characterMesh->load("assets/Eve/dae/amy2/Talking On Phone.dae", true);
+    characterMesh->load("assets/Eve/dae/amy2/Idle.dae", true);
+    //characterMesh->load("assets/Eve/dae/eve/Mma Kick.dae");
 #endif
 #if 0
             // EVE - Mixamo Pro Rifle Pack
@@ -221,6 +263,7 @@ int main(int argc, char *argv[])
             characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk right.fbx", true);
             characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward right.fbx", true);
             characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips_extra/IdleReload.fbx", true);
+            characterMesh->remove_translation_keys(1);
 #endif
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/SK_Mannequin_tex.FBX");
     // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/clips_animpack/Aim_Space_Ironsights_PreviewMesh.fbx", true);
@@ -356,13 +399,15 @@ int main(int argc, char *argv[])
         linalg::m4f P = linalg::m4f::GL_PerspectiveProjectionRHS(fov, aspect, 1.0f, 500.0f);
         linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
 
-        // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.5f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
+        // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.75f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f * 0, {1,0,0}, {0.25f,0.25f,0.25f}); // Manneq
-        //linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
+        // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-        linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.5f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
-        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 0, lightPos, eye);
+        linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
+        // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
+        // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
+        characterMesh->render(P * V, W, time_s * ANIM_SPEED, -1, lightPos, eye);
 #if 1
         W = mat4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
