@@ -42,6 +42,11 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            //"problemMatcher": ["$gcc"],
+            "presentation": {
+                "reveal": "always", // always, silent, never
+                "panel": "shared"      // shared, dedicated, new
             }
         },
         {
@@ -55,6 +60,11 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            //"problemMatcher": ["$gcc"],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
             }
         }
     ]
