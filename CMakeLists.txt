@@ -70,12 +70,18 @@ else()
     FetchContent_Declare(
         assimp
         GIT_REPOSITORY https://github.com/assimp/assimp.git
-        GIT_TAG v5.0.1
+        GIT_TAG v5.0.1 # 5.3.0 - v5.4.0 breaks some Mixamo animations
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(assimp)
 endif()
 include_directories(${assimp_SOURCE_DIR})
+# Set C++14 standard for Assimp 5.0.1
+set_target_properties(assimp PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
 
 # Fetch STB
 FetchContent_Declare(
