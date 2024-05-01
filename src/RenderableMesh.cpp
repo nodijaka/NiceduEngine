@@ -169,8 +169,6 @@ const std::string fshader =
     //"   fragcolor = vec4(color,1);"
     "}";
 
-// unsigned char checker_data[256*256];
-
 // Re-worked from assimp_bones_viewer
 //
 GLuint create_checker_texture(void)
@@ -241,20 +239,6 @@ void RenderableMesh::SkinData::add_weight(unsigned bone_index, float bone_weight
         bone_weights[min_index] = bone_weight;
         bone_indices[min_index] = bone_index;
     }
-
-#if 0
-    for (uint i = 0 ; i < numelem(bone_indices) ; i++) {
-        //if (Weights[i] == 0.0) {
-        if (Weight > Weights[i]) {
-            bone_indices[i]     = BoneID;
-            Weights[i] = Weight;
-            return;
-        }
-    }
-#endif
-
-    // should never get here - more bones than we have space for
-    // assert(0);
 }
 
 RenderableMesh::RenderableMesh()
@@ -554,39 +538,39 @@ bool RenderableMesh::load_scene(const aiScene *aiscene, const std::string &filen
 #define BONE_WEIGHT_LOCATION 6
 
     // Generate and populate the buffers with vertex attributes and the indices
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[POS_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[PositionBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_positions[0]) * scene_positions.size(), &scene_positions[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(POSITION_LOCATION);
     glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TEXCOORD_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TexturecoordBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_texcoords[0]) * scene_texcoords.size(), &scene_texcoords[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(TEXCOORD_LOCATION);
     glVertexAttribPointer(TEXCOORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[NORMAL_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[NormalBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_normals[0]) * scene_normals.size(), &scene_normals[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(NORMAL_LOCATION);
     glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TANGENT_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TangentBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_tangents[0]) * scene_tangents.size(), &scene_tangents[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(TANGENT_LOCATION);
     glVertexAttribPointer(TANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BINORMAL_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BinormalBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_binormals[0]) * scene_binormals.size(), &scene_binormals[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(BINORMAL_LOCATION);
     glVertexAttribPointer(BINORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BoneBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(scene_skinweights[0]) * scene_skinweights.size(), &scene_skinweights[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(BONE_INDEX_LOCATION);
     glVertexAttribIPointer(BONE_INDEX_LOCATION, 4, GL_UNSIGNED_INT, sizeof(SkinData), (const GLvoid *)0);
     glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
     glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(SkinData), (const GLvoid *)16);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[IndexBuffer]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(scene_indices[0]) * scene_indices.size(), &scene_indices[0], GL_STATIC_DRAW);
 
     CheckAndThrowGLErrors();

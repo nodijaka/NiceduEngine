@@ -568,41 +568,57 @@ namespace linalg
         return out << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
     }
     
-    typedef vec2<float> float2;
-    typedef vec3<float> float3;
-    typedef vec4<float> float4;
-    typedef vec5<float> float5;
-    
-    typedef vec2<float> vec2f;
-    typedef vec3<float> vec3f;
-    typedef vec4<float> vec4f;
-    typedef vec5<float> vec5f;
-    
-    typedef vec2<float> v2f;
-    typedef vec3<float> v3f;
-    typedef vec4<float> v4f;
-    typedef vec5<float> v5f;
-    
-    typedef vec2<int> int2;
-    typedef vec3<int> int3;
-    typedef vec4<int> int4;
-    typedef vec5<int> int5;
-    
-    typedef vec2<int> vec2i;
-    typedef vec3<int> vec3i;
-    typedef vec4<int> vec4i;
-    typedef vec5<int> vec5i;
-    
-    typedef vec2<long> long2;
-    typedef vec3<long> long3;
-    typedef vec4<long> long4;
-    
-    typedef vec2<unsigned> unsigned2;
-    typedef vec3<unsigned> unsigned3;
-    typedef vec4<unsigned> unsigned4;
-    typedef vec2<unsigned> vec2ui;
-    typedef vec3<unsigned> vec3ui;
-    typedef vec4<unsigned> vec4ui;
+typedef vec2<float> float2;
+typedef vec3<float> float3;
+typedef vec4<float> float4;
+typedef vec5<float> float5;
+
+typedef vec2<float> vec2f;
+typedef vec3<float> vec3f;
+typedef vec4<float> vec4f;
+typedef vec5<float> vec5f;
+
+typedef vec2<float> v2f;
+typedef vec3<float> v3f;
+typedef vec4<float> v4f;
+typedef vec5<float> v5f;
+
+typedef vec2<uint32_t> v2u;
+typedef vec3<uint32_t> v3u;
+typedef vec4<uint32_t> v4u;
+typedef vec5<uint32_t> v5u;
+
+typedef vec2<unsigned char> v2uc;
+typedef vec3<unsigned char> v3uc;
+typedef vec4<unsigned char> v4uc;
+typedef vec5<unsigned char> v5uc;
+
+typedef vec2<int32_t> int2;
+typedef vec3<int32_t> int3;
+typedef vec4<int32_t> int4;
+typedef vec5<int32_t> int5;
+
+typedef vec2<int32_t> vec2i;
+typedef vec3<int32_t> vec3i;
+typedef vec4<int32_t> vec4i;
+typedef vec5<int32_t> vec5i;
+
+typedef vec2<int32_t> v2i;
+typedef vec3<int32_t> v3i;
+typedef vec4<int32_t> v4i;
+typedef vec4<uint32_t> v4ui;
+typedef vec5<int32_t> v5i;
+
+//typedef vec2<long> long2;
+//typedef vec3<long> long3;
+//typedef vec4<long> long4;
+
+//typedef vec2<unsigned> unsigned2;
+//typedef vec3<unsigned> unsigned3;
+//typedef vec4<unsigned> unsigned4;
+typedef vec2<uint32_t> vec2ui;
+typedef vec3<uint32_t> vec3ui;
+typedef vec4<uint32_t> vec4ui;
     
    
     /*

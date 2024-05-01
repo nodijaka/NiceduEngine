@@ -90,4 +90,11 @@ static void EENG_ERROR(std::string_view fmt, Args &&...args)
 static_assert(false, "OpenGL 4.1 is required");
 #endif
 
+/// Convert an enum class to its underlying type
+template<typename E>
+constexpr auto to_integral(E e) -> typename std::underlying_type<E>::type
+{
+   return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
 #endif

@@ -15,20 +15,10 @@
 #include <map>
 #include <unordered_map>
 #include <fstream>
-#include <string> // std::to_string
+#include <string>
 // GL
 #include "glcommon.h"
-// #include "GL/glew.h"
-// #include <GLFW/glfw3.h>
-//  #ifdef __APPLE__
-//  #include <OpenGL/gl.h>
-//  #else
-//  #include <windows.h>
-//  #include <GL/gl.h>
-//  #endif
-
 // Assimp
-// #include <assimp/cimport.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -40,21 +30,10 @@
 #include "AABB.h"
 #include "Texture.hpp"
 #include "VectorTree.h"
-// (logging & debugging)
 #include "logstreamer.h"
-// #include "debug_renderer.h"
-// #include "glyph_renderer.hpp"
 
 using namespace linalg;
-// using linalg::v2f;
-// using linalg::v3f;
-// using linalg::m3f;
-// using linalg::m4f;
-// using linalg::quatf;
-// using linalg::m4f_1;
 using namespace logstreamer;
-// using namespace gl_batch_renderer;
-// class glyph_renderer_t;
 using uint = uint32_t;
 
 const int NUM_BONES_PER_VERTEX = 4;
@@ -86,20 +65,19 @@ enum xiContentFlags
 
 class RenderableMesh
 {
-    //    friend class AnimController;
-    //    friend class ClipNode;
+    friend class ForwardRenderer;
 
 private:
     enum
     {
-        INDEX_BUFFER,
-        POS_VB,
-        NORMAL_VB,
-        TANGENT_VB,
-        BINORMAL_VB,
-        TEXCOORD_VB,
-        BONE_VB,
-        NUM_VBs
+        IndexBuffer,
+        PositionBuffer,
+        NormalBuffer,
+        TangentBuffer,
+        BinormalBuffer,
+        TexturecoordBuffer,
+        BoneBuffer,
+        BufferCount
     };
 
     /**
@@ -132,8 +110,8 @@ private:
      */
     struct SkinData
     {
-        unsigned bone_indices[NUM_BONES_PER_VERTEX] = {0};
-        float bone_weights[NUM_BONES_PER_VERTEX] = {0};
+        unsigned bone_indices[NUM_BONES_PER_VERTEX] {0};
+        float bone_weights[NUM_BONES_PER_VERTEX] {0};
 
         int nbr_added = 0; // For checking
         void add_weight(unsigned bone_index, float bone_weight);
@@ -164,7 +142,7 @@ private:
     // GL stuff
 
     GLuint m_VAO = 0;
-    GLuint m_Buffers[NUM_VBs] = {0};
+    GLuint m_Buffers[BufferCount] = {0};
     GLuint default_shader;
     GLuint placeholder_texture;
     // GLuint test_texture;

@@ -24,6 +24,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "RenderableMesh.hpp"
+#include "ForwardRenderer.hpp"
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
@@ -35,6 +36,7 @@ bool SOUND_PLAY = false;
 int main(int argc, char *argv[])
 {
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
+    ForwardRenderer renderer;
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
@@ -179,34 +181,19 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    /*
-        // Load a model using Assimp
-        Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile("/Users/ag1498/Dropbox/dev/assets/meshes/quaternius/FBX/Leela.fbx", aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-        if (!scene) {
-            std::cerr << "Failed to load model: " << importer.GetErrorString() << std::endl;
-        } else
-        {
-            std::cout << "Assimp loaded file successfully..." << std::endl;
-        }
-    */
-
+    // Grass
     auto grassMesh = std::make_shared<RenderableMesh>();
-    auto characterMesh = std::make_shared<RenderableMesh>();
-
     grassMesh->load("assets/grass/grass_trees.fbx", false);
-    //
-    // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Sketchfab/maple-tree/maple-tree.fbx");
-    // characterMesh->load("assets/Leela.fbx", false);
-    // characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
-    // characterMesh->load("assets/Ultimate Platformer Pack/Enemies/Bee.fbx", false);
-#if 0
-    treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Models/characterLargeFemale.fbx", false);
-    treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/idle.fbx", true);
-    treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/run.fbx", true);
-    treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Kenney Game Assets All-in-1 2.0.0/3D assets/Animated Characters Bundle/Animations/walk.fbx", true);
-#endif
 
+    auto characterMesh = std::make_shared<RenderableMesh>();
+#if 0
+    // Character
+    characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
+#endif
+#if 0
+    // Enemy
+    characterMesh->load("assets/Ultimate Platformer Pack/Enemies/Bee.fbx", false);
+#endif
 #if 0
     // Dragon
     // Requires MaxBones = 151;
@@ -215,63 +202,25 @@ int main(int argc, char *argv[])
 #endif
 #if 0
     // ExoRed 5.0.1 PACK FBX, 60fps, No keyframe reduction
-    characterMesh->load("assets/Eve/dae/exored/exo_red.fbx");
-    characterMesh->load("assets/Eve/dae/exored/idle (2).fbx", true);
-    characterMesh->load("assets/Eve/dae/exored/walking.fbx", true);
+    characterMesh->load("assets/ExoRed/exo_red.fbx");
+    characterMesh->load("assets/ExoRed/idle (2).fbx", true);
+    characterMesh->load("assets/ExoRed/walking.fbx", true);
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 #if 1
     // Amy 5.0.1 PACK FBX
-    characterMesh->load("assets/Eve/dae/amy3/Ch46_nonPBR.fbx");
-    characterMesh->load("assets/Eve/dae/amy3/idle.fbx", true);
-    characterMesh->load("assets/Eve/dae/amy3/walking.fbx", true);
+    characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
+    characterMesh->load("assets/Amy/idle.fbx", true);
+    characterMesh->load("assets/Amy/walking.fbx", true);
     characterMesh->remove_translation_keys(1);
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
-    characterMesh->load("assets/Eve/dae/eve2/Eve By J.Gonzales.fbx");
-    characterMesh->load("assets/Eve/dae/eve2/idle.fbx", true);
-    characterMesh->load("assets/Eve/dae/eve2/walking.fbx", true);
+    characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
+    characterMesh->load("assets/Eve/idle.fbx", true);
+    characterMesh->load("assets/Eve/walking.fbx", true);
     characterMesh->remove_translation_keys(1);
 #endif
-
-#if 0
-    // Amy DAE
-    characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/Ch46_nonPBR.dae");
-    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/idle.dae", true);
-    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/jump.dae", true);
-    // characterMesh->load("assets/Eve/dae/amy/Locomotion Pack/walking.dae", true);
-#endif
-#if 0
-    // Amy
-    characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
-    characterMesh->load("assets/Amy/Walking.fbx", true);
-    characterMesh->load("assets/Amy/Talking.fbx", true);
-    characterMesh->load("assets/Amy/Warrior Idle.fbx", true);
-#endif
-#if 0
-    characterMesh->load("assets/Eve/dae/amy2/Ch46_nonPBR.dae");
-    characterMesh->load("assets/Eve/dae/amy2/Talking On Phone.dae", true);
-    characterMesh->load("assets/Eve/dae/amy2/Idle.dae", true);
-    //characterMesh->load("assets/Eve/dae/eve/Mma Kick.dae");
-#endif
-#if 0
-            // EVE - Mixamo Pro Rifle Pack
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/eve_j_gonzales.fbx");
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/idle.fbx", true);
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward.fbx", true);
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk right.fbx", true);
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips/walk forward right.fbx", true);
-            characterMesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/Mixamo/Eve_ProRiflePack/clips_extra/IdleReload.fbx", true);
-            characterMesh->remove_translation_keys(1);
-#endif
-    // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/SK_Mannequin_tex.FBX");
-    // treemesh->load("/Users/ag1498/Dropbox/dev/assets/meshes/UE4/clips_animpack/Aim_Space_Ironsights_PreviewMesh.fbx", true);
-
-    // Timestamp of last frame
-    // Uint32 lastFrame = SDL_GetTicks();
-    // Desired frame time
-    // Uint32 frameDelay = 1000 / FRAMETIME_MIN_MS;
 
     // Main loop
     float time_s, time_ms;
@@ -404,7 +353,7 @@ int main(int argc, char *argv[])
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-        linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Amy
+        linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
         // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, -1, lightPos, eye);
