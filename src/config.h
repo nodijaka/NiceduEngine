@@ -19,6 +19,20 @@
 #define EENG_PLATFORM_APPLE
 #endif
 
+// CPP versions
+#if __cplusplus >= 201103L
+#define CPP11_SUPPORTED
+#endif
+#if __cplusplus >= 201402L
+#define CPP14_SUPPORTED
+#endif
+#if __cplusplus >= 201703L
+#define CPP17_SUPPORTED
+#endif
+#if __cplusplus >= 202002L
+#define CPP20_SUPPORTED
+#endif
+
 // Compiler
 #ifdef _MSC_VER
 #define EENG_COMPILER_MSVC
@@ -50,7 +64,7 @@
 #endif
 
 // Assert
-#ifdef EENG_ENABLE_ASSERTS
+#if defined(EENG_ENABLE_ASSERTS) and defined(CPP20_SUPPORTED)
 template <class... Args>
 static void EENG_ERROR(std::string_view fmt, Args &&...args)
 {
@@ -65,6 +79,9 @@ static void EENG_ERROR(std::string_view fmt, Args &&...args)
             EENG_DEBUG_BREAK();      \
         }                            \
     }
+#elif defined(EENG_ENABLE_ASSERTS)
+#include <cassert>
+#define EENG_ASSERT(x, ...) assert(x);
 #else
 #define EENG_ASSERT(x, ...)
 #endif
