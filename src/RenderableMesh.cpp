@@ -9,7 +9,7 @@
 #include "RenderableMesh.hpp"
 #include <assimp/version.h>
 #include "interp.h"
-#include "loadshader.h"
+#include "ShaderLoader.h"
 #include "parseutil.h"
 // #include "glyph_renderer.hpp"
 
@@ -272,7 +272,8 @@ void RenderableMesh::load(const std::string &file, bool append_animations)
         aiProcess_Triangulate |
         aiProcess_GenUVCoords |
         aiProcess_SortByPType |
-        aiProcess_FlipUVs; // added
+        aiProcess_FlipUVs | // added
+        aiProcess_OptimizeGraph;
 
     load(file, xiflags, aiflags);
 }

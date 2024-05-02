@@ -6,86 +6,81 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-#ifndef LOADSHADER_H
-#define LOADSHADER_H
-
-#include "glcommon.h"
-//#include <GLUT/glut.h>
-// #ifdef __APPLE__
-// #include <OpenGL/gl.h>
-// #else
-// #include <windows.h>
-// #include <GL/gl.h>
-// #endif
+#ifndef ShaderLoader_H
+#define ShaderLoader_H
 
 #include <cstdlib>
 #include <iostream>
-//#include <fstream>
-//#include "lodepng.h"
-//#include "file_rw.h"
-//#include "config.h"
+#include "glcommon.h"
 
-static void printShaderLog(GLuint obj, GLuint shader)
+static void printShaderLog(GLuint obj,
+						   GLuint shader)
 {
 	int infologLength = 0;
-	int charsWritten  = 0;
-	char* infoLog;
-	
+	int charsWritten = 0;
+	char *infoLog;
+
 	glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &infologLength);
-	
-	if (infologLength > 1) {
-		infoLog = (char*)malloc(infologLength);
+
+	if (infologLength > 1)
+	{
+		infoLog = (char *)malloc(infologLength);
 		glGetProgramInfoLog(obj, infologLength, &charsWritten, infoLog);
 		std::cerr << infoLog << std::endl;
 		free(infoLog);
-        throw std::runtime_error("shader compilation failed");
+		throw std::runtime_error("shader compilation failed");
 	}
-	
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologLength);
-	
-	if (infologLength > 1) {
-		infoLog = (char*)malloc(infologLength);
+
+	glGetShaderiv(shader,
+				  GL_INFO_LOG_LENGTH,
+				  &infologLength);
+
+	if (infologLength > 1)
+	{
+		infoLog = (char *)malloc(infologLength);
 		glGetShaderInfoLog(shader, infologLength, &charsWritten, infoLog);
 		std::cerr << infoLog << std::endl;
 		free(infoLog);
-        throw std::runtime_error("shader compilation failed");
+		throw std::runtime_error("shader compilation failed");
 	}
 }
 
-static GLuint createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource)
+static GLuint createShaderProgram(const char *vertexShaderSource,
+								  const char *fragmentShaderSource)
 {
-    // Make sure GL-errors has not already been thrown elsewhere
-    CheckAndThrowGLErrors();
-    
+	// Make sure GL-errors has not already been thrown elsewhere
+	CheckAndThrowGLErrors();
+
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    
+
 	glShaderSource(vertexShader, 1, &vertexShaderSource, 0);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, 0);
-	
-    std::cout << "Compiling vertex shader..." << std::endl;
+
+	std::cout << "Compiling vertex shader..." << std::endl;
 	glCompileShader(vertexShader);
-    
-    std::cout << "Compiling fragment shader..." << std::endl;
+
+	std::cout << "Compiling fragment shader..." << std::endl;
 	glCompileShader(fragmentShader);
-	
+
 	GLuint program = glCreateProgram();
-	
+
 	glAttachShader(program, vertexShader);
 	printShaderLog(program, vertexShader);
-	
+
 	glAttachShader(program, fragmentShader);
 	printShaderLog(program, fragmentShader);
-	
+
 	glLinkProgram(program);
 	if (glGetError() != GL_NO_ERROR)
 	{
-        printf("errors:\n");
+		std::cerr << "errors:\n";
 		printShaderLog(program, vertexShader);
 		printShaderLog(program, fragmentShader);
-        throw std::runtime_error("shader compilation failed");
+		throw std::runtime_error("shader compilation failed");
 	}
-	
+
+#if 0
     int params[9];
     glGetProgramiv(program, GL_DELETE_STATUS, params+0);
     std::cout << "GL_DELETE_STATUS " << params[0] << std::endl;
@@ -105,7 +100,8 @@ static GLuint createShaderProgram(const char* vertexShaderSource, const char* fr
     std::cout << "GL_ACTIVE_UNIFORMS " << params[7] << std::endl;
     glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, params+8);
     std::cout << "GL_ACTIVE_UNIFORM_MAX_LENGTH " << params[8] << std::endl;
-    
+#endif
+
 	return program;
 }
 
