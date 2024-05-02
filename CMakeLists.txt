@@ -6,7 +6,7 @@ project(DA376B_Labs
 )
 
 # CPP
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
@@ -77,11 +77,11 @@ else()
 endif()
 include_directories(${assimp_SOURCE_DIR})
 # Set C++14 standard for Assimp 5.0.1
-set_target_properties(assimp PROPERTIES
-    CXX_STANDARD 14
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+#set_target_properties(assimp PROPERTIES
+#    CXX_STANDARD 14
+#    CXX_STANDARD_REQUIRED ON
+#    CXX_EXTENSIONS OFF
+#)
 
 # Fetch STB
 FetchContent_Declare(
