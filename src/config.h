@@ -112,33 +112,33 @@ template<class LogType>
 static void LOG_DEFINES()
 {
 #ifdef EENG_DEBUG
-    LogType::log("Mode: DEBUG");
+    LogType::log("Mode DEBUG");
 #else
-    LogType::log("Mode: RELEASE");
+    LogType::log("Mode RELEASE");
 #endif
 
 #ifdef EENG_COMPILER_MSVC
-    LogType::log("Compiler: MSVC");
+    LogType::log("Compiler MSVC");
 #elif defined(EENG_COMPILER_CLANG)
-    LogType::log("Compiler: Clang");
+    LogType::log("Compiler Clang");
 #elif defined(EENG_COMPILER_GCC)
-    LogType::log("Compiler: GCC");
+    LogType::log("Compiler GCC");
 #endif
 
 #ifdef CPP20_SUPPORTED
-    LogType::log("C++ version: 20");
+    LogType::log("C++ version 20");
 #elif defined(CPP17_SUPPORTED)
-    LogType::log("C++ version: 17");
+    LogType::log("C++ version 17");
 #elif defined(CPP14_SUPPORTED)
     LogType::log("C++ version: 14");
 #elif defined(CPP11_SUPPORTED)
-    LogType::log("C++ version: 11");
+    LogType::log("C++ version 11");
 #endif
 
 #ifdef EENG_GLVERSION_43
-    LogType::log("OpenGL version: 4.3+");
+    LogType::log("OpenGL version 4.3+");
 #elif defined(EENG_GLVERSION_41)
-    LogType::log("OpenGL version: 4.1");
+    LogType::log("OpenGL version 4.1");
 #endif
 }
 
