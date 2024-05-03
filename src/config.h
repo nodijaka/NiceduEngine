@@ -113,7 +113,7 @@ static void LOG_DEFINES()
 {
 #ifdef EENG_DEBUG
     LogType::log("Mode: DEBUG");
-#elif
+#else
     LogType::log("Mode: RELEASE");
 #endif
 

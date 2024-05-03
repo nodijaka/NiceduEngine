@@ -208,14 +208,14 @@ int main(int argc, char *argv[])
     characterMesh->load("assets/ExoRed/walking.fbx", true);
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
-#if 0
+#if 1
     // Amy 5.0.1 PACK FBX
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/idle.fbx", true);
     characterMesh->load("assets/Amy/walking.fbx", true);
     characterMesh->remove_translation_keys(1);
 #endif
-#if 1
+#if 0
     // Eve 5.0.1 PACK FBX
     characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
     characterMesh->load("assets/Eve/idle.fbx", true);
