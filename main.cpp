@@ -230,9 +230,9 @@ int main(int argc, char *argv[])
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 
-    LOG_DEFINES<eeng::UILog>();
+    LOG_DEFINES<eeng::Log>();
     renderer->init("shaders/phong_vert.glsl","shaders/phong_frag.glsl");
-    eeng::UILog::log("Entering main loop...");
+    eeng::Log::log("Entering main loop...");
 
     // Main loop
     float time_s, time_ms;
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
 
         ImGui::End();
 
-        eeng::UILog::draw();
+        eeng::Log::draw();
 
         renderer->beginPass();
         // renderer->renderMesh()
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
         //        }
     }
 
-    eeng::UILog::log("Exiting...");
+    eeng::Log::log("Exiting...");
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();

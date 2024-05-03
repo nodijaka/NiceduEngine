@@ -11,7 +11,7 @@ namespace eeng {
 ///  Adapted from imgui_demo.cpp
 struct LogWidget;
 
-class UILog
+class Log
 {
 public:
     static std::unique_ptr<LogWidget> log_widget;

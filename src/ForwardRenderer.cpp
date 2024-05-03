@@ -42,7 +42,7 @@ ForwardRenderer::~ForwardRenderer()
 void ForwardRenderer::init(const std::string &vertShaderPath,
                            const std::string &fragShaderPath)
 {
-    UILog::log("Compiling shaders %s, %s",
+    Log::log("Compiling shaders %s, %s",
                vertShaderPath.c_str(),
                fragShaderPath.c_str());
     //UILog::log((std::string("Compiling shaders ") + vertShaderPath + std::string(", ") + fragShaderPath).c_str());

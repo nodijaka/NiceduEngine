@@ -148,9 +148,9 @@ struct LogWidget
     }
 };
 
-std::unique_ptr<LogWidget> UILog::log_widget = std::make_unique<LogWidget>();
+std::unique_ptr<LogWidget> Log::log_widget = std::make_unique<LogWidget>();
 
-void UILog::log(const char *fmt, ...)
+void Log::log(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -161,17 +161,17 @@ void UILog::log(const char *fmt, ...)
     log_widget->AddLog("[frame#%i] %s\n", ImGui::GetFrameCount(), formattedString.c_str());
 }
 
-void UILog::draw(bool *p_open)
+void Log::draw(bool *p_open)
 {
     log_widget->Draw("Log", p_open);
 }
 
-void UILog::clear()
+void Log::clear()
 {
     log_widget->Clear();
 }
 
-std::string UILog::formatString(const char* fmt, va_list args) 
+std::string Log::formatString(const char* fmt, va_list args) 
 {
     va_list args_copy;
     va_copy(args_copy, args);
