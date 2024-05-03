@@ -40,7 +40,10 @@ ForwardRenderer::~ForwardRenderer()
 void ForwardRenderer::init(const std::string &vertShaderPath,
                            const std::string &fragShaderPath)
 {
-    UILog::log((std::string("Compiling shaders ") + vertShaderPath + std::string(", ") + fragShaderPath).c_str());
+    UILog::log("Compiling shaders %s, %s",
+               vertShaderPath.c_str(),
+               fragShaderPath.c_str());
+    //UILog::log((std::string("Compiling shaders ") + vertShaderPath + std::string(", ") + fragShaderPath).c_str());
     auto vertSource = file_to_string(vertShaderPath);
     auto fragSource = file_to_string(fragShaderPath);
     phong_shader = createShaderProgram(vertSource.c_str(), fragSource.c_str());
@@ -100,8 +103,12 @@ void ForwardRenderer::renderMesh(
     const m4f &WorldMatrix)
 {
     EENG_ASSERT(phong_shader, "Renderer not initialized");
+    glUseProgram(phong_shader);
 
     // VFC
 
     // Render mesh
+
+    glBindVertexArray(0);
+    glUseProgram(0);
 }
