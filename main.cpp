@@ -208,14 +208,14 @@ int main(int argc, char *argv[])
     characterMesh->load("assets/ExoRed/walking.fbx", true);
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
-#if 1
+#if 0
     // Amy 5.0.1 PACK FBX
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/idle.fbx", true);
     characterMesh->load("assets/Amy/walking.fbx", true);
     characterMesh->remove_translation_keys(1);
 #endif
-#if 0
+#if 1
     // Eve 5.0.1 PACK FBX
     characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
     characterMesh->load("assets/Eve/idle.fbx", true);
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 
     LOG_DEFINES<UILog>();
     renderer->init("shaders/phong_vert.glsl","shaders/phong_frag.glsl");
-    // UILog::log("Entering main loop...");
+    UILog::log("Entering main loop...");
 
     // Main loop
     float time_s, time_ms;
@@ -310,6 +310,10 @@ int main(int argc, char *argv[])
 
         UILog::draw();
 
+        renderer->beginPass();
+        // renderer->renderMesh()
+        renderer->endPass();
+
         // Face culling - takes place before rasterization
         glEnable(GL_CULL_FACE); // Perform face culling
         glFrontFace(GL_CCW);    // Define winding for a front-facing face
@@ -376,10 +380,6 @@ int main(int argc, char *argv[])
         // Animate & render grass
         W = mat4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
-
-        // renderer->beginPass();
-        // renderer->renderMesh()
-        // renderer->endPass();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

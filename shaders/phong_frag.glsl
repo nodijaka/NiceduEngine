@@ -3,13 +3,13 @@ uniform vec3 ucolor;
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
-uniform sampler2D reflectiveTexture;
+// uniform sampler2D reflectiveTexture;
 uniform sampler2D opacityTexture;
 uniform samplerCube cubeTexture;
 uniform int has_diffusetex;
 uniform int has_normaltexture;
 uniform int has_speculartexture;
-uniform int has_reflectivetex;
+// uniform int has_reflectivetex;
 uniform int has_opacitytex;
 uniform int has_cubemap;
 uniform vec3 lightpos;
@@ -63,12 +63,12 @@ void main()
    float ldot = max(0.0, dot(N, L));
    float rdot = max(0.0, dot(R, V));
 
-   if (has_reflectivetex > 0 && has_cubemap > 0)
-   {
-       float refl = texture(reflectiveTexture, texflip).x;
-       vec3 cubec = texture(cubeTexture, reflect(-V, N)).xyz;
-       C = cubec*refl + C*(1.0-refl);
-   }
+//    if (has_reflectivetex > 0 && has_cubemap > 0)
+//    {
+//        float refl = texture(reflectiveTexture, texflip).x;
+//        vec3 cubec = texture(cubeTexture, reflect(-V, N)).xyz;
+//        C = cubec*refl + C*(1.0-refl);
+//    }
 
    vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 20) * vec3(1,1,1);
    fragcolor = vec4(CC, 1);

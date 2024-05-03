@@ -82,13 +82,13 @@ const std::string fshader =
     "uniform sampler2D diffuseTexture;"
     "uniform sampler2D normalTexture;"
     "uniform sampler2D specularTexture;"
-    "uniform sampler2D reflectiveTexture;"
+    // "uniform sampler2D reflectiveTexture;"
     "uniform sampler2D opacityTexture;"
     "uniform samplerCube cubeTexture;"
     "uniform int has_diffusetex;"
     "uniform int has_normaltexture;"
     "uniform int has_speculartexture;"
-    "uniform int has_reflectivetex;"
+    // "uniform int has_reflectivetex;"
     "uniform int has_opacitytex;"
     "uniform int has_cubemap;"
     "uniform vec3 lightpos;"
@@ -144,13 +144,13 @@ const std::string fshader =
     "float ldot = max(0.0, dot(N, L));"
     "float rdot = max(0.0, dot(R, V));"
     ""
-    "   if (has_reflectivetex > 0 && has_cubemap > 0)"
-    "   {"
-    "       float refl = texture(reflectiveTexture, texflip).x;"
-    "       vec3 cubec = texture(cubeTexture, reflect(-V, N)).xyz;"
-    //"       vec3 cubec = textureLod(cubeTexture, reflect(-V, N), 2).xyz;"
-    "       C = cubec*refl + C*(1.0-refl);"
-    "   }"
+    // "   if (has_reflectivetex > 0 && has_cubemap > 0)"
+    // "   {"
+    // "       float refl = texture(reflectiveTexture, texflip).x;"
+    // "       vec3 cubec = texture(cubeTexture, reflect(-V, N)).xyz;"
+    // //"       vec3 cubec = textureLod(cubeTexture, reflect(-V, N), 2).xyz;"
+    // "       C = cubec*refl + C*(1.0-refl);"
+    // "   }"
     ""
     "   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 20) * vec3(1,1,1);"
     //"   C = C*(0.5+0.5*ldot);"
@@ -1365,7 +1365,7 @@ void RenderableMesh::render(const m4f &PROJ_VIEW,
 
     // Cube map
     if (cubemap)
-        cubemap->bind(GL_TEXTURE5);
+        cubemap->bind(GL_TEXTURE4);
     glUniform1i(glGetUniformLocation(shader, "has_cubemap"), cubemap ? 1 : 0);
 
     // Light & eye position
@@ -1417,15 +1417,15 @@ void RenderableMesh::render(const m4f &PROJ_VIEW,
         glUniform1i(glGetUniformLocation(shader, "has_speculartexture"), (int)has_speculartex);
 
         // Reflectiveness texture
-        bool has_reflectivetex = (m_materials[m_meshes[i].mtl_index].reflective_texture_index != NO_TEXTURE);
-        if (has_reflectivetex)
-            m_textures[m_materials[m_meshes[i].mtl_index].reflective_texture_index].bind(GL_TEXTURE3);
-        glUniform1i(glGetUniformLocation(shader, "has_reflectivetex"), (int)has_reflectivetex);
+        // bool has_reflectivetex = (m_materials[m_meshes[i].mtl_index].reflective_texture_index != NO_TEXTURE);
+        // if (has_reflectivetex)
+        //     m_textures[m_materials[m_meshes[i].mtl_index].reflective_texture_index].bind(GL_TEXTURE3);
+        // glUniform1i(glGetUniformLocation(shader, "has_reflectivetex"), (int)has_reflectivetex);
 
         // Reflectiveness texture
         bool has_opacitytex = (m_materials[m_meshes[i].mtl_index].opacity_texture_index != NO_TEXTURE);
         if (has_opacitytex)
-            m_textures[m_materials[m_meshes[i].mtl_index].opacity_texture_index].bind(GL_TEXTURE4);
+            m_textures[m_materials[m_meshes[i].mtl_index].opacity_texture_index].bind(GL_TEXTURE3);
         glUniform1i(glGetUniformLocation(shader, "has_opacitytex"), (int)has_opacitytex);
 
         // Skinned flag
