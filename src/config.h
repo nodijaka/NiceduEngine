@@ -45,7 +45,7 @@
 #endif
 
 // Debug
-#if not defined(NDEBUG) or defined(_DEBUG)
+#if !defined(NDEBUG) || defined(_DEBUG)
 #define EENG_DEBUG
 #define EENG_ENABLE_ASSERTS
 #endif
@@ -64,7 +64,7 @@
 #endif
 
 // Assert
-#if defined(EENG_ENABLE_ASSERTS) and defined(CPP20_SUPPORTED)
+#if defined(EENG_ENABLE_ASSERTS) && defined(CPP20_SUPPORTED)
 template <class... Args>
 static void EENG_ERROR(std::string_view fmt, Args &&...args)
 {
