@@ -27,6 +27,10 @@
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 
+using linalg::m4f;
+using linalg::m3f;
+using linalg::v3f;
+
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
 float FRAMETIME_MIN_MS = 1000.0f / 60;
@@ -37,7 +41,7 @@ bool SOUND_PLAY = false;
 int main(int argc, char *argv[])
 {
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
-    auto renderer = std::make_shared<ForwardRenderer>();
+    auto renderer = std::make_shared<eeng::ForwardRenderer>();
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
@@ -183,10 +187,10 @@ int main(int argc, char *argv[])
 #endif
 
     // Grass
-    auto grassMesh = std::make_shared<RenderableMesh>();
+    auto grassMesh = std::make_shared<eeng::RenderableMesh>();
     grassMesh->load("assets/grass/grass_trees.fbx", false);
 
-    auto characterMesh = std::make_shared<RenderableMesh>();
+    auto characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
@@ -206,6 +210,7 @@ int main(int argc, char *argv[])
     characterMesh->load("assets/ExoRed/exo_red.fbx");
     characterMesh->load("assets/ExoRed/idle (2).fbx", true);
     characterMesh->load("assets/ExoRed/walking.fbx", true);
+    // Remove root motion
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 #if 0
@@ -213,19 +218,21 @@ int main(int argc, char *argv[])
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/idle.fbx", true);
     characterMesh->load("assets/Amy/walking.fbx", true);
-    characterMesh->remove_translation_keys(1);
+    // Remove root motion
+    characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 #if 1
     // Eve 5.0.1 PACK FBX
     characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
     characterMesh->load("assets/Eve/idle.fbx", true);
     characterMesh->load("assets/Eve/walking.fbx", true);
-    characterMesh->remove_translation_keys(1);
+    // Remove root motion
+    characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 
-    LOG_DEFINES<UILog>();
+    LOG_DEFINES<eeng::UILog>();
     renderer->init("shaders/phong_vert.glsl","shaders/phong_frag.glsl");
-    UILog::log("Entering main loop...");
+    eeng::UILog::log("Entering main loop...");
 
     // Main loop
     float time_s, time_ms;
@@ -308,7 +315,7 @@ int main(int argc, char *argv[])
 
         ImGui::End();
 
-        UILog::draw();
+        eeng::UILog::draw();
 
         renderer->beginPass();
         // renderer->renderMesh()
@@ -366,19 +373,19 @@ int main(int argc, char *argv[])
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-        linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
+        linalg::m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
         // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, -1, lightPos, eye);
 #if 1
-        W = mat4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
-        W = mat4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
 #endif
 
         // Animate & render grass
-        W = mat4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
 
         ImGui::Render();
@@ -399,7 +406,7 @@ int main(int argc, char *argv[])
         //        }
     }
 
-    UILog::log("Exiting...");
+    eeng::UILog::log("Exiting...");
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();

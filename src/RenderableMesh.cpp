@@ -13,6 +13,8 @@
 #include "parseutil.h"
 // #include "glyph_renderer.hpp"
 
+namespace eeng {
+
 using linalg::dualquatf;
 
 namespace
@@ -1478,3 +1480,5 @@ RenderableMesh::~RenderableMesh()
         m_VAO = 0;
     }
 }
+
+} // namespace eeng

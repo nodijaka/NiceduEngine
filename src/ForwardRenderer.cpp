@@ -8,6 +8,8 @@
 #include "ShaderLoader.h"
 #include "UILog.hpp"
 
+namespace eeng {
+
 namespace
 {
     std::string file_to_string(const std::string &filename)
@@ -112,3 +114,5 @@ void ForwardRenderer::renderMesh(
     glBindVertexArray(0);
     glUseProgram(0);
 }
+
+} // namespace eeng

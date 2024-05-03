@@ -21,6 +21,8 @@
 // #include "VectorTree.h"
 // #include "logstreamer.h"
 
+namespace eeng {
+
 class ForwardRenderer
 {
     // GLboolean depthMask = GL_TRUE;
@@ -57,5 +59,7 @@ private:
     {
     }
 };
+
+} // namespace eeng
 
 #endif

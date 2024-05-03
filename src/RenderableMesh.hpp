@@ -32,6 +32,8 @@
 #include "VectorTree.h"
 #include "logstreamer.h"
 
+namespace eeng {
+
 using namespace linalg;
 using namespace logstreamer;
 using uint = uint32_t;
@@ -292,5 +294,7 @@ public:
         return vec3f(1, lerp<float>(1, 0, (x - 0.75f) * 4), 0);
     }
 };
+
+} // namespace eeng
 
 #endif /* assimp_mesh_hpp */

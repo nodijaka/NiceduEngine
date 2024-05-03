@@ -5,7 +5,7 @@
 #include <memory>
 #include "imgui.h"
 
-// namespace eeng {
+namespace eeng {
 
 /// @brief ImGui log widget
 ///  Adapted from imgui_demo.cpp
@@ -33,6 +33,6 @@ private:
     static std::string formatString(const char* fmt, va_list args);
 };
 
-// } // namespace eeng
+} // namespace eeng
 
 #endif /* UILog_hpp */

@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include "UILog.hpp"
 
-// namespace eeng {
+namespace eeng {
 
 struct LogWidget
 {
@@ -187,4 +187,4 @@ std::string UILog::formatString(const char* fmt, va_list args)
     return formattedString;
 }
 
-// } // namespace eeng
+} // namespace eeng
