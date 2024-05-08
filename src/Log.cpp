@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <cstdarg>
-#include "UILog.hpp"
+#include "Log.hpp"
 
 namespace eeng {
 

@@ -23,12 +23,12 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
-#include "UILog.hpp"
+#include "Log.hpp"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 
-using linalg::m4f;
 using linalg::m3f;
+using linalg::m4f;
 using linalg::v3f;
 
 const int WINDOW_WIDTH = 1600;
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
 #endif
 
     LOG_DEFINES<eeng::Log>();
-    renderer->init("shaders/phong_vert.glsl","shaders/phong_frag.glsl");
+    renderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
     eeng::Log::log("Entering main loop...");
 
     // Main loop
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         ImGui::ShowDemoWindow();
-        
+
         // Render GUI here
 
         ImGui::Begin("Config");
@@ -317,10 +317,6 @@ int main(int argc, char *argv[])
 
         eeng::Log::draw();
 
-        renderer->beginPass();
-        // renderer->renderMesh()
-        renderer->endPass();
-
         // Face culling - takes place before rasterization
         glEnable(GL_CULL_FACE); // Perform face culling
         glFrontFace(GL_CCW);    // Define winding for a front-facing face
@@ -368,25 +364,42 @@ int main(int argc, char *argv[])
         linalg::m4f P = linalg::m4f::GL_PerspectiveProjectionRHS(fov, aspect, 1.0f, 500.0f);
         linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
 
+        // Animate & render grass
+        linalg::m4f W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        // grassMesh->animate(-1, time_s * ANIM_SPEED, )
+        grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
+
         // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.75f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f * 0, {1,0,0}, {0.25f,0.25f,0.25f}); // Manneq
-        // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
+        // W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-        linalg::m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
+        W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
+
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
         // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
+#if 0
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, -1, lightPos, eye);
-#if 1
         W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
         W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
 #endif
 
-        // Animate & render grass
-        W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
-        grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
+        renderer->beginPass(P, V, lightPos, eye);
+
+        characterMesh->animate(-1, time_s * ANIM_SPEED);
+        renderer->renderMesh(characterMesh, W);
+
+        W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        characterMesh->animate(1, time_s * ANIM_SPEED);
+        renderer->renderMesh(characterMesh, W);
+
+        W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        characterMesh->animate(2, time_s * ANIM_SPEED);
+        renderer->renderMesh(characterMesh, W);
+
+        renderer->endPass();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

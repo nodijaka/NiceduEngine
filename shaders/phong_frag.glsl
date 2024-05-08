@@ -1,23 +1,24 @@
 #version 410 core
-uniform vec3 ucolor;
+
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
-// uniform sampler2D reflectiveTexture;
 uniform sampler2D opacityTexture;
 uniform samplerCube cubeTexture;
-uniform int has_diffusetex;
-uniform int has_normaltexture;
-uniform int has_speculartexture;
-// uniform int has_reflectivetex;
-uniform int has_opacitytex;
+
+uniform int has_diffuseTexture;
+uniform int has_normalTexture;
+uniform int has_specularTexture;
+uniform int has_opacityTexture;
 uniform int has_cubemap;
+
 uniform vec3 lightpos;
 uniform vec3 eyepos;
 uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
-uniform float shn;
+uniform float shininess;
+// uniform vec3 ucolor; // !!!
 
 in vec3 wpos;
 in vec2 texcoord;
@@ -36,23 +37,23 @@ void main()
    vec3 C = Kd;
    vec3 S = Ks;
 
-   if (has_opacitytex > 0)
+   if (has_opacityTexture > 0)
    {
        if (texture(opacityTexture, texflip).x < 0.5)
            discard;
    }
 
-   if (has_diffusetex > 0)
+   if (has_diffuseTexture > 0)
    {
        C = texture(diffuseTexture, texflip).rgb;
    }
 
-   if (has_speculartexture > 0)
+   if (has_specularTexture > 0)
    {
        S = texture(specularTexture, texflip).rgb;
    }
 
-   if (has_normaltexture > 0)
+   if (has_normalTexture > 0)
    {
        mat3 TBN = mat3(tangent, binormal, normal);
        vec3 bnormal = texture(normalTexture, texflip).xyz * 2.0 - 1.0;

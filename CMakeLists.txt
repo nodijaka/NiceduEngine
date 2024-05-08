@@ -125,7 +125,7 @@ add_executable(Module1
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderableMesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ForwardRenderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/UILog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/mat.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/vec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/quat.cpp

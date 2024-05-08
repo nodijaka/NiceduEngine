@@ -58,9 +58,11 @@ public:
                     int h,
                     int channels);
     
-    void bind(GLenum p_texture_slot);
+    GLuint getHandle();
+
+    void bind(GLenum p_texture_slot) const;
     
-    void unbind();
+    void unbind() const;
     
     void free();
     
