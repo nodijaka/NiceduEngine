@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
                     currentItem = i;
 
                 if (isSelected)
-                    ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo
+                    ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
@@ -304,19 +304,22 @@ int main(int argc, char *argv[])
             std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->get_animation_name(curAnimIndex));
             if (ImGui::BeginCombo("Animation Clip##animclip", label.c_str()))
             {
+                // Bind pose item
                 const bool isSelected = (curAnimIndex == -1);
                 if (ImGui::Selectable("Bind pose", isSelected))
                     curAnimIndex = -1;
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
 
+                // Clip items
                 for (int i = 0; i < characterMesh->get_nbr_animations(); i++)
                 {
                     const bool isSelected = (curAnimIndex == i);
-                    const auto label = characterMesh->get_animation_name(i) + "##" + std::to_string(i);;
+                    const auto label = characterMesh->get_animation_name(i) + "##" + std::to_string(i);
                     if (ImGui::Selectable(label.c_str(), isSelected))
                         curAnimIndex = i;
-
                     if (isSelected)
-                        ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo
+                        ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
                 ANIM_INDEX = curAnimIndex;
@@ -418,21 +421,23 @@ int main(int argc, char *argv[])
 
         renderer->beginPass(P, V, lightPos, eye);
 
+        // Grass
         m4f grassWorldMatrix = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         // grassMesh->animate(-1, time_s * ANIM_SPEED, )
         // grassMesh->animate(-1, 0.0f);
         renderer->renderMesh(grassMesh, grassWorldMatrix);
         // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
 
+        // Character
         // m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
         m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
-
+        // Character #2
         W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(1, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
-
+        // Character #3
         W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(2, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
