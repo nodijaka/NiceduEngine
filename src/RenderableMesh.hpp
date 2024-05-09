@@ -52,12 +52,6 @@ namespace eeng
         v3f Ks = {1.0f, 1.0f, 1.0f};
         float shininess = 10;
 
-        int diffuse_texture_index = NO_TEXTURE;
-        int normal_texture_index = NO_TEXTURE;
-        int specular_texture_index = NO_TEXTURE;
-        int opacity_texture_index = NO_TEXTURE;
-        int reflective_texture_index = NO_TEXTURE;
-
         enum TextureTypeIndex
         {
             Diffuse = 0,
@@ -98,6 +92,7 @@ namespace eeng
          */
         struct Submesh
         {
+            // TODO: GL types?
             unsigned base_index = 0;
             unsigned nbr_indices = 0;
             unsigned base_vertex = 0;
@@ -152,41 +147,25 @@ namespace eeng
             std::vector<NodeKeyframes> node_animations;
         };
 
-        // GL stuff
-
         GLuint m_VAO = 0;
         GLuint m_Buffers[BufferCount] = {0};
-        GLuint default_shader;
-        GLuint placeholder_texture;
-        // GLuint test_texture;
-
-        // Assimp stuff
-        // Todo: import what's needed and then release these
-
-        //    const aiScene* m_pScene;
-        //    Assimp::Importer m_importer; // owns the loaded data (pointed to by aiScene*)
-
-        // Scene stuff
 
     public:
-        // m4f M_global, M_global_inverse;
-
-        // Node hierarchy
         VectorTree<SkeletonNode> m_nodetree;
         std::vector<Bone> m_bones;
         std::vector<m4f> boneMatrices;
-        // Geometry & materials
+        std::vector<AnimationClip> m_animations;
+
         std::vector<Submesh> m_meshes;
         std::vector<PhongMaterial> m_materials;
         std::vector<Texture2D> m_textures;
+
         // Bounding volumes
         std::vector<AABB_t> m_bone_aabbs_bind; // Per-bone bind AABB
         std::vector<AABB_t> m_bone_aabbs_pose; // Per-node pose AABB's – intermediary, used for visualization
         std::vector<AABB_t> m_mesh_aabbs_bind; // Per-mesh bind AABB
         std::vector<AABB_t> m_mesh_aabbs_pose; // Per-mesh pose AABB's – intermediary, used for visualization
         AABB_t m_model_aabb;                   // AABB for the entire model
-        // Animations
-        std::vector<AnimationClip> m_animations;
 
     public:
         unsigned m_embedded_textures_ofs = 0;
@@ -223,24 +202,6 @@ namespace eeng
 
         void animate(int anim_index,
                      float time);
-        // std::vector<m4f> &bone_transforms);
-
-        void render(const m4f &PROJ_VIEW,
-                    const m4f &WORLD,
-                    double time,
-                    int anim_index,
-                    const v3f &lightpos,
-                    const v3f &eyepos,
-                    gl_cubemap_t *cubemap = nullptr,
-                    GLuint shader = 0);
-
-        void render(const m4f &PROJ_VIEW,
-                    const m4f &WORLD,
-                    // const std::vector<m4f> &bone_array,
-                    const v3f &lightpos,
-                    const v3f &eyepos,
-                    gl_cubemap_t *cubemap = nullptr,
-                    GLuint shader = 0);
 
         unsigned get_nbr_animations() const;
         std::string get_animation_name(unsigned i) const;

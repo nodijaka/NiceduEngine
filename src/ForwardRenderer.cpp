@@ -203,6 +203,13 @@ namespace eeng
                 glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, WorldMatrix.array);
 
             // (Could do view frustum culling (VFC) here using the projection matrix)
+            // (Mesh traversal)
+            // if (submesh.is_skinned)
+            //     submesh.aabb = meshres.src_mesh->m_model_aabb;
+            // else
+            //     submesh.aabb = meshres.src_mesh->m_mesh_aabbs_pose[i];
+            // (VFC)
+            // v4f bs = aabb.post_transform(tfm).get_boundingsphere();
 
             // Color components
             glUniform3fv(glGetUniformLocation(phongShader, "Ka"), 1, mtl.Ka.vec);

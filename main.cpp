@@ -192,6 +192,10 @@ int main(int argc, char *argv[])
 
     auto characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
+    // Sponza
+    characterMesh->load("/Users/ag1498/Dropbox/MAU/DA307A-CGM/Rendering/eduRend_2022/assets/crytek-sponza/sponza.obj", false);
+#endif
+#if 0
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
 #endif
@@ -365,16 +369,15 @@ int main(int argc, char *argv[])
         linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
 
         // Animate & render grass
-        linalg::m4f W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        // linalg::m4f W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         // grassMesh->animate(-1, time_s * ANIM_SPEED, )
-        grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
+        // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
 
         // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.75f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f * 0, {1,0,0}, {0.25f,0.25f,0.25f}); // Manneq
         // W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
         //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-        W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
 
         // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
         // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
@@ -388,6 +391,13 @@ int main(int argc, char *argv[])
 
         renderer->beginPass(P, V, lightPos, eye);
 
+        m4f grassWorldMatrix = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        // grassMesh->animate(-1, time_s * ANIM_SPEED, )
+        // grassMesh->animate(-1, 0.0f);
+        renderer->renderMesh(grassMesh, grassWorldMatrix);
+        // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
+
+        m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
         characterMesh->animate(-1, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
 

@@ -26,186 +26,6 @@ namespace eeng
         }
     }
 
-    /* Note:
-     100 bone transformations amount to 1600 floats.
-     GL_MAX_VERTEX_UNIFORM_COMPONENTS is 4096 (eg floats) on my AMD M370X (2015 Macbook Pro)
-     */
-    const std::string vshader =
-        "#version 410 core\n"
-        "const int MaxBones = 128;"
-        ""
-        "layout (location = 0) in vec3 attr_Position;"
-        "layout (location = 1) in vec2 attr_Texcoord;"
-        "layout (location = 2) in vec3 attr_Normal;"
-        "layout (location = 3) in vec3 attr_Tangent;"
-        "layout (location = 4) in vec3 attr_Binormal;"
-        "layout (location = 5) in ivec4 BoneIDs;"
-        "layout (location = 6) in vec4 BoneWeights;"
-        ""
-        "uniform mat4 PROJ_VIEW;"
-        "uniform mat4 WORLD;"
-        "uniform mat4 BoneTfms[MaxBones];"
-        "uniform int u_is_skinned;"
-        ""
-        "out vec3 wpos;"
-        "out vec2 texcoord;"
-        "out vec3 normal;"
-        "out vec3 tangent;"
-        "out vec3 binormal;"
-        "out vec3 color;"
-        "void main()"
-        "{"
-        "   mat4 B = mat4(1.0);"
-        "   if (u_is_skinned > 0)"
-        "   {"
-        "       B *=    BoneTfms[BoneIDs.x] * BoneWeights.x + "
-        "               BoneTfms[BoneIDs.y] * BoneWeights.y + "
-        "               BoneTfms[BoneIDs.z] * BoneWeights.z + "
-        "               BoneTfms[BoneIDs.w] * BoneWeights.w;"
-        "       /* Fallback when bone weights are zero */"
-        "       if (BoneWeights.x+BoneWeights.y+BoneWeights.z+BoneWeights.w < 0.01)"
-        //"           B = mat4(1.0);"
-        "           B = BoneTfms[0];"
-        "   } "
-        ""
-        "   wpos = (WORLD * B * vec4(attr_Position, 1)).xyz;"
-        "   texcoord = attr_Texcoord;"
-        "   normal = normalize( (WORLD * B * vec4(attr_Normal, 0)).xyz );"
-        "   tangent = normalize( (WORLD * B * vec4(attr_Tangent, 0)).xyz );"
-        "   binormal = normalize( (WORLD * B * vec4(attr_Binormal, 0)).xyz );"
-        //    "   color = normalize(vec3(BoneIDs[0], BoneIDs[1], BoneIDs[2]));"
-        //"   color = vec3(Weights[0], Weights[1], Weights[2]+Weights[3]);"
-        //"   gl_Position = PROJ_VIEW * vec4(attr_Position,1);"
-        "   gl_Position = PROJ_VIEW * WORLD * B * vec4(attr_Position, 1);"
-        "}";
-
-    const std::string fshader =
-        "#version 410 core\n"
-        "uniform vec3 ucolor;"
-        "uniform sampler2D diffuseTexture;"
-        "uniform sampler2D normalTexture;"
-        "uniform sampler2D specularTexture;"
-        // "uniform sampler2D reflectiveTexture;"
-        "uniform sampler2D opacityTexture;"
-        "uniform samplerCube cubeTexture;"
-        "uniform int has_diffusetex;"
-        "uniform int has_normaltexture;"
-        "uniform int has_speculartexture;"
-        // "uniform int has_reflectivetex;"
-        "uniform int has_opacitytex;"
-        "uniform int has_cubemap;"
-        "uniform vec3 lightpos;"
-        "uniform vec3 eyepos;"
-        "uniform vec3 Ka;"
-        "uniform vec3 Kd;"
-        "uniform vec3 Ks;"
-        "uniform float shn;"
-        ""
-        "in vec3 wpos;"
-        "in vec2 texcoord;"
-        "in vec3 normal;"
-        "in vec3 tangent;"
-        "in vec3 binormal;"
-        "in vec3 color;"
-        "out vec4 fragcolor;\n"
-        "void main()"
-        "{"
-        // "   fragcolor = vec4(Ks,1); return;"
-        "   vec3 N = normal;"
-        "   vec2 texflip = vec2(texcoord.x, texcoord.y);"
-        "   vec3 V = normalize(eyepos - wpos);"
-        "   vec3 L = normalize(lightpos - wpos);"
-        "   vec3 C = Kd;"
-        "   vec3 S = Ks;"
-        "   "
-        "   if (has_opacitytex > 0)"
-        "   {"
-        "       if (texture(opacityTexture, texflip).x < 0.5)"
-        "           discard;"
-        "   }"
-        "   "
-        "   if (has_diffusetex > 0)"
-        "   {"
-        "       C = texture(diffuseTexture, texflip).rgb;"
-        "   }"
-        "   "
-        "   if (has_speculartexture > 0)"
-        "   {"
-        "       S = texture(specularTexture, texflip).rgb;"
-        // "       fragcolor = vec4(S,1); return;"
-        "   }"
-        "   "
-        "   if (has_normaltexture > 0)"
-        "   {"
-        "       mat3 TBN = mat3(tangent, binormal, normal);"
-        "       vec3 bnormal = texture(normalTexture, texflip).xyz * 2.0 - 1.0;"
-        "       N = normalize( TBN * bnormal );"
-        //"      fragcolor = vec4(bnormal*0.5+0.5,1); return;" // normal
-        "   }"
-        ""
-        "vec3 R = reflect(-L, N);"
-        "float ldot = max(0.0, dot(N, L));"
-        "float rdot = max(0.0, dot(R, V));"
-        ""
-        // "   if (has_reflectivetex > 0 && has_cubemap > 0)"
-        // "   {"
-        // "       float refl = texture(reflectiveTexture, texflip).x;"
-        // "       vec3 cubec = texture(cubeTexture, reflect(-V, N)).xyz;"
-        // //"       vec3 cubec = textureLod(cubeTexture, reflect(-V, N), 2).xyz;"
-        // "       C = cubec*refl + C*(1.0-refl);"
-        // "   }"
-        ""
-        "   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 20) * vec3(1,1,1);"
-        //"   C = C*(0.5+0.5*ldot);"
-        "   fragcolor = vec4(CC, 1);"
-        //
-        //    "float gamma = 2.2;"
-        //    "fragcolor.rgb = pow(fragcolor.rgb, vec3(1.0/gamma));"
-        //    "   fragcolor = vec4(cc, 0,0,1);"
-        //    "   fragcolor = vec4(vec3(0.5+0.5*ldot),1);" // grayscale
-        //"   fragcolor = vec4(vec3(1,0.65,0.65)*(0.2+0.8*ldot),1);" // red-ish
-        //"   fragcolor = vec4(0,texcoord,1);" // texture coord's
-        //"   fragcolor = vec4(N*0.5+0.5,1);" // normal
-        //"   fragcolor = vec4(tangent*0.5+0.5,1);" // tangent
-        //"   fragcolor = vec4(binormal*0.5+0.5,1);" // binormal
-        //"   fragcolor = vec4(ucolor,1);"
-        //"   fragcolor = vec4(color,1);"
-        "}";
-
-    // Re-worked from assimp_bones_viewer
-    //
-    GLuint create_checker_texture(void)
-    {
-        unsigned char texture_data[256 * 256];
-        unsigned int texture_id = 0;
-
-        int x, y, i = 0;
-        for (y = 0; y < 256; y++)
-        {
-            for (x = 0; x < 256; x++)
-            {
-                int k = ((x >> 4) & 1) ^ ((y >> 4) & 1);
-                texture_data[i++] = k ? 255 : 192;
-                //            texture_data[i++] = 125;
-            }
-        }
-
-        glGenTextures(1, &texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        //.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_GREEN /**/, GL_UNSIGNED_BYTE, texture_data);
-        //.
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        CheckAndThrowGLErrors();
-        return texture_id;
-    }
-
     inline m4f to_m4f(const aiMatrix4x4 &aim)
     {
         return {
@@ -351,10 +171,13 @@ namespace eeng
 
         load_animations(aiscene);
 
-        default_shader = createShaderProgram(vshader.c_str(), fshader.c_str());
-        placeholder_texture = create_checker_texture();
+        // default_shader = createShaderProgram(vshader.c_str(), fshader.c_str());
+        // placeholder_texture = create_checker_texture();
 
         mSceneAABB = measure_scene(aiscene); // Only captures bind pose.
+
+        // Traverse the hierarchy
+        animate(-1, 0.0f);
     }
 
     void RenderableMesh::remove_translation_keys(const std::string &node_name)
@@ -451,7 +274,7 @@ namespace eeng
         scene_tangents.reserve(scene_nbr_vertices);
         scene_binormals.reserve(scene_nbr_vertices);
         scene_texcoords.reserve(scene_nbr_vertices);
-        scene_skinweights.resize(scene_nbr_vertices); // skinweights
+        scene_skinweights.resize(scene_nbr_vertices);
         scene_indices.reserve(scene_nbr_indices);
 
         // Initialize the meshes in the scene one by one
@@ -814,17 +637,19 @@ namespace eeng
         }
     }
 
-    int RenderableMesh::load_texture(const aiMaterial *aimtl, aiTextureType tex_type, const std::string &local_filepath)
+    /// @brief Load textures of a given type
+    /// @param aimtl
+    /// @param tex_type
+    /// @param modelDir
+    /// @return An index to the loaded texture
+    int RenderableMesh::load_texture(const aiMaterial *material, aiTextureType textureType, const std::string &modelDir)
     {
-        // Load all textures of a certain type from a material
-        // Allow multiple texture of the same type?
-
-        unsigned nbr_textures = aimtl->GetTextureCount(tex_type);
+        unsigned nbr_textures = material->GetTextureCount(textureType);
 
         if (!nbr_textures)
             return NO_TEXTURE;
         if (nbr_textures > 1)
-            throw std::runtime_error("Multiple textures of type " + std::to_string(tex_type) + ", aborting. Nbr = " + std::to_string(nbr_textures));
+            throw std::runtime_error("Multiple textures of type " + std::to_string(textureType) + ", aborting. Nbr = " + std::to_string(nbr_textures));
 
         // Fetch texture properties from assimp
         aiString ai_texpath;            //
@@ -833,7 +658,7 @@ namespace eeng
         float ai_blend;                 // currently unused
         aiTextureOp ai_texop;           // currently unused
         aiTextureMapMode ai_texmapmode; //
-        aiReturn tex_ret = aimtl->GetTexture(tex_type,
+        aiReturn tex_ret = material->GetTexture(textureType,
                                              0,
                                              &ai_texpath,
                                              &ai_texmap,
@@ -844,50 +669,57 @@ namespace eeng
         if (tex_ret != AI_SUCCESS)
             return NO_TEXTURE;
 
-        std::string texpath(ai_texpath.C_Str());
+        // Relative texture path, e.g. "/textures/texture.png"
+        std::string textureRelPath{ai_texpath.C_Str()};
 
         // Find an index to this texture, either by retrieving it (embedded texture)
         // or by creating it (texture on file)
-        unsigned texture_index;
+        unsigned textureIndex;
 
         // Embedded textures are named *[N], where N is an index. Embedded  textures
         // are already loaded at this point, so if we ecounter this format we
         // extract N and use it (plus a buffer offset) as our index.
         int embedded_texture_index = EENG_NULL_INDEX;
-        if (sscanf(texpath.c_str(), "*%d", &embedded_texture_index) == 1)
+        if (sscanf(textureRelPath.c_str(), "*%d", &embedded_texture_index) == 1)
         {
-            texture_index = m_embedded_textures_ofs + embedded_texture_index;
+            textureIndex = m_embedded_textures_ofs + embedded_texture_index;
             log << priority(PRTSTRICT) << "\tUsing indexed embedded texture: " << embedded_texture_index << std::endl;
         }
         // Texture is a separate file
         else
         {
-            std::string tex_filename = get_filename(texpath);
-            std::string local_file = local_filepath + tex_filename;
+            // Texture filename, e.g. "texture.png"
+            std::string textureFilename = get_filename(textureRelPath);
+            // Absolute texture path, e.g. "C:/sponza/textures/texture.png"
+#if 1
+            std::string textureAbsPath = modelDir + textureRelPath;
+#else
+            std::string textureAbsPath = modelDir + textureFilename;
+#endif
 
-            log << priority(PRTVERBOSE) << "\traw path: " << texpath << std::endl;
-            log << priority(PRTVERBOSE) << "\tlocal file: " << local_file << std::endl;
+            log << priority(PRTVERBOSE) << "\traw path: " << textureRelPath << std::endl;
+            log << priority(PRTVERBOSE) << "\tlocal file: " << textureAbsPath << std::endl;
 
             // Look for non-embedded textures (filepath + filename)
-            auto tex_it = m_texturehash.find(local_file);
+            auto tex_it = m_texturehash.find(textureRelPath);
 
             if (tex_it == m_texturehash.end())
             {
                 // Look for embedded texture (just filename)
-                tex_it = m_texturehash.find(tex_filename);
+                tex_it = m_texturehash.find(textureFilename);
             }
             if (tex_it == m_texturehash.end())
             {
                 // New texture found: create & hash it
                 Texture2D texture;
-                texture.load_from_file(tex_filename, local_file);
+                texture.load_from_file(textureFilename, textureAbsPath);
                 log << priority(PRTSTRICT) << "Loaded texture " << texture << std::endl;
-                texture_index = (unsigned)m_textures.size();
+                textureIndex = (unsigned)m_textures.size();
                 m_textures.push_back(texture);
-                m_texturehash[local_file] = texture_index;
+                m_texturehash[textureRelPath] = textureIndex;
             }
             else
-                texture_index = tex_it->second;
+                textureIndex = tex_it->second;
 
             // Fetch & set address mode
             GLuint adr_mode;
@@ -909,10 +741,10 @@ namespace eeng
                 adr_mode = GL_REPEAT;
                 break;
             }
-            m_textures[texture_index].set_address_mode({adr_mode, adr_mode});
+            m_textures[textureIndex].set_address_mode({adr_mode, adr_mode});
         }
 
-        return texture_index;
+        return textureIndex;
     }
 
     // bool SkinnedMesh::InitMaterials(const aiScene* pScene, const string& Filename)
@@ -1032,8 +864,10 @@ namespace eeng
 #endif
 
             // Fallback: assimp seems to label OBJ normal maps as HEIGHT type textures.
-            if (mtl.normal_texture_index == NO_TEXTURE)
-                mtl.normal_texture_index = load_texture(pMaterial, aiTextureType_HEIGHT, local_filepath);
+            if (mtl.textureIndices[TextureType::Normal] == NO_TEXTURE)
+                mtl.textureIndices[TextureType::Normal] = load_texture(pMaterial, aiTextureType_HEIGHT, local_filepath);
+            // if (mtl.normal_texture_index == NO_TEXTURE)
+            //     mtl.normal_texture_index = load_texture(pMaterial, aiTextureType_HEIGHT, local_filepath);
 
             log << "Done loading textures" << std::endl;
 
@@ -1302,150 +1136,6 @@ namespace eeng
         //     bone_transforms[i] = m_bones[i].global_tfm;
     }
 
-    void RenderableMesh::render(const m4f &PROJ_VIEW,
-                                const m4f &WORLD,
-                                double time,
-                                int anim_index,
-                                const v3f &lightpos,
-                                const v3f &eyepos,
-                                gl_cubemap_t *cubemap,
-                                GLuint shader)
-    {
-        // std::vector<m4f> bone_array;
-
-        // Bone matrices
-        // if (m_bones.size())
-        {
-            animate(anim_index, time); //, bone_array);
-        }
-
-        render(PROJ_VIEW, WORLD, /*bone_array,*/ lightpos, eyepos, cubemap, shader);
-    }
-
-    void RenderableMesh::render(const m4f &PROJ_VIEW,
-                                const m4f &WORLD,
-                                // const std::vector<m4f> &bone_array,
-                                const v3f &lightpos,
-                                const v3f &eyepos,
-                                gl_cubemap_t *cubemap,
-                                GLuint shader)
-    {
-        // Fix when a better shader system is in place
-        if (!shader)
-            shader = default_shader;
-        glUseProgram(shader);
-
-        glUniformMatrix4fv(glGetUniformLocation(shader, "PROJ_VIEW"), 1, 0, PROJ_VIEW.array);
-        // glUniformMatrix4fv(glGetUniformLocation(shader, "WORLD"), 1, 0, WORLD.array);
-
-        // Link uniform names to slots
-        // Note: this should obly be done *once* per shader program
-        //      (the default one within this class + geometry pass shader)
-        glUniform1i(glGetUniformLocation(shader, "diffuseTexture"), 0);
-        glUniform1i(glGetUniformLocation(shader, "normalTexture"), 1);
-        glUniform1i(glGetUniformLocation(shader, "specularTexture"), 2);
-        // glUniform1i(glGetUniformLocation(shader, "reflectiveTexture"), 3);
-        glUniform1i(glGetUniformLocation(shader, "opacityTexture"), 3);
-        glUniform1i(glGetUniformLocation(shader, "cubeTexture"), 4);
-
-        // Bone matrices
-        if (m_bones.size())
-        {
-            glUniformMatrix4fv(glGetUniformLocation(shader, "BoneTfms"),
-                               (GLsizei)boneMatrices.size(),
-                               0,
-                               boneMatrices[0].array);
-
-            //        DEV_renderBoneArray = bone_array; // temporary solution
-        }
-
-        glBindVertexArray(m_VAO);
-
-        // Cube map
-        if (cubemap)
-            cubemap->bind(GL_TEXTURE4);
-        glUniform1i(glGetUniformLocation(shader, "has_cubemap"), cubemap ? 1 : 0);
-
-        // Light & eye position
-        glUniform3fv(glGetUniformLocation(shader, "lightpos"), 1, lightpos.vec);
-        glUniform3fv(glGetUniformLocation(shader, "eyepos"), 1, eyepos.vec);
-
-        m4f MESHW;
-        for (uint i = 0; i < m_meshes.size(); i++)
-        {
-            // Append hierarchical transform to meshes linked to nodes
-            // Note: exclude skinned meshes (i.e. meshes linked to bones)
-            if (m_meshes[i].node_index != EENG_NULL_INDEX && !m_meshes[i].is_skinned)
-            {
-                MESHW = WORLD * m_nodetree.nodes[m_meshes[i].node_index].global_tfm;
-                glUniformMatrix4fv(glGetUniformLocation(shader, "WORLD"), 1, 0, MESHW.array);
-            }
-            else
-                glUniformMatrix4fv(glGetUniformLocation(shader, "WORLD"), 1, 0, WORLD.array);
-
-            // Color components
-            glUniform3fv(glGetUniformLocation(shader, "Ka"), 1, m_materials[m_meshes[i].mtl_index].Ka.vec);
-            glUniform3fv(glGetUniformLocation(shader, "Kd"), 1, m_materials[m_meshes[i].mtl_index].Kd.vec);
-            glUniform3fv(glGetUniformLocation(shader, "Ks"), 1, m_materials[m_meshes[i].mtl_index].Ks.vec);
-            glUniform1f(glGetUniformLocation(shader, "shn"), m_materials[m_meshes[i].mtl_index].shininess);
-
-            // Diffuse texture
-            const bool use_default_diffuse = false;
-            bool has_diffusetex = (m_materials[m_meshes[i].mtl_index].diffuse_texture_index != NO_TEXTURE);
-            if (has_diffusetex)
-                m_textures[m_materials[m_meshes[i].mtl_index].diffuse_texture_index].bind(GL_TEXTURE0);
-            else if (use_default_diffuse)
-            {
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, placeholder_texture);
-                has_diffusetex = true;
-            }
-            glUniform1i(glGetUniformLocation(shader, "has_diffusetex"), (int)has_diffusetex);
-
-            // Normal texture
-            bool has_normaltex = (m_materials[m_meshes[i].mtl_index].normal_texture_index != NO_TEXTURE);
-            if (has_normaltex)
-                m_textures[m_materials[m_meshes[i].mtl_index].normal_texture_index].bind(GL_TEXTURE1);
-            glUniform1i(glGetUniformLocation(shader, "has_normaltexture"), (int)has_normaltex);
-
-            // Specular texture
-            bool has_speculartex = (m_materials[m_meshes[i].mtl_index].specular_texture_index != NO_TEXTURE);
-            if (has_speculartex)
-                m_textures[m_materials[m_meshes[i].mtl_index].specular_texture_index].bind(GL_TEXTURE2);
-            glUniform1i(glGetUniformLocation(shader, "has_speculartexture"), (int)has_speculartex);
-
-            // Reflectiveness texture
-            // bool has_reflectivetex = (m_materials[m_meshes[i].mtl_index].reflective_texture_index != NO_TEXTURE);
-            // if (has_reflectivetex)
-            //     m_textures[m_materials[m_meshes[i].mtl_index].reflective_texture_index].bind(GL_TEXTURE3);
-            // glUniform1i(glGetUniformLocation(shader, "has_reflectivetex"), (int)has_reflectivetex);
-
-            // Reflectiveness texture
-            bool has_opacitytex = (m_materials[m_meshes[i].mtl_index].opacity_texture_index != NO_TEXTURE);
-            if (has_opacitytex)
-                m_textures[m_materials[m_meshes[i].mtl_index].opacity_texture_index].bind(GL_TEXTURE3);
-            glUniform1i(glGetUniformLocation(shader, "has_opacitytex"), (int)has_opacitytex);
-
-            // Debug color
-            v3f color = v3f(1, 1, 1) * (0.2 + 0.8 * float(i) / m_meshes.size());
-            glUniform3fv(glGetUniformLocation(shader, "ucolor"), 1, color.vec);
-
-#if 1
-            glDrawElementsBaseVertex(GL_TRIANGLES,
-                                     m_meshes[i].nbr_indices,
-                                     GL_UNSIGNED_INT,
-                                     (void *)(sizeof(uint) * m_meshes[i].base_index),
-                                     m_meshes[i].base_vertex);
-#endif
-
-            cubemap->unbind();
-            // glBindTexture(GL_TEXTURE_2D, 0);
-        }
-
-        glBindVertexArray(0);
-        glUseProgram(0);
-    }
-
     unsigned RenderableMesh::get_nbr_animations() const
     {
         return (unsigned)m_animations.size();
@@ -1460,7 +1150,7 @@ namespace eeng
     {
         for (auto &t : m_textures)
             t.free();
-        glDeleteTextures(1, &placeholder_texture);
+        // glDeleteTextures(1, &placeholder_texture);
 
         if (m_Buffers[0] != 0)
         {
