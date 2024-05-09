@@ -37,6 +37,7 @@ float FRAMETIME_MIN_MS = 1000.0f / 60;
 bool WIREFRAME = false;
 float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
+int ANIM_INDEX = -1;
 
 int main(int argc, char *argv[])
 {
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
     // Sponza
     characterMesh->load("/Users/ag1498/Dropbox/MAU/DA307A-CGM/Rendering/eduRend_2022/assets/crytek-sponza/sponza.obj", false);
 #endif
-#if 0
+#if 1
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
 #endif
@@ -225,7 +226,7 @@ int main(int argc, char *argv[])
     // Remove root motion
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
-#if 1
+#if 0
     // Eve 5.0.1 PACK FBX
     characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
     characterMesh->load("assets/Eve/idle.fbx", true);
@@ -295,6 +296,32 @@ int main(int argc, char *argv[])
             FRAMETIME_MIN_MS = 1000.0f / 120;
         else if (currentItem == 4)
             FRAMETIME_MIN_MS = 0.0f;
+
+        // Combo (drop-down) for animation clip
+        if (characterMesh)
+        {
+            int curAnimIndex = ANIM_INDEX;
+            std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->get_animation_name(curAnimIndex));
+            if (ImGui::BeginCombo("Animation Clip##animclip", label.c_str()))
+            {
+                const bool isSelected = (curAnimIndex == -1);
+                if (ImGui::Selectable("Bind pose", isSelected))
+                    curAnimIndex = -1;
+
+                for (int i = 0; i < characterMesh->get_nbr_animations(); i++)
+                {
+                    const bool isSelected = (curAnimIndex == i);
+                    const auto label = characterMesh->get_animation_name(i) + "##" + std::to_string(i);;
+                    if (ImGui::Selectable(label.c_str(), isSelected))
+                        curAnimIndex = i;
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus(); // Set the initial focus when opening the combo
+                }
+                ImGui::EndCombo();
+                ANIM_INDEX = curAnimIndex;
+            }
+        }
 
         ImGui::Checkbox("Wireframe rendering", &WIREFRAME);
 
@@ -397,8 +424,9 @@ int main(int argc, char *argv[])
         renderer->renderMesh(grassMesh, grassWorldMatrix);
         // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
 
-        m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
-        characterMesh->animate(-1, time_s * ANIM_SPEED);
+        // m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
+        m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
+        characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
 
         W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
