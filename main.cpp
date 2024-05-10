@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 
     glm::vec3 v3(1.0f, 2.0f, 3.0f);                  // Creates a 3D vector
     glm::vec4 v4(1.0f, 2.0f, 3.0f, 1.0f); // Creates a 4D homogeneous vector
+    auto vdot = glm::dot(v3, v3);
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;

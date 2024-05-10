@@ -115,11 +115,14 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/g-truc/glm.git
   GIT_TAG       1.0.1
 )
-FetchContent_MakeAvailable(glm)
-#if(glm_POPULATED)
-#  add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR})
-#endif()
-include_directories(${glm_SOURCE_DIR})
+#FetchContent_MakeAvailable(glm)
+FetchContent_GetProperties(glm)
+if(NOT glm_POPULATED)
+	FetchContent_Populate(glm)
+	set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
+	add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR})
+endif()
+#include_directories(${glm_SOURCE_DIR})
 
 #
 # Fetch enTT
@@ -142,6 +145,7 @@ FetchContent_Declare(imgui
     GIT_TAG v1.89.9)
 FetchContent_MakeAvailable(imgui)
 include_directories(${imgui_SOURCE_DIR})
+include_directories(${imgui_SOURCE_DIR}/backends)
 
 #
 # Targets
@@ -170,9 +174,9 @@ add_executable(Module1
 set_target_properties(Module1 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Module1"
 )
-target_link_libraries(Module1 SDL2 assimp libglew_static ${OPENGL_LIBRARIES})
-target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR})
-target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR}/backends)
+target_link_libraries(Module1 SDL2 assimp libglew_static glm ${OPENGL_LIBRARIES})
+#target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR})
+#target_include_directories(Module1 PRIVATE ${imgui_SOURCE_DIR}/backends)
 # Copy SDL2 DLL to the build directory (for Windows)
 add_custom_command(TARGET Module1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
