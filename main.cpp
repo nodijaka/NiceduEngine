@@ -13,7 +13,7 @@
 
 // #include <entt/entt.hpp> // -> Scene class eg
 
-// <glm/glm.hpp>
+#include <glm/glm.hpp>
 
 #include <iostream>
 #include "imgui.h"              // <imgui.h>
@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
 {
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
     auto renderer = std::make_shared<eeng::ForwardRenderer>();
+
+    glm::vec3 v3(1.0f, 2.0f, 3.0f);                  // Creates a 3D vector
+    glm::vec4 v4(1.0f, 2.0f, 3.0f, 1.0f); // Creates a 4D homogeneous vector
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
@@ -391,7 +394,7 @@ int main(int argc, char *argv[])
         }
 
         linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
-        linalg::v3f eye = (m4f::TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD*45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * v4f {0.0f,0.0f,0.0f,1.0f}).xyz();
+        linalg::v3f eye = (m4f::TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD * 45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * v4f{0.0f, 0.0f, 0.0f, 1.0f}).xyz();
 
         // animtime += 0.016f;
         //

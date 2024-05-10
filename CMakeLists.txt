@@ -110,15 +110,16 @@ include_directories(${stb_SOURCE_DIR})
 #
 #Fetch GLM
 #
-#FetchContent_Declare(
-#  glm
-#  GIT_REPOSITORY https://github.com/g-truc/glm.git
-#  GIT_TAG       0.9.9.8  # Specify the version or tag you want to fetch
-#)
-#FetchContent_MakeAvailable(glm)
+FetchContent_Declare(
+  glm
+  GIT_REPOSITORY https://github.com/g-truc/glm.git
+  GIT_TAG       1.0.1
+)
+FetchContent_MakeAvailable(glm)
 #if(glm_POPULATED)
 #  add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR})
 #endif()
+include_directories(${glm_SOURCE_DIR})
 
 #
 # Fetch enTT
