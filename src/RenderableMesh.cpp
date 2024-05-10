@@ -658,16 +658,25 @@ namespace eeng
         float ai_blend;                 // currently unused
         aiTextureOp ai_texop;           // currently unused
         aiTextureMapMode ai_texmapmode; //
-        aiReturn tex_ret = material->GetTexture(textureType,
-                                             0,
-                                             &ai_texpath,
-                                             &ai_texmap,
-                                             &ai_uvindex,
-                                             &ai_blend,
-                                             &ai_texop,
-                                             &ai_texmapmode);
-        if (tex_ret != AI_SUCCESS)
+        if (material->GetTexture(textureType,
+                                 0,
+                                 &ai_texpath,
+                                 &ai_texmap,
+                                 &ai_uvindex,
+                                 &ai_blend,
+                                 &ai_texop,
+                                 &ai_texmapmode) != AI_SUCCESS)
             return NO_TEXTURE;
+        // aiReturn tex_ret = material->GetTexture(textureType,
+        //                                      0,
+        //                                      &ai_texpath,
+        //                                      &ai_texmap,
+        //                                      &ai_uvindex,
+        //                                      &ai_blend,
+        //                                      &ai_texop,
+        //                                      &ai_texmapmode);
+        // if (tex_ret != AI_SUCCESS)
+        //     return NO_TEXTURE;
 
         // Relative texture path, e.g. "/textures/texture.png"
         std::string textureRelPath{ai_texpath.C_Str()};
