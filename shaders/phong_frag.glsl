@@ -13,6 +13,7 @@ uniform int has_opacityTexture;
 uniform int has_cubemap;
 
 uniform vec3 lightpos;
+uniform vec3 lightColor;
 uniform vec3 eyepos;
 uniform vec3 Ka;
 uniform vec3 Kd;
@@ -71,6 +72,6 @@ void main()
 //        C = cubec*refl + C*(1.0-refl);
 //    }
 
-   vec3 CC = C*0.5 + C*ldot + S*pow(rdot, 20) * vec3(1,1,1);
+   vec3 CC = (C*0.5 + C*ldot + S*pow(rdot, 20)) * lightColor;
    fragcolor = vec4(CC, 1);
 }

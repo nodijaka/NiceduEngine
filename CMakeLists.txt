@@ -1,17 +1,24 @@
 cmake_minimum_required(VERSION 3.8)
 
+#
+# Project
+#
 project(DA376B_Labs
   VERSION 1.0
   LANGUAGES CXX
 )
 
+#
 # CPP
+#
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
-# Compiler definitions
+#
+# Compiler
+#
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 #    add_compile_definitions(EENG_DEBUG)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -24,6 +31,7 @@ else()
 endif()
 
 # ???
+# 'target_include_directories' if target specific
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/vec)
 
@@ -31,7 +39,9 @@ find_package(OpenGL REQUIRED)
 find_package (Git REQUIRED)
 include(FetchContent)
 
+#
 # Fetch SDL
+#
 FetchContent_Declare(
     sdl2
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -44,8 +54,10 @@ if(NOT sdl2_POPULATED)
 endif()
 include_directories(${sdl2_SOURCE_DIR}/include)
 
+#
 # Fetch glew
 # https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
+#
 include(FetchContent)
 FetchContent_Declare(
   glew
@@ -58,7 +70,9 @@ if(NOT glew_POPULATED)
   add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+#
 # Fetch Assimp
+#
 set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "Build zlib" FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp tools" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp tests" FORCE)
@@ -83,7 +97,9 @@ include_directories(${assimp_SOURCE_DIR})
 #    CXX_EXTENSIONS OFF
 #)
 
+#
 # Fetch STB
+#
 FetchContent_Declare(
 	stb
 	GIT_REPOSITORY https://github.com/nothings/stb.git
@@ -91,7 +107,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(stb)
 include_directories(${stb_SOURCE_DIR})
 
+#
 #Fetch GLM
+#
 #FetchContent_Declare(
 #  glm
 #  GIT_REPOSITORY https://github.com/g-truc/glm.git
@@ -102,14 +120,31 @@ include_directories(${stb_SOURCE_DIR})
 #  add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR})
 #endif()
 
+#
+# Fetch enTT
+#
+# ENTT_INCLUDE_NATVIS (https://github.com/skypjack/entt?tab=readme-ov-file#cmake)
+# ENTT_BUILD_TESTING, ENTT_BUILD_DOCS (https://github.com/skypjack/entt/issues/603)
+#FetchContent_Declare(
+#  entt
+#  GIT_REPOSITORY https://github.com/skypjack/entt.git
+#  GIT_TAG        v3.9.1  # or any specific version you want to use
+#)
+# include_directories(${SDL2_SOURCE_DIR}/include) # or target_include_directories(my_project PRIVATE ${entt_SOURCE_DIR}/include)
+# -> target target_link_libraries(my_project PRIVATE entt)
+
+#
 # Fetch Dear ImGui
+#
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui
     GIT_TAG v1.89.9)
 FetchContent_MakeAvailable(imgui)
 include_directories(${imgui_SOURCE_DIR})
 
-# Create targets
+#
+# Targets
+#
 
 # Module1
 add_executable(Module1 

@@ -106,6 +106,7 @@ namespace eeng
     void ForwardRenderer::beginPass(const m4f &ProjMatrix,
                                     const m4f &ViewMatrix,
                                     const v3f &lightPos,
+                                    const v3f& lightColor,
                                     const v3f &eyePos)
     {
         EENG_ASSERT(phongShader, "Renderer not initialized");
@@ -152,6 +153,7 @@ namespace eeng
 
         // Bind light & eye position
         glUniform3fv(glGetUniformLocation(phongShader, "lightpos"), 1, lightPos.vec);
+        glUniform3fv(glGetUniformLocation(phongShader, "lightColor"), 1, lightColor.vec);
         glUniform3fv(glGetUniformLocation(phongShader, "eyepos"), 1, eyePos.vec);
 
         // Bind cube map texture

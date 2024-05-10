@@ -1,13 +1,6 @@
 
 #include "config.h"
 #include "glcommon.h"
-// #include <GL/glew.h>
-// #ifdef __APPLE__
-// #include <OpenGL/gl.h>
-// #else
-// #include <windows.h>
-// #include <GL/gl.h>
-// #endif
 
 // OpenGL debug message callback requires 4.3
 #ifdef EENG_GLVERSION_43
@@ -18,10 +11,14 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+// #include <entt/entt.hpp> // -> Scene class eg
+
+// <glm/glm.hpp>
+
 #include <iostream>
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_opengl3.h"
+#include "imgui.h"              // <imgui.h>
+#include "imgui_impl_sdl2.h"    // ...
+#include "imgui_impl_opengl3.h" // ...
 
 #include "Log.hpp"
 #include "RenderableMesh.hpp"
@@ -38,6 +35,7 @@ bool WIREFRAME = false;
 float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
 int ANIM_INDEX = -1;
+v3f LIGHT_COLOR{1.0f, 1.0f, 1.0f};
 
 int main(int argc, char *argv[])
 {
@@ -347,7 +345,13 @@ int main(int argc, char *argv[])
             }
         }
 
-        ImGui::End();
+        if (ImGui::ColorEdit3("Light color",
+                              (float *)&LIGHT_COLOR.vec,
+                              ImGuiColorEditFlags_NoInputs))
+        {
+        }
+
+        ImGui::End(); // end config window
 
         eeng::Log::draw();
 
@@ -419,7 +423,7 @@ int main(int argc, char *argv[])
         characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
 #endif
 
-        renderer->beginPass(P, V, lightPos, eye);
+        renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
 
         // Grass
         m4f grassWorldMatrix = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});

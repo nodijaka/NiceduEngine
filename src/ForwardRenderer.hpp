@@ -77,6 +77,7 @@ namespace eeng
         void beginPass(const m4f &ProjMatrix,
                        const m4f &ViewMatrix,
                        const v3f &lightPos,
+                       const v3f& lightColor,
                        const v3f &eyePos);
 
         void endPass();
