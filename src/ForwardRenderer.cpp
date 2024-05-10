@@ -106,7 +106,7 @@ namespace eeng
     void ForwardRenderer::beginPass(const m4f &ProjMatrix,
                                     const m4f &ViewMatrix,
                                     const v3f &lightPos,
-                                    const v3f& lightColor,
+                                    const v3f &lightColor,
                                     const v3f &eyePos)
     {
         EENG_ASSERT(phongShader, "Renderer not initialized");
@@ -168,14 +168,17 @@ namespace eeng
         }
 
         CheckAndThrowGLErrors();
+        drawcallCounter = 0;
     }
 
-    void ForwardRenderer::endPass()
+    int ForwardRenderer::endPass()
     {
         glUseProgram(0);
         glBindVertexArray(0);
 
         // Possibly restore GL state
+
+        return drawcallCounter;
     }
 
     void ForwardRenderer::renderMesh(const std::shared_ptr<RenderableMesh> mesh,
@@ -242,9 +245,10 @@ namespace eeng
                                      GL_UNSIGNED_INT,
                                      (GLvoid *)(sizeof(uint) * submesh.base_index),
                                      submesh.base_vertex);
+            drawcallCounter++;
 
-            // Unbind textures
-            for (auto &texture : texturesDescs)
+                // Unbind textures
+                for (auto &texture : texturesDescs)
             {
                 glActiveTexture(GL_TEXTURE0 + texture.textureUnit);
                 glBindTexture(GL_TEXTURE_2D, 0);

@@ -36,6 +36,7 @@ float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
 int ANIM_INDEX = -1;
 v3f LIGHT_COLOR{1.0f, 1.0f, 1.0f};
+int DRAWCALL_COUNT;
 
 int main(int argc, char *argv[])
 {
@@ -268,6 +269,8 @@ int main(int argc, char *argv[])
 
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
+        ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
+
         // Combo (drop-down) for fps settings
         static const char *items[] = {"10", "30", "60", "120", "Uncapped"};
         static int currentItem = 2;
@@ -446,7 +449,7 @@ int main(int argc, char *argv[])
         characterMesh->animate(2, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
 
-        renderer->endPass();
+        DRAWCALL_COUNT = renderer->endPass();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

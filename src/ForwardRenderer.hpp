@@ -28,6 +28,7 @@ namespace eeng
     {
         GLuint phongShader = 0;
         GLuint placeholder_texture = 0;
+        int drawcallCounter;
 
         struct TextureDesc
         {
@@ -54,54 +55,38 @@ namespace eeng
         
         TextureDesc cubemapTextureDesc {PhongMaterial::TextureTypeIndex::Cubemap, 4, "cubeTexture", "has_cubemap"};
 
-        //     const char *diffuseTextureName = "diffuseTexture";
-        // const char *normalTextureName = "normalTexture";
-        // const char *specularTextureName = "specularTexture";
-        // const char *opacityTextureName = "opacityTexture";
-        // const char *cubeTextureName = "cubeTexture";
-
-        // const GLuint diffuseTextureUnit = 0;
-        // const GLuint normalTextureUnit = 1;
-        // const GLuint specularTextureUnit = 2;
-        // const GLuint opacityTextureUnit = 3;
-        // const GLuint cubeTextureUnit = 4;
-
     public:
         ForwardRenderer();
 
         ~ForwardRenderer();
 
+        /// @brief Initialize renderer
+        /// @param vertShaderPath 
+        /// @param fragShaderPath 
         void init(const std::string &vertShaderPath,
                   const std::string &fragShaderPath);
 
+        /// @brief Start of a rendering pass and set common uniforms
+        /// @param ProjMatrix 
+        /// @param ViewMatrix 
+        /// @param lightPos 
+        /// @param lightColor 
+        /// @param eyePos 
         void beginPass(const m4f &ProjMatrix,
                        const m4f &ViewMatrix,
                        const v3f &lightPos,
                        const v3f& lightColor,
                        const v3f &eyePos);
 
-        void endPass();
+        /// @brief Ends pass and resets GL state
+        /// @return Number of drawcalls made during pass
+        int endPass();
 
-        // Bone array ???
-
+        /// @brief Render an instance of a mesh
+        /// @param mesh Mesh to render
+        /// @param WorldMatrix Instance world transform
         void renderMesh(const std::shared_ptr<RenderableMesh> mesh,
                         const m4f &WorldMatrix);
-
-    private:
-        // void bindTexture(const RenderableMesh &mesh, int textureIndex)
-        // {
-        //             const bool use_default_diffuse = false;
-        // bool has_diffusetex = (m_materials[m_meshes[i].mtl_index].diffuse_texture_index != NO_TEXTURE);
-        // if (has_diffusetex)
-        //     m_textures[m_materials[m_meshes[i].mtl_index].diffuse_texture_index].bind(GL_TEXTURE0);
-        // else if (use_default_diffuse)
-        // {
-        //     glActiveTexture(GL_TEXTURE0);
-        //     glBindTexture(GL_TEXTURE_2D, placeholder_texture);
-        //     has_diffusetex = true;
-        // }
-        // glUniform1i(glGetUniformLocation(shader, "has_diffusetex"), (int)has_diffusetex);
-        // }
     };
 
 } // namespace eeng
