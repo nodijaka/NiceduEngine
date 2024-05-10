@@ -73,5 +73,9 @@ void main()
 //    }
 
    vec3 CC = (C*0.5 + C*ldot + S*pow(rdot, 20)) * lightColor;
+   
+   // Gamma correcton
+   //CC = pow(CC, vec3(1.0/2.2));
+
    fragcolor = vec4(CC, 1);
 }

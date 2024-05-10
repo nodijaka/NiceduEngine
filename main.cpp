@@ -27,6 +27,7 @@
 using linalg::m3f;
 using linalg::m4f;
 using linalg::v3f;
+using linalg::v4f;
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
@@ -188,7 +189,7 @@ int main(int argc, char *argv[])
 
     // Grass
     auto grassMesh = std::make_shared<eeng::RenderableMesh>();
-    grassMesh->load("assets/grass/grass_trees.fbx", false);
+    grassMesh->load("assets/grass/grass_trees_merged.fbx", false);
 
     auto characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
@@ -390,7 +391,7 @@ int main(int argc, char *argv[])
         }
 
         linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
-        linalg::v3f eye{0.0f, 0.0f, 100.0f};
+        linalg::v3f eye = (m4f::TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD*45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * v4f {0.0f,0.0f,0.0f,1.0f}).xyz();
 
         // animtime += 0.016f;
         //
@@ -429,23 +430,23 @@ int main(int argc, char *argv[])
         renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
 
         // Grass
-        m4f grassWorldMatrix = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        m4f grassWorldMatrix = m4f::TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         // grassMesh->animate(-1, time_s * ANIM_SPEED, )
         // grassMesh->animate(-1, 0.0f);
         renderer->renderMesh(grassMesh, grassWorldMatrix);
         // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
 
         // Character
-        // m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.6f, 0.6f, 0.6f}); // Mixamo
-        m4f W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
+        // m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Mixamo
+        m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.01f, 0.01f, 0.01f}); // Character
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #2
-        W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = m4f::TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(1, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #3
-        W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = m4f::TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(2, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
 
