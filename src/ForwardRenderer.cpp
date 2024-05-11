@@ -58,13 +58,6 @@ namespace eeng
         // placeholder_texture = create_checker_texture();
     }
 
-    linalg::m4f get_mf4(const glm::mat4 m)
-    {
-        linalg::m4f mout;
-        memcpy(mout.array, glm::value_ptr(m), sizeof(float) * 16);
-        return mout;
-    }
-
     void ForwardRenderer::beginPass(const glm::mat4 &ProjMatrix,
                                     const glm::mat4 &ViewMatrix,
                                     const glm::vec3 &lightPos,

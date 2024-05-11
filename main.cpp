@@ -11,20 +11,22 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include <entt/entt.hpp> // -> Scene class eg
+#include <entt/entt.hpp> // -> Scene source
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>         // glm::value_ptr
 #include <glm/gtc/matrix_transform.hpp> // glm::perspective
 
+// -> UI source
 #include <iostream>
-#include "imgui.h"              // <imgui.h>
-#include "imgui_impl_sdl2.h"    // ...
-#include "imgui_impl_opengl3.h" // ...
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl3.h"
 
 #include "Log.hpp"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
+#include "math_.h" // -> Scene source, or put defs in config
 
 // using linalg::m3f;
 // using linalg::m4f;

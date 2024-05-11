@@ -1,12 +1,11 @@
 
 #include "RenderableMesh.hpp"
 
-#include <glm/gtc/quaternion.hpp> // -> CPP?
-// #include <glm/gtc/matrix_transform.hpp> // -> CPP?
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <assimp/version.h>
-#include "interp.h"
+
 #include "ShaderLoader.h"
 #include "parseutil.h"
 
@@ -47,6 +46,48 @@ namespace eeng
         }
     }
 
+    // Half-ugly way to dump node tree without coupling tree with node type
+    namespace
+    {
+        /// Dump tree node to stream
+        void dump_tree_to_stream(const VectorTree<SkeletonNode> &tree,
+                                 unsigned i,
+                                 const std::string &indent,
+                                 logstreamer_t &outstream)
+        {
+            const auto &node = tree.nodes[i];
+            outstream << indent;
+            outstream << " [node " << i << "]";
+            if (node.bone_index != EENG_NULL_INDEX)
+                outstream << "[bone " << node.bone_index << "]";
+            if (node.nbr_meshes)
+                outstream << "[" << node.nbr_meshes << " meshes]";
+            outstream << " " << node.name
+                      << " (children " << node.m_nbr_children
+                      << ", stride " << node.m_branch_stride
+                      << ", parent ofs " << node.m_parent_ofs << ")";
+            outstream << std::endl;
+            int ci = i + 1;
+            for (int j = 0; j < node.m_nbr_children; j++)
+            {
+                dump_tree_to_stream(tree, ci, indent + "\t", outstream);
+                ci += tree.nodes[ci].m_branch_stride;
+            }
+        }
+
+        /// Dump node tree to stream
+        void dump_tree_to_stream(const VectorTree<SkeletonNode> &tree,
+                                 logstreamer_t &&outstream)
+        {
+            int i = 0;
+            while (i < tree.nodes.size())
+            {
+                dump_tree_to_stream(tree, i, "", outstream);
+                i += tree.nodes[i].m_branch_stride;
+            }
+        }
+    }
+
     void RenderableMesh::SkinData::addWeight(unsigned bone_index, float bone_weight)
     {
         nbr_added++;
@@ -70,7 +111,6 @@ namespace eeng
     {
     }
 
-    // Legacy
     void RenderableMesh::load(const std::string &file, bool append_animations)
     {
         unsigned xiflags = (append_animations ? xi_load_animations : (xi_load_meshes | xi_load_animations));
@@ -88,7 +128,7 @@ namespace eeng
         // aiflags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
 
         aiflags =
-            aiProcess_CalcTangentSpace |
+            aiProcess_CalcTangentSpace /*  */ |
             aiProcess_GenNormals |
             aiProcess_JoinIdenticalVertices |
             aiProcess_Triangulate /* Must be here for render geometry */ |
@@ -166,7 +206,8 @@ namespace eeng
         glBindVertexArray(0);
 
         loadNodes(aiscene->mRootNode);
-        m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
+        dump_tree_to_stream(m_nodetree, logstreamer_t{filepath + filename + "_nodetree.txt", PRTVERBOSE});
+        // m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
 
         loadAnimations(aiscene);
 
@@ -271,14 +312,14 @@ namespace eeng
         {
             const aiMesh *paiMesh = aiscene->mMeshes[i];
             loadMesh(i,
-                      paiMesh,
-                      scene_positions,
-                      scene_normals,
-                      scene_tangents,
-                      scene_binormals,
-                      scene_texcoords,
-                      scene_skinweights,
-                      scene_indices);
+                     paiMesh,
+                     scene_positions,
+                     scene_normals,
+                     scene_tangents,
+                     scene_binormals,
+                     scene_texcoords,
+                     scene_skinweights,
+                     scene_indices);
         }
 
         log << priority(PRTSTRICT);
@@ -369,14 +410,14 @@ namespace eeng
     }
 
     void RenderableMesh::loadMesh(uint meshindex,
-                                   const aiMesh *aimesh,
-                                   std::vector<glm::vec3> &scene_positions,
-                                   std::vector<glm::vec3> &scene_normals,
-                                   std::vector<glm::vec3> &scene_tangents,
-                                   std::vector<glm::vec3> &scene_binormals,
-                                   std::vector<glm::vec2> &scene_texcoords,
-                                   std::vector<SkinData> &scene_skindata,
-                                   std::vector<unsigned int> &scene_indices)
+                                  const aiMesh *aimesh,
+                                  std::vector<glm::vec3> &scene_positions,
+                                  std::vector<glm::vec3> &scene_normals,
+                                  std::vector<glm::vec3> &scene_tangents,
+                                  std::vector<glm::vec3> &scene_binormals,
+                                  std::vector<glm::vec2> &scene_texcoords,
+                                  std::vector<SkinData> &scene_skindata,
+                                  std::vector<unsigned int> &scene_indices)
     {
         log << priority(PRTVERBOSE);
         log << "Loading mesh " << aimesh->mName.C_Str() << std::endl;
@@ -427,9 +468,9 @@ namespace eeng
     }
 
     void RenderableMesh::measureNode(const aiScene *aiscene,
-                                      const aiNode *pNode,
-                                      const glm::mat4 &M_roottfm,
-                                      AABB &aabb)
+                                     const aiNode *pNode,
+                                     const glm::mat4 &M_roottfm,
+                                     AABB &aabb)
     {
         glm::mat4 M_identity{1.0f};
         glm::mat4 M_nodetfm = M_roottfm * aimat_to_glmmat(pNode->mTransformation);
@@ -453,8 +494,8 @@ namespace eeng
     }
 
     void RenderableMesh::measureMesh(const aiMesh *pMesh,
-                                      const glm::mat4 &M_roottfm,
-                                      AABB &aabb)
+                                     const glm::mat4 &M_roottfm,
+                                     AABB &aabb)
     {
         for (int i = 0; i < pMesh->mNumVertices; i++)
         {
@@ -522,8 +563,8 @@ namespace eeng
     }
 
     void RenderableMesh::loadBones(uint mesh_index,
-                                    const aiMesh *aimesh,
-                                    std::vector<SkinData> &scene_skindata)
+                                   const aiMesh *aimesh,
+                                   std::vector<SkinData> &scene_skindata)
     {
         log << priority(PRTVERBOSE) << aimesh->mNumBones << " bones (nbr weights):\n";
 
@@ -754,11 +795,11 @@ namespace eeng
             // Fetch common color attributes
             aiColor3D aic;
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, aic))
-                mtl.Ka = glm::vec3 {aic.r, aic.g, aic.b};
+                mtl.Ka = glm::vec3{aic.r, aic.g, aic.b};
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aic))
-                mtl.Kd = glm::vec3 {aic.r, aic.g, aic.b};
+                mtl.Kd = glm::vec3{aic.r, aic.g, aic.b};
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, aic))
-                mtl.Ks = glm::vec3 {aic.r, aic.g, aic.b};
+                mtl.Ks = glm::vec3{aic.r, aic.g, aic.b};
             pMaterial->Get(AI_MATKEY_SHININESS, mtl.shininess);
 
             // Fetch common textures
@@ -903,8 +944,8 @@ namespace eeng
     }
 
     /// @brief Update node hiearchy using animation keyframes
-    /// @param anim_index 
-    /// @param time 
+    /// @param anim_index
+    /// @param time
     void RenderableMesh::animate(int anim_index,
                                  float time)
     {

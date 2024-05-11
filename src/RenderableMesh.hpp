@@ -8,28 +8,19 @@
 
 #ifndef RenderableMesh_hpp
 #define RenderableMesh_hpp
-// std
-#include <iostream>
-#include <stdio.h>
+
 #include <vector>
-#include <map>
 #include <unordered_map>
-#include <fstream>
 #include <string>
-// GL
+
 #include "glcommon.h"
-// Assimp
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <glm/glm.hpp>
 
-// lib
-// #include "vec.h"
-// #include "mat.h"
-// #include "quat.h"
-// #include "interp.h" // smoothstep
 #include "AABB.h"
 #include "Texture.hpp"
 #include "VectorTree.h"
@@ -37,7 +28,6 @@
 
 namespace eeng
 {
-    // using namespace linalg;
     using namespace logstreamer;
     using uint = uint32_t;
 
@@ -47,6 +37,22 @@ namespace eeng
 
     template <std::size_t N, class T>
     constexpr std::size_t numelem(T (&)[N]) { return N; }
+
+    struct SkeletonNode : public TreeNode
+    {
+        glm::mat4 local_tfm;
+        glm::mat4 global_tfm{1.0f};
+        
+        int bone_index = EENG_NULL_INDEX;
+        int nbr_meshes = 0;
+        
+        std::string name = "";
+
+        SkeletonNode() = default;
+        SkeletonNode(const std::string &name, const glm::mat4 &local_tfm)
+            : name(name),
+              local_tfm(local_tfm) {}
+    };
 
     /// A material with typical Phong illumination properties
     struct PhongMaterial

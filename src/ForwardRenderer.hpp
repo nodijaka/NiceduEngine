@@ -1,3 +1,4 @@
+
 #ifndef ForwardRenderer_hpp
 #define ForwardRenderer_hpp
 // std
@@ -14,19 +15,8 @@
 
 #include <glm/glm.hpp>
 
-// lib
-// #include "vec.h"
-// #include "mat.h"
-// #include "quat.h"
-// #include "interp.h" // smoothstep
-// #include "AABB.h"
-// #include "Texture.hpp"
-// #include "VectorTree.h"
-// #include "logstreamer.h"
-
 namespace eeng
 {
-
     class ForwardRenderer
     {
         GLuint phongShader = 0;
