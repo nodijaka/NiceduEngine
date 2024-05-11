@@ -26,17 +26,7 @@
 #include "Log.hpp"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
-#include "math_.h" // -> Scene source, or put defs in config
-
-// using linalg::m3f;
-// using linalg::m4f;
-// using linalg::v3f;
-// using linalg::v4f;
-
-// using v3f = glm::vec3;
-// using v4f = glm::vec4;
-// using m3f = glm::mat3;
-// using m4f = glm::mat4;
+// #include "math_.h" // -> Scene source, or put defs in config
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
@@ -427,7 +417,7 @@ int main(int argc, char *argv[])
 
         glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
         // linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
-        glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD * 45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
+        glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -glm::radians(45.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
 
         // animtime += 0.016f;
         //
