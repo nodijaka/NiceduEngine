@@ -22,6 +22,12 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp> // -> CPP?
+// #include <glm/gtc/matrix_transform.hpp> // -> CPP?
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+
 // lib
 #include "vec.h"
 #include "mat.h"
@@ -108,7 +114,7 @@ namespace eeng
          */
         struct Bone
         {
-            m4f inversebind_tfm = m4f_1; //!< Inverse of the associated node in bind pose
+            glm::mat4 inversebind_tfm{1.0f}; //!< Inverse of the associated node in bind pose
             // m4f global_tfm = m4f_1;      // Built during traversal * reduntant, use bone array directly for final bone transforms *
             int node_index = -1; //!< Node associated with this bone
         };
@@ -131,9 +137,9 @@ namespace eeng
         struct NodeKeyframes // NodeKeyframes ???
         {
             bool is_used = false;
-            std::vector<v3f> pos_keys;
-            std::vector<v3f> scale_keys;
-            std::vector<quatf> rot_keys;
+            std::vector<glm::vec3> pos_keys;
+            std::vector<glm::vec3> scale_keys;
+            std::vector<glm::quat> rot_keys;
         };
 
         /**
@@ -153,7 +159,7 @@ namespace eeng
     public:
         VectorTree<SkeletonNode> m_nodetree;
         std::vector<Bone> m_bones;
-        std::vector<m4f> boneMatrices;
+        std::vector<glm::mat4> boneMatrices;
         std::vector<AnimationClip> m_animations;
 
         std::vector<Submesh> m_meshes;
@@ -211,11 +217,11 @@ namespace eeng
                         const std::string &file);
         void load_mesh(uint MeshIndex,
                        const aiMesh *paiMesh,
-                       std::vector<v3f> &Positions,
-                       std::vector<v3f> &Normals,
-                       std::vector<v3f> &Tangents,
-                       std::vector<v3f> &Binormals,
-                       std::vector<v2f> &TexCoords,
+                       std::vector<glm::vec3> &Positions,
+                       std::vector<glm::vec3> &Normals,
+                       std::vector<glm::vec3> &Tangents,
+                       std::vector<glm::vec3> &Binormals,
+                       std::vector<glm::vec2> &TexCoords,
                        std::vector<SkinData> &Bones,
                        std::vector<unsigned int> &Indices);
 
@@ -239,20 +245,24 @@ namespace eeng
                          const std::string &local_filepath);
 
         void load_animations(const aiScene *scene);
-        m4f blend_transform_at_time(const AnimationClip *anim,
-                                    const NodeKeyframes &nodeanim,
-                                    float time) const;
-        m4f blend_transform_at_frac(const AnimationClip *anim,
-                                    const NodeKeyframes &nodeanim,
-                                    float frac) const;
+        
+        glm::mat4 blend_transform_at_time(const AnimationClip *anim,
+                                          const NodeKeyframes &nodeanim,
+                                          float time) const;
+
+        glm::mat4 blend_transform_at_frac(const AnimationClip *anim,
+                                          const NodeKeyframes &nodeanim,
+                                          float frac) const;
 
         AABB_t measure_scene(const aiScene *aiscene);
+
         void measure_node(const aiScene *aiscene,
                           const aiNode *pNode,
-                          const m4f &transform,
+                          const glm::mat4 &transform,
                           AABB_t &aabb);
+
         void measure_mesh(const aiMesh *pMesh,
-                          const m4f &transform,
+                          const glm::mat4 &transform,
                           AABB_t &aabb);
     };
 

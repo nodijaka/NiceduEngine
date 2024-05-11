@@ -16,34 +16,67 @@
 namespace eeng
 {
 
-    using linalg::dualquatf;
+    // using linalg::dualquatf;
 
     namespace
     {
-        inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
+        // inline v3f lerp_v3f(const v3f &v0, const v3f &v1, float t)
+        // {
+        //     return v0 * (1.0f - t) + v1 * t;
+        // }
+
+        inline glm::vec3 aivec_to_glmvec(const aiVector3D &vec)
         {
-            return v0 * (1.0f - t) + v1 * t;
+            return glm::vec3(vec.x, vec.y, vec.z);
+        }
+
+        inline glm::quat aiquat_to_glmquat(const aiQuaternion &aiq)
+        {
+            return glm::quat(aiq.w, aiq.x, aiq.y, aiq.z);
+        }
+
+        inline glm::mat4 aimat_to_glmmat(const aiMatrix4x4 &aim)
+        {
+            glm::mat4 glmm;
+            // the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+            glmm[0][0] = aim.a1;
+            glmm[1][0] = aim.a2;
+            glmm[2][0] = aim.a3;
+            glmm[3][0] = aim.a4;
+            glmm[0][1] = aim.b1;
+            glmm[1][1] = aim.b2;
+            glmm[2][1] = aim.b3;
+            glmm[3][1] = aim.b4;
+            glmm[0][2] = aim.c1;
+            glmm[1][2] = aim.c2;
+            glmm[2][2] = aim.c3;
+            glmm[3][2] = aim.c4;
+            glmm[0][3] = aim.d1;
+            glmm[1][3] = aim.d2;
+            glmm[2][3] = aim.d3;
+            glmm[3][3] = aim.d4;
+            return glmm;
         }
     }
 
-    inline m4f to_m4f(const aiMatrix4x4 &aim)
-    {
-        return {
-            aim.a1, aim.a2, aim.a3, aim.a4,
-            aim.b1, aim.b2, aim.b3, aim.b4,
-            aim.c1, aim.c2, aim.c3, aim.c4,
-            aim.d1, aim.d2, aim.d3, aim.d4};
-    }
+    // inline m4f to_m4f(const aiMatrix4x4 &aim)
+    // {
+    //     return {
+    //         aim.a1, aim.a2, aim.a3, aim.a4,
+    //         aim.b1, aim.b2, aim.b3, aim.b4,
+    //         aim.c1, aim.c2, aim.c3, aim.c4,
+    //         aim.d1, aim.d2, aim.d3, aim.d4};
+    // }
 
-    inline quatf to_quatf(const aiQuaternion &aiq)
-    {
-        return {aiq.w, aiq.x, aiq.y, aiq.z};
-    }
+    // inline quatf to_quatf(const aiQuaternion &aiq)
+    // {
+    //     return {aiq.w, aiq.x, aiq.y, aiq.z};
+    // }
 
-    inline v3f to_v3f(const aiVector3D &aiv)
-    {
-        return {aiv.x, aiv.y, aiv.z};
-    }
+    // inline v3f to_v3f(const aiVector3D &aiv)
+    // {
+    //     return {aiv.x, aiv.y, aiv.z};
+    // }
 
     void RenderableMesh::SkinData::add_weight(unsigned bone_index, float bone_weight)
     {
@@ -240,11 +273,11 @@ namespace eeng
         m_meshes.resize(scene_nbr_meshes);
         m_materials.resize(scene_nbr_mtl);
 
-        std::vector<v3f> scene_positions;
-        std::vector<v3f> scene_normals;
-        std::vector<v3f> scene_tangents;
-        std::vector<v3f> scene_binormals;
-        std::vector<v2f> scene_texcoords;
+        std::vector<glm::vec3> scene_positions;
+        std::vector<glm::vec3> scene_normals;
+        std::vector<glm::vec3> scene_tangents;
+        std::vector<glm::vec3> scene_binormals;
+        std::vector<glm::vec2> scene_texcoords;
         std::vector<SkinData> scene_skinweights;
         std::vector<uint> scene_indices;
 
@@ -410,11 +443,11 @@ namespace eeng
 
     void RenderableMesh::load_mesh(uint meshindex,
                                    const aiMesh *aimesh,
-                                   std::vector<v3f> &scene_positions,
-                                   std::vector<v3f> &scene_normals,
-                                   std::vector<v3f> &scene_tangents,
-                                   std::vector<v3f> &scene_binormals,
-                                   std::vector<v2f> &scene_texcoords,
+                                   std::vector<glm::vec3> &scene_positions,
+                                   std::vector<glm::vec3> &scene_normals,
+                                   std::vector<glm::vec3> &scene_tangents,
+                                   std::vector<glm::vec3> &scene_binormals,
+                                   std::vector<glm::vec2> &scene_texcoords,
                                    std::vector<SkinData> &scene_skindata,
                                    std::vector<unsigned int> &scene_indices)
     {
@@ -472,18 +505,18 @@ namespace eeng
     AABB_t RenderableMesh::measure_scene(const aiScene *aiscene)
     {
         AABB_t aabb;
-        measure_node(aiscene, aiscene->mRootNode, linalg::m4f_1, aabb);
+        measure_node(aiscene, aiscene->mRootNode, glm::mat4{1.0f}, aabb);
 
         return aabb;
     }
 
     void RenderableMesh::measure_node(const aiScene *aiscene,
                                       const aiNode *pNode,
-                                      const m4f &M_roottfm,
+                                      const glm::mat4 &M_roottfm,
                                       AABB_t &aabb)
     {
-        m4f M_identity = linalg::m4f_1;
-        m4f M_nodetfm = M_roottfm * to_m4f(pNode->mTransformation);
+        glm::mat4 M_identity{1.0f};
+        glm::mat4 M_nodetfm = M_roottfm * aimat_to_glmmat(pNode->mTransformation);
 
         for (int i = 0; i < pNode->mNumMeshes; i++)
         {
@@ -492,7 +525,7 @@ namespace eeng
             // Skinned meshes are expressed in world/model space,
             // non-skinned meshes are expressed in node space.
             if (mesh->mNumBones)
-                measure_mesh(mesh, M_identity, aabb);
+                measure_mesh(mesh, glm::mat4{1.0f}, aabb);
             else
                 measure_mesh(mesh, M_nodetfm, aabb);
         }
@@ -504,13 +537,13 @@ namespace eeng
     }
 
     void RenderableMesh::measure_mesh(const aiMesh *pMesh,
-                                      const m4f &M_roottfm,
+                                      const glm::mat4 &M_roottfm,
                                       AABB_t &aabb)
     {
         for (int i = 0; i < pMesh->mNumVertices; i++)
         {
-            v3f v = to_v3f(*(pMesh->mVertices + i));
-            aabb.grow((M_roottfm * v.xyz1()).xyz());
+            glm::vec3 v = aivec_to_glmvec(*(pMesh->mVertices + i));
+            aabb.grow(glm::vec3{M_roottfm * glm::vec4(v, 1.0f)});
         }
     }
 
@@ -568,12 +601,12 @@ namespace eeng
         // Node data
         std::string node_name;   //
         std::string parent_name; //
-        m4f transform;           // Local transform = transform relative parent
+        glm::mat4 transform;     // Local transform = transform relative parent
         // Fetch node data from assimp
         node_name = std::string(ainode->mName.C_Str());
         const aiNode *parent_node = ainode->mParent;
         parent_name = parent_node ? std::string(parent_node->mName.C_Str()) : "";
-        transform = to_m4f(ainode->mTransformation);
+        transform = aimat_to_glmmat(ainode->mTransformation);
 
         // Create & insert node
         SkeletonNode stnode(node_name, transform);
@@ -617,7 +650,7 @@ namespace eeng
                 // Create bone from its inverse bind-pose transform
                 Bone bi;
                 m_bones.push_back(bi);
-                m_bones[bone_index].inversebind_tfm = to_m4f(aimesh->mBones[i]->mOffsetMatrix);
+                m_bones[bone_index].inversebind_tfm = aimat_to_glmmat(aimesh->mBones[i]->mOffsetMatrix);
                 // Hash bone w.r.t. its name
                 m_bonehash[bone_name] = bone_index;
             }
@@ -937,17 +970,17 @@ namespace eeng
 
                 for (int k = 0; k < ainode_anim->mNumPositionKeys; k++)
                 {
-                    v3f pos_key = to_v3f(ainode_anim->mPositionKeys[k].mValue);
+                    glm::vec3 pos_key = aivec_to_glmvec(ainode_anim->mPositionKeys[k].mValue);
                     node_anim.pos_keys.push_back(pos_key);
                 }
                 for (int k = 0; k < ainode_anim->mNumScalingKeys; k++)
                 {
-                    v3f scale_key = to_v3f(ainode_anim->mScalingKeys[k].mValue);
+                    glm::vec3 scale_key = aivec_to_glmvec(ainode_anim->mScalingKeys[k].mValue);
                     node_anim.scale_keys.push_back(scale_key);
                 }
                 for (int k = 0; k < ainode_anim->mNumRotationKeys; k++)
                 {
-                    quatf rot_key = to_quatf(ainode_anim->mRotationKeys[k].mValue);
+                    glm::quat rot_key = aiquat_to_glmquat(ainode_anim->mRotationKeys[k].mValue);
                     node_anim.rot_keys.push_back(rot_key);
                 }
 
@@ -972,7 +1005,7 @@ namespace eeng
     }
 
     // get_key_tfm_at_time
-    m4f RenderableMesh::blend_transform_at_time(const AnimationClip *anim,
+    glm::mat4 RenderableMesh::blend_transform_at_time(const AnimationClip *anim,
                                                 const NodeKeyframes &nodeanim,
                                                 float time) const
     {
@@ -991,29 +1024,32 @@ namespace eeng
         return blend_transform_at_frac(anim, nodeanim, animtime_nrm);
     }
 
-    m4f RenderableMesh::blend_transform_at_frac(const AnimationClip *anim,
-                                                const NodeKeyframes &nodeanim,
-                                                float frac) const
+    glm::mat4 RenderableMesh::blend_transform_at_frac(const AnimationClip *anim,
+                                                      const NodeKeyframes &nodeanim,
+                                                      float frac) const
     {
         // Translation
         float pos_indexf = frac * (nodeanim.pos_keys.size() - 1);
         unsigned pos_index0 = std::floor(pos_indexf);
         unsigned pos_index1 = std::min<unsigned>(pos_index0 + 1,
                                                  (unsigned)nodeanim.pos_keys.size() - 1);
-        const v3f blendpos = lerp_v3f(nodeanim.pos_keys[pos_index0],
-                                      nodeanim.pos_keys[pos_index1],
-                                      pos_indexf - pos_index0);
+        const auto blendpos = glm::mix(nodeanim.pos_keys[pos_index0],
+                                       nodeanim.pos_keys[pos_index1],
+                                       pos_indexf - pos_index0);
 
         // Rotation
         float rot_indexf = frac * (nodeanim.rot_keys.size() - 1);
         unsigned rot_index0 = std::floor(rot_indexf);
         unsigned rot_index1 = std::min<unsigned>(rot_index0 + 1, (unsigned)nodeanim.rot_keys.size() - 1);
-        const quatf &rot0 = nodeanim.rot_keys[rot_index0];
-        const quatf &rot1 = nodeanim.rot_keys[rot_index1];
+        const auto &rot0 = nodeanim.rot_keys[rot_index0];
+        const auto &rot1 = nodeanim.rot_keys[rot_index1];
 
-        const quatf blendrot = qnlerp(rot0,
-                                      rot1,
-                                      rot_indexf - rot_index0);
+        const auto blendrot = glm::slerp(rot0,
+                                         rot1,
+                                         rot_indexf - rot_index0);
+        // const quatf blendrot = qnlerp(rot0,
+        //                               rot1,
+        //                               rot_indexf - rot_index0);
 
         //
         //    aiQuaternion q0 = aiQuaterniont<float>(rot0.qw, rot0.qx, rot0.qy, rot0.qz);
@@ -1028,12 +1064,17 @@ namespace eeng
         unsigned scale_index0 = std::floor(scale_indexf);
         unsigned scale_index1 = std::min<unsigned>(scale_index0 + 1,
                                                    (unsigned)nodeanim.scale_keys.size() - 1);
-        const v3f blendscale = lerp_v3f(nodeanim.scale_keys[scale_index0],
-                                        nodeanim.scale_keys[scale_index1],
-                                        scale_indexf - scale_index0);
+        const auto blendscale = glm::mix(nodeanim.scale_keys[scale_index0],
+                                         nodeanim.scale_keys[scale_index1],
+                                         scale_indexf - scale_index0);
 
         //    return m4f(blendrot);
-        return m4f::translation(blendpos) * m4f(blendrot) * m4f::scaling(blendscale);
+        // return m4f::translation(blendpos) * m4f(blendrot) * m4f::scaling(blendscale);
+
+        const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), blendpos);
+        const glm::mat4 rotationMatrix = glm::mat4_cast(blendrot);;
+        const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), blendscale);
+        return translationMatrix * rotationMatrix * scaleMatrix;
 
 #if 0
     // Dual quaternion interpolation
@@ -1076,15 +1117,15 @@ namespace eeng
         }
 
         for (auto &node : m_nodetree.nodes)
-            node.global_tfm = m4f_1;
+            node.global_tfm = glm::mat4 {1.0f};
 
         // std::cout << time << std::endl;
 
         int node_index = 0;
         while (node_index < m_nodetree.nodes.size())
         {
-            m4f node_tfm = m_nodetree.nodes[node_index].local_tfm;
-            m4f global_tfm;
+            glm::mat4 node_tfm = m_nodetree.nodes[node_index].local_tfm;
+            glm::mat4 global_tfm;
 
             // If an animation key is available, use it to replace the node tfm
             if (anim)
@@ -1111,13 +1152,14 @@ namespace eeng
         {
             const auto &node_tfm = m_nodetree.nodes[m_bones[i].node_index].global_tfm;
             const auto &boneIB_tfm = m_bones[i].inversebind_tfm;
-            m4f M = node_tfm * boneIB_tfm;
+            glm::mat4 M = node_tfm * boneIB_tfm;
 
-            // Final bone matrices
-            // m_bones[i].global_tfm = M;
+            // Bone matrices
             boneMatrices[i] = M;
-            // AABB
-            m_bone_aabbs_pose[i] = m_bone_aabbs_bind[i].post_transform(M.column(3).xyz(), M.get_3x3());
+
+            // AABBs
+            m_bone_aabbs_pose[i] = m_bone_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
+            // m_bone_aabbs_pose[i] = m_bone_aabbs_bind[i].post_transform(M.column(3).xyz(), M.get_3x3());
             m_model_aabb.grow(m_bone_aabbs_pose[i]);
         }
 
@@ -1131,8 +1173,9 @@ namespace eeng
 
             if (m_meshes[i].node_index > EENG_NULL_INDEX)
             {
-                m4f M = m_nodetree.nodes[m_meshes[i].node_index].global_tfm; // * boneIB_tfm;
-                m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(M.column(3).xyz(), M.get_3x3());
+                glm::mat4 M = m_nodetree.nodes[m_meshes[i].node_index].global_tfm; // * boneIB_tfm;
+                m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
+                // m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(M.column(3).xyz(), M.get_3x3());
             }
             else
                 m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i];

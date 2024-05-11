@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
     // Sponza
     characterMesh->load("/Users/ag1498/Dropbox/MAU/DA307A-CGM/Rendering/eduRend_2022/assets/crytek-sponza/sponza.obj", false);
 #endif
-#if 1
+#if 0
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
 #endif
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
     // Remove root motion
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
-#if 0
+#if 1
     // Amy 5.0.1 PACK FBX
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/idle.fbx", true);
@@ -475,7 +475,7 @@ int main(int argc, char *argv[])
 
         // Character
         // m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Mixamo
-        glm::mat4 W = TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.01f, 0.01f, 0.01f}); // Character
+        glm::mat4 W = TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.03f, 0.03f, 0.03f}); // Character
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #2

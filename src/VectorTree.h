@@ -11,6 +11,10 @@
 
 #include <iostream>
 #include <vector>
+
+// Remove when SkeletonNode is moved out
+#include <glm/glm.hpp>
+
 #include "config.h"
 #include "vec.h"
 #include "mat.h"
@@ -29,24 +33,24 @@ struct TreeNode
 
 struct SkeletonNode : public TreeNode
 {
-    m4f local_tfm;              ///< Transform relative parent
-    m4f global_tfm = m4f_1;     ///< Updated during tree traversal
+    glm::mat4 local_tfm;        ///< Transform relative parent
+    glm::mat4 global_tfm{1.0f}; ///< Updated during tree traversal
     int bone_index = EENG_NULL_INDEX;
     int nbr_meshes = 0;
     std::string name = "";
 
     SkeletonNode() = default;
-    SkeletonNode(const std::string &name, const m4f &local_tfm)
+    SkeletonNode(const std::string &name, const glm::mat4 &local_tfm)
         : name(name),
           local_tfm(local_tfm) {}
 };
 
 /// @brief Sequential tree representation optimized for depth-first traversal
 /// @tparam NodeType Node type, should inherit from TreeNode
-/** Nodes are organized in pre-order, which means that the first child of a 
- * node is located directly after the node. Each node has information about 
+/** Nodes are organized in pre-order, which means that the first child of a
+ * node is located directly after the node. Each node has information about
  * number children, stride of its branch, and offset from its parent.
-*/
+ */
 template <class NodeType>
 class VectorTree
 {
@@ -120,7 +124,7 @@ public:
         node.m_parent_ofs = 1;
         pit->m_nbr_children++;
         nodes.insert(pit + 1, node);
-//        data.insert(data.begin() + (pit+1-nodes.begin()), 123);
+        //        data.insert(data.begin() + (pit+1-nodes.begin()), 123);
 
         return true;
     }

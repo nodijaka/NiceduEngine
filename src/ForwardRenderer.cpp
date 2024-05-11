@@ -164,7 +164,7 @@ linalg::m4f get_mf4(const glm::mat4 m)
             glUniformMatrix4fv(glGetUniformLocation(phongShader, "BoneMatrices"),
                                (GLsizei)mesh->boneMatrices.size(),
                                0,
-                               mesh->boneMatrices[0].array);
+                               glm::value_ptr(mesh->boneMatrices[0]));
 
         glBindVertexArray(mesh->m_VAO);
 
@@ -176,8 +176,8 @@ linalg::m4f get_mf4(const glm::mat4 m)
             // Append hierarchical transform non-skinned meshes that are linked to nodes
             if (submesh.node_index != EENG_NULL_INDEX && !submesh.is_skinned)
             {
-                const m4f WorldMeshMatrix = get_mf4(WorldMatrix) * mesh->m_nodetree.nodes[submesh.node_index].global_tfm;
-                glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, WorldMeshMatrix.array);
+                const auto WorldMeshMatrix = WorldMatrix * mesh->m_nodetree.nodes[submesh.node_index].global_tfm;
+                glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, glm::value_ptr(WorldMeshMatrix));
             }
             else
                 glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, glm::value_ptr(WorldMatrix));
