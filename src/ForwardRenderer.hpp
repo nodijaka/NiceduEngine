@@ -13,11 +13,10 @@
 #include "RenderableMesh.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 // lib
-#include "vec.h"
-#include "mat.h"
+// #include "vec.h"
+// #include "mat.h"
 // #include "quat.h"
 // #include "interp.h" // smoothstep
 // #include "AABB.h"

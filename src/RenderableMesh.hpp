@@ -24,15 +24,12 @@
 #include <assimp/postprocess.h>
 
 #include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp> // -> CPP?
-// #include <glm/gtc/matrix_transform.hpp> // -> CPP?
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 // lib
-#include "vec.h"
-#include "mat.h"
-#include "quat.h"
-#include "interp.h" // smoothstep
+// #include "vec.h"
+// #include "mat.h"
+// #include "quat.h"
+// #include "interp.h" // smoothstep
 #include "AABB.h"
 #include "Texture.hpp"
 #include "VectorTree.h"
@@ -40,7 +37,7 @@
 
 namespace eeng
 {
-    using namespace linalg;
+    // using namespace linalg;
     using namespace logstreamer;
     using uint = uint32_t;
 
@@ -51,11 +48,12 @@ namespace eeng
     template <std::size_t N, class T>
     constexpr std::size_t numelem(T (&)[N]) { return N; }
 
+    /// A material with typical Phong illumination properties
     struct PhongMaterial
     {
-        v3f Ka = {0.25f, 0.0f, 0.0f};
-        v3f Kd = {0.75f, 0.0f, 0.0f};
-        v3f Ks = {1.0f, 1.0f, 1.0f};
+        glm::vec3 Ka = {0.25f, 0.0f, 0.0f};
+        glm::vec3 Kd = {0.75f, 0.0f, 0.0f};
+        glm::vec3 Ks = {1.0f, 1.0f, 1.0f};
         float shininess = 10;
 
         enum TextureTypeIndex
@@ -76,6 +74,7 @@ namespace eeng
         xi_load_animations = 0x2
     };
 
+    /// @brief A model loaded from file prepared with GL textures and buffers
     class RenderableMesh
     {
         friend class ForwardRenderer;
@@ -93,9 +92,7 @@ namespace eeng
             BufferCount
         };
 
-        /**
-         *
-         */
+        /// A mesh with a single material and a given set of geometry
         struct Submesh
         {
             // TODO: GL types?
@@ -105,35 +102,28 @@ namespace eeng
             unsigned nbr_vertices = 0;
 
             int mtl_index = -1;
-            int node_index = -1; // EXPERIMENTAL
+            int node_index = -1;
             bool is_skinned = false;
         };
 
-        /**
-         * Per-bone data
-         */
+        /// Per-bone data
         struct Bone
         {
             glm::mat4 inversebind_tfm{1.0f}; //!< Inverse of the associated node in bind pose
-            // m4f global_tfm = m4f_1;      // Built during traversal * reduntant, use bone array directly for final bone transforms *
-            int node_index = -1; //!< Node associated with this bone
+            int node_index = -1;             //!< Node associated with this bone
         };
 
-        /**
-         * Bone indices and weights for a vertex
-         */
+        /// Bone indices and weights for a vertex
         struct SkinData
         {
             unsigned bone_indices[NUM_BONES_PER_VERTEX]{0};
             float bone_weights[NUM_BONES_PER_VERTEX]{0};
 
             int nbr_added = 0; // For checking
-            void add_weight(unsigned bone_index, float bone_weight);
+            void addWeight(unsigned bone_index, float bone_weight);
         };
 
-        /**
-         * Keyframe sequence for a node and an animation.
-         */
+        /// Keyframe sequence for a node and an animation.
         struct NodeKeyframes // NodeKeyframes ???
         {
             bool is_used = false;
@@ -142,9 +132,7 @@ namespace eeng
             std::vector<glm::quat> rot_keys;
         };
 
-        /**
-         * Data related to an animation clip, including keyframes for all nodes.
-         */
+        /// Data related to an animation clip, including keyframes for all nodes.
         struct AnimationClip
         {
             std::string name;
@@ -167,11 +155,11 @@ namespace eeng
         std::vector<Texture2D> m_textures;
 
         // Bounding volumes
-        std::vector<AABB_t> m_bone_aabbs_bind; // Per-bone bind AABB
-        std::vector<AABB_t> m_bone_aabbs_pose; // Per-node pose AABB's – intermediary, used for visualization
-        std::vector<AABB_t> m_mesh_aabbs_bind; // Per-mesh bind AABB
-        std::vector<AABB_t> m_mesh_aabbs_pose; // Per-mesh pose AABB's – intermediary, used for visualization
-        AABB_t m_model_aabb;                   // AABB for the entire model
+        std::vector<AABB> m_bone_aabbs_bind; // Per-bone bind AABB
+        std::vector<AABB> m_bone_aabbs_pose; // Per-node pose AABB's – intermediary, used for visualization
+        std::vector<AABB> m_mesh_aabbs_bind; // Per-mesh bind AABB
+        std::vector<AABB> m_mesh_aabbs_pose; // Per-mesh pose AABB's – intermediary, used for visualization
+        AABB m_model_aabb;                   // AABB for the entire model
 
     public:
         unsigned m_embedded_textures_ofs = 0;
@@ -182,15 +170,10 @@ namespace eeng
         index_hash_t m_nodehash;
 
         // Log & debug stuff
-
         logstreamer_t log;
-        //    gl_batch_renderer::glDebugBatchRenderer* dbgrenderer = nullptr;
-
-        //    template<typename T>
-        //    inline T lerp(const T &a, const T &b, float x) { return a*(1.0f-x) + b*x; }
 
     public:
-        AABB_t mSceneAABB;
+        AABB mSceneAABB;
 
         RenderableMesh();
 
@@ -202,68 +185,68 @@ namespace eeng
                   unsigned xiflags,
                   unsigned aiflags = 0);
 
-        void remove_translation_keys(const std::string &node_name);
+        void removeTranslationKeys(const std::string &node_name);
 
-        void remove_translation_keys(int node_index);
+        void removeTranslationKeys(int node_index);
 
         void animate(int anim_index,
                      float time);
 
-        unsigned get_nbr_animations() const;
-        std::string get_animation_name(unsigned i) const;
+        unsigned getNbrAnimations() const;
+        std::string getAnimationName(unsigned i) const;
 
     private:
-        bool load_scene(const aiScene *pScene,
-                        const std::string &file);
-        void load_mesh(uint MeshIndex,
-                       const aiMesh *paiMesh,
-                       std::vector<glm::vec3> &Positions,
-                       std::vector<glm::vec3> &Normals,
-                       std::vector<glm::vec3> &Tangents,
-                       std::vector<glm::vec3> &Binormals,
-                       std::vector<glm::vec2> &TexCoords,
-                       std::vector<SkinData> &Bones,
-                       std::vector<unsigned int> &Indices);
+        bool loadScene(const aiScene *pScene,
+                       const std::string &file);
+        void loadMesh(uint MeshIndex,
+                      const aiMesh *paiMesh,
+                      std::vector<glm::vec3> &Positions,
+                      std::vector<glm::vec3> &Normals,
+                      std::vector<glm::vec3> &Tangents,
+                      std::vector<glm::vec3> &Binormals,
+                      std::vector<glm::vec2> &TexCoords,
+                      std::vector<SkinData> &Bones,
+                      std::vector<unsigned int> &Indices);
 
         void compute_bind_aabbs(); // not implemented. where?
         void compute_pose_aabbs(); // not implemented. where?
 
-        void load_nodes(aiNode *node);
-        void load_node(aiNode *node);
+        void loadNodes(aiNode *node);
+        void loadNode(aiNode *node);
 
         /// Load bones and skin weights associated with a mesh
         ///
-        void load_bones(uint mesh_index,
-                        const aiMesh *aimesh,
-                        std::vector<SkinData> &scene_skindata);
+        void loadBones(uint mesh_index,
+                       const aiMesh *aimesh,
+                       std::vector<SkinData> &scene_skindata);
 
-        void load_materials(const aiScene *aiscene,
-                            const std::string &file);
+        void loadMaterials(const aiScene *aiscene,
+                           const std::string &file);
 
-        int load_texture(const aiMaterial *aimtl,
-                         aiTextureType tex_type,
-                         const std::string &local_filepath);
+        int loadTexture(const aiMaterial *aimtl,
+                        aiTextureType tex_type,
+                        const std::string &local_filepath);
 
-        void load_animations(const aiScene *scene);
-        
-        glm::mat4 blend_transform_at_time(const AnimationClip *anim,
-                                          const NodeKeyframes &nodeanim,
-                                          float time) const;
+        void loadAnimations(const aiScene *scene);
 
-        glm::mat4 blend_transform_at_frac(const AnimationClip *anim,
-                                          const NodeKeyframes &nodeanim,
-                                          float frac) const;
+        glm::mat4 blendTransformAtTime(const AnimationClip *anim,
+                                       const NodeKeyframes &nodeanim,
+                                       float time) const;
 
-        AABB_t measure_scene(const aiScene *aiscene);
+        glm::mat4 blendTransformAtFrac(const AnimationClip *anim,
+                                       const NodeKeyframes &nodeanim,
+                                       float frac) const;
 
-        void measure_node(const aiScene *aiscene,
-                          const aiNode *pNode,
-                          const glm::mat4 &transform,
-                          AABB_t &aabb);
+        AABB measureScene(const aiScene *aiscene);
 
-        void measure_mesh(const aiMesh *pMesh,
-                          const glm::mat4 &transform,
-                          AABB_t &aabb);
+        void measureNode(const aiScene *aiscene,
+                         const aiNode *pNode,
+                         const glm::mat4 &transform,
+                         AABB &aabb);
+
+        void measureMesh(const aiMesh *pMesh,
+                         const glm::mat4 &transform,
+                         AABB &aabb);
     };
 
 } /* namespace eeng */

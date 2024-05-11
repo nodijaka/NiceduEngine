@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
     characterMesh->load("assets/Amy/idle.fbx", true);
     characterMesh->load("assets/Amy/walking.fbx", true);
     // Remove root motion
-    characterMesh->remove_translation_keys("mixamorig:Hips");
+    characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
         if (characterMesh)
         {
             int curAnimIndex = ANIM_INDEX;
-            std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->get_animation_name(curAnimIndex));
+            std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
             if (ImGui::BeginCombo("Animation Clip##animclip", label.c_str()))
             {
                 // Bind pose item
@@ -347,10 +347,10 @@ int main(int argc, char *argv[])
                     ImGui::SetItemDefaultFocus();
 
                 // Clip items
-                for (int i = 0; i < characterMesh->get_nbr_animations(); i++)
+                for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
                 {
                     const bool isSelected = (curAnimIndex == i);
-                    const auto label = characterMesh->get_animation_name(i) + "##" + std::to_string(i);
+                    const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
                     if (ImGui::Selectable(label.c_str(), isSelected))
                         curAnimIndex = i;
                     if (isSelected)

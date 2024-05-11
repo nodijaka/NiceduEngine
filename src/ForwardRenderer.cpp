@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "ForwardRenderer.hpp"
 #include "glcommon.h"
@@ -14,14 +15,10 @@ namespace
     {
         std::ifstream file(filename);
         if (!file.is_open())
-        {
-            // Handle error - file not found, permissions issue, etc.
-            return "";
-        }
+            throw std::runtime_error(std::string("Cannot open ") + filename);
 
         std::stringstream buffer;
         buffer << file.rdbuf();
-
         return buffer.str();
     }
 }
@@ -37,8 +34,6 @@ namespace eeng
         EENG_ASSERT(phongShader, "Destrying uninitialized shader program");
         if (phongShader)
             glDeleteProgram(phongShader);
-
-        // glDeleteTextures(1, &placeholder_texture);
     }
 
     void ForwardRenderer::init(const std::string &vertShaderPath,
@@ -47,7 +42,6 @@ namespace eeng
         Log::log("Compiling shaders %s, %s",
                  vertShaderPath.c_str(),
                  fragShaderPath.c_str());
-        // UILog::log((std::string("Compiling shaders ") + vertShaderPath + std::string(", ") + fragShaderPath).c_str());
         auto vertSource = file_to_string(vertShaderPath);
         auto fragSource = file_to_string(fragShaderPath);
         phongShader = createShaderProgram(vertSource.c_str(), fragSource.c_str());
@@ -58,25 +52,18 @@ namespace eeng
         {
             glUniform1i(glGetUniformLocation(phongShader, textureDesc.samplerName), textureDesc.textureUnit);
         }
-        // glUniform1i(glGetUniformLocation(phongShader, cubemapDesc.samplerName), cubemapDesc.textureUnit);
-
-        // glUniform1i(glGetUniformLocation(phongShader, diffuseTextureName), diffuseTextureUnit);
-        // glUniform1i(glGetUniformLocation(phongShader, normalTextureName), normalTextureUnit);
-        // glUniform1i(glGetUniformLocation(phongShader, specularTextureName), specularTextureUnit);
-        // glUniform1i(glGetUniformLocation(phongShader, opacityTextureName), opacityTextureUnit);
-        // glUniform1i(glGetUniformLocation(phongShader, cubeTextureName), cubeTextureUnit);
         glUseProgram(0);
         CheckAndThrowGLErrors();
 
         // placeholder_texture = create_checker_texture();
     }
 
-linalg::m4f get_mf4(const glm::mat4 m)
-{
-    linalg::m4f mout;
-    memcpy(mout.array, glm::value_ptr(m), sizeof(float) * 16);
-    return mout;
-}
+    linalg::m4f get_mf4(const glm::mat4 m)
+    {
+        linalg::m4f mout;
+        memcpy(mout.array, glm::value_ptr(m), sizeof(float) * 16);
+        return mout;
+    }
 
     void ForwardRenderer::beginPass(const glm::mat4 &ProjMatrix,
                                     const glm::mat4 &ViewMatrix,
@@ -192,9 +179,9 @@ linalg::m4f get_mf4(const glm::mat4 m)
             // v4f bs = aabb.post_transform(tfm).get_boundingsphere();
 
             // Color components
-            glUniform3fv(glGetUniformLocation(phongShader, "Ka"), 1, mtl.Ka.vec);
-            glUniform3fv(glGetUniformLocation(phongShader, "Kd"), 1, mtl.Kd.vec);
-            glUniform3fv(glGetUniformLocation(phongShader, "Ks"), 1, mtl.Ks.vec);
+            glUniform3fv(glGetUniformLocation(phongShader, "Ka"), 1, glm::value_ptr(mtl.Ka));
+            glUniform3fv(glGetUniformLocation(phongShader, "Kd"), 1, glm::value_ptr(mtl.Kd));
+            glUniform3fv(glGetUniformLocation(phongShader, "Ks"), 1, glm::value_ptr(mtl.Ks));
             glUniform1f(glGetUniformLocation(phongShader, "shininess"), mtl.shininess);
 
             // Bind textures and texture flags
