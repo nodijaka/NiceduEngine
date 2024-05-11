@@ -14,6 +14,8 @@
 #include <entt/entt.hpp> // -> Scene class eg
 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>         // glm::value_ptr
+#include <glm/gtc/matrix_transform.hpp> // glm::perspective
 
 #include <iostream>
 #include "imgui.h"              // <imgui.h>
@@ -24,10 +26,15 @@
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 
-using linalg::m3f;
-using linalg::m4f;
-using linalg::v3f;
-using linalg::v4f;
+// using linalg::m3f;
+// using linalg::m4f;
+// using linalg::v3f;
+// using linalg::v4f;
+
+// using v3f = glm::vec3;
+// using v4f = glm::vec4;
+// using m3f = glm::mat3;
+// using m4f = glm::mat4;
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
@@ -36,18 +43,30 @@ bool WIREFRAME = false;
 float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
 int ANIM_INDEX = -1;
-v3f LIGHT_COLOR{1.0f, 1.0f, 1.0f};
+glm::vec3 LIGHT_COLOR{1.0f, 1.0f, 1.0f};
 int DRAWCALL_COUNT;
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+glm::mat4 TRS(const glm::vec3 &translation, float angle, const glm::vec3 &axis, const glm::vec3 &scale)
+{
+    const glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
+    const glm::mat4 RS = glm::rotate(S, glm::radians(angle), axis);
+    const glm::mat4 TRS = glm::translate(RS, translation);
+    return TRS;
+
+    // const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), translation);
+    // const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
+    // const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+    // return translationMatrix * rotationMatrix * scaleMatrix;
+}
 
 int main(int argc, char *argv[])
 {
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
     auto renderer = std::make_shared<eeng::ForwardRenderer>();
-
-    // Do some glm stuff
-    glm::vec3 v3(1.0f, 2.0f, 3.0f);       // Creates a 3D vector
-    glm::vec4 v4(1.0f, 2.0f, 3.0f, 1.0f); // Creates a 4D homogeneous vector
-    auto vdot = glm::dot(v3, v3);
 
     // Do some entt stuff
     entt::registry registry;
@@ -364,7 +383,7 @@ int main(int argc, char *argv[])
         }
 
         if (ImGui::ColorEdit3("Light color",
-                              (float *)&LIGHT_COLOR.vec,
+                              glm::value_ptr(LIGHT_COLOR),
                               ImGuiColorEditFlags_NoInputs))
         {
         }
@@ -404,8 +423,9 @@ int main(int argc, char *argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
-        linalg::v3f eye = (m4f::TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD * 45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * v4f{0.0f, 0.0f, 0.0f, 1.0f}).xyz();
+        glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
+        // linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
+        glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -fTO_RAD * 45.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
 
         // animtime += 0.016f;
         //
@@ -415,10 +435,13 @@ int main(int argc, char *argv[])
         //  glfwGetFramebufferSize(window, &width, &height);
         //  glViewport(0, 0, w, h);
         //
-        float fov = 60.0f * fTO_RAD;
-        float aspect = float(WINDOW_WIDTH) / WINDOW_HEIGHT;
-        linalg::m4f P = linalg::m4f::GL_PerspectiveProjectionRHS(fov, aspect, 1.0f, 500.0f);
-        linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
+        // float fov = 60.0f * fTO_RAD;
+        const float aspectRatio = float(WINDOW_WIDTH) / WINDOW_HEIGHT;
+        const float nearPlane = 1.0f, farPlane = 500.0f;
+        glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
+        glm::mat4 V = glm::inverse(TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}));
+        // linalg::m4f P = linalg::m4f::GL_PerspectiveProjectionRHS(fov, aspect, 1.0f, 500.0f);
+        // linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
 
         // Animate & render grass
         // linalg::m4f W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
@@ -444,7 +467,7 @@ int main(int argc, char *argv[])
         renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
 
         // Grass
-        m4f grassWorldMatrix = m4f::TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        glm::mat4 grassWorldMatrix = TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         // grassMesh->animate(-1, time_s * ANIM_SPEED, )
         // grassMesh->animate(-1, 0.0f);
         renderer->renderMesh(grassMesh, grassWorldMatrix);
@@ -452,15 +475,15 @@ int main(int argc, char *argv[])
 
         // Character
         // m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Mixamo
-        m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.01f, 0.01f, 0.01f}); // Character
+        glm::mat4 W = TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.01f, 0.01f, 0.01f}); // Character
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #2
-        W = m4f::TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(1, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #3
-        W = m4f::TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        W = TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
         characterMesh->animate(2, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
 

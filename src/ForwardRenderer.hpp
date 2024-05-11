@@ -11,6 +11,10 @@
 // GL
 #include "glcommon.h"
 #include "RenderableMesh.hpp"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+
 // lib
 #include "vec.h"
 #include "mat.h"
@@ -52,8 +56,8 @@ namespace eeng
             {PhongMaterial::TextureTypeIndex::Normal, 1, "normalTexture", "has_normalTexture"},
             {PhongMaterial::TextureTypeIndex::Specular, 2, "specularTexture", "has_specularTexture"},
             {PhongMaterial::TextureTypeIndex::Opacity, 3, "opacityTexture", "has_opacityTexture"}};
-        
-        TextureDesc cubemapTextureDesc {PhongMaterial::TextureTypeIndex::Cubemap, 4, "cubeTexture", "has_cubemap"};
+
+        TextureDesc cubemapTextureDesc{PhongMaterial::TextureTypeIndex::Cubemap, 4, "cubeTexture", "has_cubemap"};
 
     public:
         ForwardRenderer();
@@ -61,22 +65,22 @@ namespace eeng
         ~ForwardRenderer();
 
         /// @brief Initialize renderer
-        /// @param vertShaderPath 
-        /// @param fragShaderPath 
+        /// @param vertShaderPath
+        /// @param fragShaderPath
         void init(const std::string &vertShaderPath,
                   const std::string &fragShaderPath);
 
         /// @brief Start of a rendering pass and set common uniforms
-        /// @param ProjMatrix 
-        /// @param ViewMatrix 
-        /// @param lightPos 
-        /// @param lightColor 
-        /// @param eyePos 
-        void beginPass(const m4f &ProjMatrix,
-                       const m4f &ViewMatrix,
-                       const v3f &lightPos,
-                       const v3f& lightColor,
-                       const v3f &eyePos);
+        /// @param ProjMatrix
+        /// @param ViewMatrix
+        /// @param lightPos
+        /// @param lightColor
+        /// @param eyePos
+        void beginPass(const glm::mat4 &ProjMatrix,
+                       const glm::mat4 &ViewMatrix,
+                       const glm::vec3 &lightPos,
+                       const glm::vec3 &lightColor,
+                       const glm::vec3 &eyePos);
 
         /// @brief Ends pass and resets GL state
         /// @return Number of drawcalls made during pass
@@ -86,7 +90,7 @@ namespace eeng
         /// @param mesh Mesh to render
         /// @param WorldMatrix Instance world transform
         void renderMesh(const std::shared_ptr<RenderableMesh> mesh,
-                        const m4f &WorldMatrix);
+                        const glm::mat4 &WorldMatrix);
     };
 
 } // namespace eeng

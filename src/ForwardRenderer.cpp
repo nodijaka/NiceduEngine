@@ -24,38 +24,6 @@ namespace
 
         return buffer.str();
     }
-
-    GLuint create_checker_texture()
-    {
-        unsigned char texture_data[256 * 256];
-        unsigned int texture_id = 0;
-
-        int x, y, i = 0;
-        for (y = 0; y < 256; y++)
-        {
-            for (x = 0; x < 256; x++)
-            {
-                int k = ((x >> 4) & 1) ^ ((y >> 4) & 1);
-                texture_data[i++] = k ? 255 : 192;
-                //            texture_data[i++] = 125;
-            }
-        }
-
-        glGenTextures(1, &texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        //.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_GREEN /**/, GL_UNSIGNED_BYTE, texture_data);
-        //.
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        CheckAndThrowGLErrors();
-
-        return texture_id;
-    }
 }
 
 namespace eeng
@@ -103,11 +71,18 @@ namespace eeng
         // placeholder_texture = create_checker_texture();
     }
 
-    void ForwardRenderer::beginPass(const m4f &ProjMatrix,
-                                    const m4f &ViewMatrix,
-                                    const v3f &lightPos,
-                                    const v3f &lightColor,
-                                    const v3f &eyePos)
+linalg::m4f get_mf4(const glm::mat4 m)
+{
+    linalg::m4f mout;
+    memcpy(mout.array, glm::value_ptr(m), sizeof(float) * 16);
+    return mout;
+}
+
+    void ForwardRenderer::beginPass(const glm::mat4 &ProjMatrix,
+                                    const glm::mat4 &ViewMatrix,
+                                    const glm::vec3 &lightPos,
+                                    const glm::vec3 &lightColor,
+                                    const glm::vec3 &eyePos)
     {
         EENG_ASSERT(phongShader, "Renderer not initialized");
 
@@ -149,12 +124,12 @@ namespace eeng
 
         // Bind matrices
         const auto ProjViewMatrix = ProjMatrix * ViewMatrix;
-        glUniformMatrix4fv(glGetUniformLocation(phongShader, "ProjViewMatrix"), 1, 0, ProjViewMatrix.array);
+        glUniformMatrix4fv(glGetUniformLocation(phongShader, "ProjViewMatrix"), 1, 0, glm::value_ptr(ProjViewMatrix));
 
         // Bind light & eye position
-        glUniform3fv(glGetUniformLocation(phongShader, "lightpos"), 1, lightPos.vec);
-        glUniform3fv(glGetUniformLocation(phongShader, "lightColor"), 1, lightColor.vec);
-        glUniform3fv(glGetUniformLocation(phongShader, "eyepos"), 1, eyePos.vec);
+        glUniform3fv(glGetUniformLocation(phongShader, "lightpos"), 1, glm::value_ptr(lightPos));
+        glUniform3fv(glGetUniformLocation(phongShader, "lightColor"), 1, glm::value_ptr(lightColor));
+        glUniform3fv(glGetUniformLocation(phongShader, "eyepos"), 1, glm::value_ptr(eyePos));
 
         // Bind cube map texture
         GLuint cubemapTextureHandle = 0; // <- PLACEHOLDER
@@ -182,7 +157,7 @@ namespace eeng
     }
 
     void ForwardRenderer::renderMesh(const std::shared_ptr<RenderableMesh> mesh,
-                                     const m4f &WorldMatrix)
+                                     const glm::mat4 &WorldMatrix)
     {
         // Bind bone matrices
         if (mesh->boneMatrices.size())
@@ -201,11 +176,11 @@ namespace eeng
             // Append hierarchical transform non-skinned meshes that are linked to nodes
             if (submesh.node_index != EENG_NULL_INDEX && !submesh.is_skinned)
             {
-                const m4f WorldMeshMatrix = WorldMatrix * mesh->m_nodetree.nodes[submesh.node_index].global_tfm;
+                const m4f WorldMeshMatrix = get_mf4(WorldMatrix) * mesh->m_nodetree.nodes[submesh.node_index].global_tfm;
                 glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, WorldMeshMatrix.array);
             }
             else
-                glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, WorldMatrix.array);
+                glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, glm::value_ptr(WorldMatrix));
 
             // (Could do view frustum culling (VFC) here using the projection matrix)
             // (Mesh traversal)
@@ -247,8 +222,8 @@ namespace eeng
                                      submesh.base_vertex);
             drawcallCounter++;
 
-                // Unbind textures
-                for (auto &texture : texturesDescs)
+            // Unbind textures
+            for (auto &texture : texturesDescs)
             {
                 glActiveTexture(GL_TEXTURE0 + texture.textureUnit);
                 glBindTexture(GL_TEXTURE_2D, 0);
