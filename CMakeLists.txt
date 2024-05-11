@@ -121,17 +121,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 
 #
-# Fetch enTT
+# Fetch enTT (header-only)
 #
-# ENTT_INCLUDE_NATVIS (https://github.com/skypjack/entt?tab=readme-ov-file#cmake)
-# ENTT_BUILD_TESTING, ENTT_BUILD_DOCS (https://github.com/skypjack/entt/issues/603)
-#FetchContent_Declare(
-#  entt
-#  GIT_REPOSITORY https://github.com/skypjack/entt.git
-#  GIT_TAG        v3.9.1  # or any specific version you want to use
-#)
-# include_directories(${SDL2_SOURCE_DIR}/include) # or target_include_directories(my_project PRIVATE ${entt_SOURCE_DIR}/include)
-# -> target target_link_libraries(my_project PRIVATE entt)
+FetchContent_Declare(
+  entt
+  GIT_REPOSITORY https://github.com/skypjack/entt.git
+  GIT_TAG        v3.13.2
+)
+FetchContent_MakeAvailable(entt)
+include_directories(${entt_SOURCE_DIR}/src) 
 
 #
 # Fetch Dear ImGui

@@ -11,7 +11,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-// #include <entt/entt.hpp> // -> Scene class eg
+#include <entt/entt.hpp> // -> Scene class eg
 
 #include <glm/glm.hpp>
 
@@ -44,9 +44,19 @@ int main(int argc, char *argv[])
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
     auto renderer = std::make_shared<eeng::ForwardRenderer>();
 
-    glm::vec3 v3(1.0f, 2.0f, 3.0f);                  // Creates a 3D vector
+    // Do some glm stuff
+    glm::vec3 v3(1.0f, 2.0f, 3.0f);       // Creates a 3D vector
     glm::vec4 v4(1.0f, 2.0f, 3.0f, 1.0f); // Creates a 4D homogeneous vector
     auto vdot = glm::dot(v3, v3);
+
+    // Do some entt stuff
+    entt::registry registry;
+    auto ent1 = registry.create();
+    struct Tfm
+    {
+        float x, y, z;
+    };
+    registry.emplace<Tfm>(ent1, Tfm{});
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
