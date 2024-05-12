@@ -15,6 +15,7 @@
 //    - no 1-bit BMP
 //    - GIF always returns *comp=4
 
+#include <algorithm>
 #include "Texture.hpp"
 
 #define STBI_NO_HDR
@@ -137,7 +138,7 @@ void Texture2D::load_to_VRAM(const std::string &name,
     GLfloat maxAniso;
 #if defined(EENG_GLVERSION_43)
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, std::min(EENG_ANISO_SAMPLES, (GLint)maxAniso);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, std::min(EENG_ANISO_SAMPLES, (GLint)maxAniso));
 #elif defined(EENG_GLVERSION_41)
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, std::min(EENG_ANISO_SAMPLES, (GLint)maxAniso));
