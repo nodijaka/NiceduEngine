@@ -59,6 +59,7 @@ void main()
        mat3 TBN = mat3(tangent, binormal, normal);
        vec3 bnormal = texture(normalTexture, texflip).xyz * 2.0 - 1.0;
        N = normalize( TBN * bnormal );
+    //    fragcolor = vec4(N*0.5+0.5, 1.0); return;
    }
 
    vec3 R = reflect(-L, N);
@@ -72,10 +73,12 @@ void main()
 //        C = cubec*refl + C*(1.0-refl);
 //    }
 
-   vec3 CC = (C*0.5 + C*ldot + S*pow(rdot, 20)) * lightColor;
+   vec3 CC = (C*0.5 + C*ldot + S*pow(rdot, 20)) * lightColor * 1;
+   
+//    CC = CC / (CC + vec3(1.0));
    
    // Gamma correcton
-   //CC = pow(CC, vec3(1.0/2.2));
+    CC = pow(CC, vec3(1.0/1.4));
 
    fragcolor = vec4(CC, 1);
 }

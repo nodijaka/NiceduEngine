@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 
     // Grass
     auto grassMesh = std::make_shared<eeng::RenderableMesh>();
-    grassMesh->load("assets/grass/grass_trees_merged.fbx", false);
+    grassMesh->load("assets/grass/grass_trees_merged2.fbx", false);
 
     auto characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
@@ -400,7 +400,8 @@ int main(int argc, char *argv[])
         // Bind the default framebuffer (only needed when using multiple render targets)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // Clear depth and color attachments of frame buffer
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        // glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
         glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -415,7 +416,8 @@ int main(int argc, char *argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
+        glm::vec3 lightPos = glm::vec3(TRS({1000.0f, 1000.0f, 1000.0f}, time_s*0.0f, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        // glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
         // linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
         glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -glm::radians(45.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -467,7 +469,7 @@ int main(int argc, char *argv[])
 
         // Character
         // m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Mixamo
-        glm::mat4 W = TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.03f, 0.03f, 0.03f}); // Character
+        glm::mat4 W = TRS({0, 0, 0}, time_s * 50.0f, {0, 1, 0}, {0.03f, 0.03f, 0.03f}); // Character
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, W);
         // Character #2
