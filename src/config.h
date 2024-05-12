@@ -7,10 +7,16 @@
 #include <string_view>
 #include <format>
 
-// Misc global defines
+/// Misc global defines
 #define EENG_NULL_INDEX -1
 
-// Platform
+/// Rendering defines
+#define EENG_MSAA
+#define EENG_MSAA_SAMPLES 4
+#define EENG_ANISO
+#define EENG_ANISO_SAMPLES 8
+
+/// Platform
 #ifdef _WIN32
 #define EENG_PLATFORM_WINDOWS
 #else
@@ -19,7 +25,7 @@
 #define EENG_PLATFORM_APPLE
 #endif
 
-// CPP versions
+/// CPP versions
 #if __cplusplus >= 201103L
 #define CPP11_SUPPORTED
 #endif
@@ -33,7 +39,7 @@
 #define CPP20_SUPPORTED
 #endif
 
-// Compiler
+/// Compiler
 #ifdef _MSC_VER
 #define EENG_COMPILER_MSVC
 #endif
@@ -44,13 +50,13 @@
 #define EENG_COMPILER_GCC
 #endif
 
-// Debug
+/// Debug
 #if !defined(NDEBUG) || defined(_DEBUG)
 #define EENG_DEBUG
 #define EENG_ENABLE_ASSERTS
 #endif
 
-// Debug break
+/// Debug break
 #ifdef EENG_PLATFORM_WINDOWS
 #define EENG_DEBUG_BREAK() __debugbreak()
 #else
@@ -63,7 +69,7 @@
 #endif
 #endif
 
-// Assert
+/// Assert
 #if defined(EENG_ENABLE_ASSERTS) && defined(CPP20_SUPPORTED)
 template <class... Args>
 static void EENG_ERROR(std::string_view fmt, Args &&...args)
@@ -86,7 +92,7 @@ static void EENG_ERROR(std::string_view fmt, Args &&...args)
 #define EENG_ASSERT(x, ...)
 #endif
 
-// GL version
+/// GL version
 #ifdef EENG_PLATFORM_APPLE
 #define EENG_GLVERSION_MAJOR 4
 #define EENG_GLVERSION_MINOR 1
@@ -108,7 +114,7 @@ static_assert(false, "OpenGL 4.1 is required");
 #endif
 
 /// Print defines
-template<class LogType>
+template <class LogType>
 static void LOG_DEFINES()
 {
 #ifdef EENG_DEBUG
@@ -134,19 +140,13 @@ static void LOG_DEFINES()
 #elif defined(CPP11_SUPPORTED)
     LogType::log("C++ version 11");
 #endif
-
-#ifdef EENG_GLVERSION_43
-    LogType::log("OpenGL version 4.3+");
-#elif defined(EENG_GLVERSION_41)
-    LogType::log("OpenGL version 4.1");
-#endif
 }
 
 /// Convert an enum class to its underlying type
-template<typename E>
+template <typename E>
 constexpr auto to_integral(E e) -> typename std::underlying_type<E>::type
 {
-   return static_cast<typename std::underlying_type<E>::type>(e);
+    return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
 #endif

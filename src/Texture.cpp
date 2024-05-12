@@ -124,12 +124,27 @@ void Texture2D::load_to_VRAM(const std::string &name,
     glGenTextures(1, &m_handle);
     glBindTexture(GL_TEXTURE_2D, m_handle);
 
+    // Minification & magnification filters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filter_mode.min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter_mode.mag_filter);
+
+    // Address mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_address_mode.s_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_address_mode.t_mode);
-    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE, image);
 
+#ifdef EENG_ANISO
+    // Anisotropic filter
+    GLfloat maxAniso;
+#if defined(EENG_GLVERSION_43)
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, std::min(EENG_ANISO_SAMPLES, (GLint)maxAniso);
+#elif defined(EENG_GLVERSION_41)
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, std::min(EENG_ANISO_SAMPLES, (GLint)maxAniso));
+#endif
+#endif
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     CheckAndThrowGLErrors();

@@ -83,8 +83,12 @@ int main(int argc, char *argv[])
     // OpenGL context attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, EENG_GLVERSION_MAJOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, EENG_GLVERSION_MINOR);
+#ifdef EENG_MSAA
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, EENG_MSAA_SAMPLES);
+#endif
 
     // Create a window
     SDL_Window *window = SDL_CreateWindow("SDL2 + Assimp + Dear ImGui",
@@ -212,6 +216,35 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    // Log some state
+    LOG_DEFINES<eeng::Log>();
+    {
+        int glMinor, glMajor;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glMinor);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glMajor);
+        eeng::Log::log("GL version %i.%i (requested), %i.%i (actual)", EENG_GLVERSION_MAJOR, EENG_GLVERSION_MINOR, glMajor, glMinor);
+    }
+#ifdef EENG_MSAA
+    {
+        int actualMSAA;
+        SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &actualMSAA);
+        eeng::Log::log("MSAA %i (requested), %i (actual)", EENG_MSAA_SAMPLES, actualMSAA);
+    }
+#endif
+#ifdef EENG_ANISO
+    {
+        GLfloat maxAniso;
+#if defined(EENG_GLVERSION_43)
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
+#elif defined(EENG_GLVERSION_41)
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+#endif
+        eeng::Log::log("Anisotropic samples %i (requested), %i (max))", EENG_ANISO_SAMPLES, (int)maxAniso);
+    }
+#endif
+
+    renderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
+
     // Grass
     auto grassMesh = std::make_shared<eeng::RenderableMesh>();
     grassMesh->load("assets/grass/grass_trees_merged2.fbx", false);
@@ -260,14 +293,12 @@ int main(int argc, char *argv[])
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 
-    LOG_DEFINES<eeng::Log>();
-    renderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
-    eeng::Log::log("Entering main loop...");
-
     // Main loop
     float time_s, time_ms;
     bool quit = false;
     SDL_Event event;
+    eeng::Log::log("Entering main loop...");
+
     while (!quit)
     {
         time_ms = SDL_GetTicks();
@@ -416,7 +447,7 @@ int main(int argc, char *argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        glm::vec3 lightPos = glm::vec3(TRS({1000.0f, 1000.0f, 1000.0f}, time_s*0.0f, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        glm::vec3 lightPos = glm::vec3(TRS({1000.0f, 1000.0f, 1000.0f}, time_s * 0.0f, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         // glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
         // linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
         glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -glm::radians(45.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});

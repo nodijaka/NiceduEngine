@@ -10,20 +10,8 @@
 #define texture_hpp
 
 #include <stdio.h>
-
 #include "glcommon.h"
-//#include <GL/glew.h>
-//#include <GLFW/glfw3.h>
-// #ifdef __APPLE__
-// #include <OpenGL/gl.h>
-// #else
-// #include <windows.h>
-// #include <GL/gl.h>
-// #endif
-
-//#define STBI_NO_HDR
-//#include "stb/stb_image.c"
-
+#include "config.h"
 #include "parseutil.h"
 
 struct texture_filter_mode_t { GLuint min_filter, mag_filter; };
