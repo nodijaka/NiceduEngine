@@ -30,10 +30,8 @@ else()
     add_compile_definitions(GL_SILENCE_DEPRECATION=0)
 endif()
 
-# ???
 # 'target_include_directories' if target specific
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/vec)
 
 find_package(OpenGL REQUIRED)
 find_package (Git REQUIRED)
@@ -160,9 +158,6 @@ add_executable(Module1
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ForwardRenderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/mat.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/vec.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vec/quat.cpp
     )
 
 set_target_properties(Module1 PROPERTIES
