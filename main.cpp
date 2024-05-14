@@ -14,8 +14,8 @@
 #include <entt/entt.hpp> // -> Scene source
 
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>         // glm::value_ptr
-#include <glm/gtc/matrix_transform.hpp> // glm::perspective
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // -> UI source
 #include <iostream>
@@ -26,7 +26,6 @@
 #include "Log.hpp"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
-// #include "math_.h" // -> Scene source, or put defs in config
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
@@ -38,21 +37,25 @@ int ANIM_INDEX = -1;
 glm::vec3 LIGHT_COLOR{1.0f, 1.0f, 1.0f};
 int DRAWCALL_COUNT;
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+void printMat4(const glm::mat4 &matrix)
+{
+    const float *ptr = glm::value_ptr(matrix);
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            std::cout << ptr[j * 4 + i] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 glm::mat4 TRS(const glm::vec3 &translation, float angle, const glm::vec3 &axis, const glm::vec3 &scale)
 {
-    const glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
-    const glm::mat4 RS = glm::rotate(S, glm::radians(angle), axis);
-    const glm::mat4 TRS = glm::translate(RS, translation);
+    const glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
+    const glm::mat4 TR = glm::rotate(T, glm::radians(angle), axis);
+    const glm::mat4 TRS = glm::scale(TR, scale);
     return TRS;
-
-    // const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), translation);
-    // const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
-    // const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-
-    // return translationMatrix * rotationMatrix * scaleMatrix;
 }
 
 int main(int argc, char *argv[])
@@ -249,6 +252,11 @@ int main(int argc, char *argv[])
     auto grassMesh = std::make_shared<eeng::RenderableMesh>();
     grassMesh->load("assets/grass/grass_trees_merged2.fbx", false);
 
+    // Horse
+    auto horseMesh = std::make_shared<eeng::RenderableMesh>();
+    horseMesh->load("assets/Animals/Horse.fbx", false);
+
+    // Character
     auto characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
     // Sponza
@@ -447,70 +455,39 @@ int main(int argc, char *argv[])
             glEnable(GL_CULL_FACE);
         }
 
+        // Light & Camera position
         glm::vec3 lightPos = glm::vec3(TRS({1000.0f, 1000.0f, 1000.0f}, time_s * 0.0f, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        // glm::vec3 lightPos{1000.0f, 1000.0f, 1000.0f};
-        // linalg::v3f lightPos = m3f::rotation(time_s * 0.0f, 1.0f, 0.0f, 0.0f) * v3f{1000.0f, 1000.0f, 1000.0f};
         glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -glm::radians(45.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
 
-        // animtime += 0.016f;
-        //
-        //  glViewport
-        //  http://www.glfw.org/docs/latest/quick.html#quick_render
-        //  int width, height; // ~2x the window size on Mac Retina
-        //  glfwGetFramebufferSize(window, &width, &height);
-        //  glViewport(0, 0, w, h);
-        //
-        // float fov = 60.0f * fTO_RAD;
+        // Projection & View matrices
         const float aspectRatio = float(WINDOW_WIDTH) / WINDOW_HEIGHT;
         const float nearPlane = 1.0f, farPlane = 500.0f;
         glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
         glm::mat4 V = glm::inverse(TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}));
-        // linalg::m4f P = linalg::m4f::GL_PerspectiveProjectionRHS(fov, aspect, 1.0f, 500.0f);
-        // linalg::m4f V = linalg::m4f::TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}).inverse();
-
-        // Animate & render grass
-        // linalg::m4f W = m4f::TRS({-50.0f, -50.0f, -150.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
-        // grassMesh->animate(-1, time_s * ANIM_SPEED, )
-        // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
-
-        // linalg::m4f W = mat4f::TRS({0,0,0}, time_s *  0.75f, {0,1,0}, {0.1f,0.1f,0.1f}); // Leela
-        //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f * 0, {1,0,0}, {0.25f,0.25f,0.25f}); // Manneq
-        // W = m4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {0.15f, 0.15f, 0.15f}); // Character
-        //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.1f,0.1f,0.1f}); // Kenney
-        //  linalg::m4f W = mat4f::TRS({0,0,0}, animtime*0.01f, {0,1,0}, {0.4f,0.4f,0.4f}); // Mixamo Eve
-
-        // linalg::m4f W = mat4f::TRS({0, -50, 0}, time_s * 0.75f, {0, 1, 0}, {50.0f, 50.0f, 50.0f}); // DAE
-        // linalg::m4f W = mat4f::TRS({0, -40, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Dragon
-#if 0
-        characterMesh->render(P * V, W, time_s * ANIM_SPEED, -1, lightPos, eye);
-        W = m4f::TRS({-30, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
-        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 1, lightPos, eye);
-        W = m4f::TRS({60, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
-        characterMesh->render(P * V, W, time_s * ANIM_SPEED, 2, lightPos, eye);
-#endif
 
         renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
 
         // Grass
-        glm::mat4 grassWorldMatrix = TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
-        // grassMesh->animate(-1, time_s * ANIM_SPEED, )
-        // grassMesh->animate(-1, 0.0f);
+        const auto grassWorldMatrix = TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
         renderer->renderMesh(grassMesh, grassWorldMatrix);
-        // grassMesh->render(P * V, W, 0.0f, -1, lightPos, eye);
+
+        // Horse
+        const auto horseWorldMatrix = TRS({30.0f, 0.0f, -35.0f}, 35.0f, {0, 1, 0}, {0.01f, 0.01f, 0.01f});
+        horseMesh->animate(3, time_s); // clip 3 = 'eating'
+        renderer->renderMesh(horseMesh, horseWorldMatrix);
 
         // Character
-        // m4f W = m4f::TRS({0, 0, 0}, time_s * 0.75f, {0, 1, 0}, {0.05f, 0.05f, 0.05f}); // Mixamo
-        glm::mat4 W = TRS({0, 0, 0}, time_s * 50.0f, {0, 1, 0}, {0.03f, 0.03f, 0.03f}); // Character
+        auto characterWorldMatrix = TRS({0, 0, 0}, time_s * 50.0f, {0, 1, 0}, {0.03f, 0.03f, 0.03f});
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, W);
+        renderer->renderMesh(characterMesh, characterWorldMatrix);
         // Character #2
-        W = TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        characterWorldMatrix = TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * characterWorldMatrix;
         characterMesh->animate(1, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, W);
+        renderer->renderMesh(characterMesh, characterWorldMatrix);
         // Character #3
-        W = TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * W; // Amy
+        characterWorldMatrix = TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * characterWorldMatrix;
         characterMesh->animate(2, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, W);
+        renderer->renderMesh(characterMesh, characterWorldMatrix);
 
         DRAWCALL_COUNT = renderer->endPass();
 

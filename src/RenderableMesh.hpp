@@ -42,10 +42,10 @@ namespace eeng
     {
         glm::mat4 local_tfm;
         glm::mat4 global_tfm{1.0f};
-        
+
         int bone_index = EENG_NULL_INDEX;
         int nbr_meshes = 0;
-        
+
         std::string name = "";
 
         SkeletonNode() = default;
@@ -78,6 +78,17 @@ namespace eeng
     {
         xi_load_meshes = 0x1,
         xi_load_animations = 0x2
+    };
+
+    /// @brief Interpretation of time when mapping to keyframes
+    /// Real-time means that (t = 0) maps to the first keyframe, 
+    /// and (t = clip duration) maps to the last keyframe.
+    // Normalied time means that (t = 0) maps to the first keyframe,
+    // and (t = 1) maps to the last keyframe.
+    enum class AnmationTimeFormat
+    {
+        RealTime,
+        NormalizedTime
     };
 
     /// @brief A model loaded from file prepared with GL textures and buffers
@@ -191,14 +202,29 @@ namespace eeng
                   unsigned xiflags,
                   unsigned aiflags = 0);
 
+        /// @brief
+        /// @param node_name
         void removeTranslationKeys(const std::string &node_name);
 
+        /// @brief
+        /// @param node_index
         void removeTranslationKeys(int node_index);
 
+        /// @brief 
+        /// @param anim_index 
+        /// @param time 
+        /// @param animTimeFormat 
         void animate(int anim_index,
-                     float time);
+                     float time,
+                     AnmationTimeFormat animTimeFormat = AnmationTimeFormat::RealTime);
 
+        /// @brief
+        /// @return
         unsigned getNbrAnimations() const;
+
+        /// @brief
+        /// @param i
+        /// @return
         std::string getAnimationName(unsigned i) const;
 
     private:
@@ -220,8 +246,6 @@ namespace eeng
         void loadNodes(aiNode *node);
         void loadNode(aiNode *node);
 
-        /// Load bones and skin weights associated with a mesh
-        ///
         void loadBones(uint mesh_index,
                        const aiMesh *aimesh,
                        std::vector<SkinData> &scene_skindata);

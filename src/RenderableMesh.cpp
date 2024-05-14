@@ -943,12 +943,18 @@ namespace eeng
         return translationMatrix * rotationMatrix * scaleMatrix;
     }
 
-    /// @brief Update node hiearchy using animation keyframes
-    /// @param anim_index
-    /// @param time
     void RenderableMesh::animate(int anim_index,
-                                 float time)
+                                 float time,
+                                 AnmationTimeFormat animTimeFormat)
     {
+        glm::mat4 (RenderableMesh::*blendFunc)(const AnimationClip *anim,
+                                               const NodeKeyframes &keys,
+                                               float time) const;
+        if (animTimeFormat == AnmationTimeFormat::RealTime)
+            blendFunc = &RenderableMesh::blendTransformAtTime;
+        else
+            blendFunc = &RenderableMesh::blendTransformAtFrac;
+
         AnimationClip *anim = nullptr;
         if (anim_index >= 0 && anim_index < getNbrAnimations())
         {
@@ -969,7 +975,8 @@ namespace eeng
             {
                 const auto &node_anim = anim->node_animations[node_index];
                 if (node_anim.is_used)
-                    node_tfm = blendTransformAtTime(anim, node_anim, time);
+                    // node_tfm = blendTransformAtTime(anim, node_anim, time);
+                    node_tfm = std::invoke(blendFunc, this, anim, node_anim, time);
             }
 
             // Apply parent transform
