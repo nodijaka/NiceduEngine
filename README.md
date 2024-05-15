@@ -67,7 +67,7 @@ After successful build, you can find the executables in the respective directori
 
 ### Generator
 
-To select a specific generator (Visual Studio, makefile etc) use cmake like this
+To select a specific generator (Visual Studio, Unix Makefile etc) use `cmake` like this
 ```sh
 cmake -B Debug -G "name-of-generator" -DCMAKE_BUILD_TYPE=Debug
 ```
