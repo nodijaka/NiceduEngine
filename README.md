@@ -18,10 +18,10 @@ Course framework for MAU::DA376B
 
 ## Under consideration
 
-- Animation: [ozz-animation](https://guillaumeblanc.github.io/ozz-animation/)
+- Advanced animation: [ozz-animation](https://guillaumeblanc.github.io/ozz-animation/)
 - JSON reader & writer: [nlohmann-json](https://github.com/nlohmann/json)
-- File-dialog for Dear ImGui: [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
-- C++ binding for LUA: [sol2](https://github.com/ThePhD/sol2)
+- File dialog based on Dear ImGui: [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
+- LUA scripting: [sol2](https://github.com/ThePhD/sol2)
 
 ## Building Instructions
 
@@ -43,7 +43,7 @@ cmake -B Release -DCMAKE_BUILD_TYPE=Release
 cmake --build Release
 ```
 
-After successful build, you can find the executables in the respective directories (`Debug` or `Release`).
+After successful build, you can find the executables in the respective directories (`Debug` or `Release`). A clean build will take some time since all code is compiled from source.
 
 ### macOS
 
@@ -63,11 +63,23 @@ cmake -B Release -DCMAKE_BUILD_TYPE=Release
 cmake --build Release
 ```
 
-After successful build, you can find the executables in the respective directories (`Debug` or `Release`).
+After successful build, you can find the executables in the respective directories (`Debug` or `Release`). A clean build will take some time since all code is compiled from source.
+
+### Generator
+
+To select a specific generator (Visual Studio, makefile etc) use cmake like this
+```sh
+cmake -B Debug -G "name-of-generator" -DCMAKE_BUILD_TYPE=Debug
+```
+
+Use this command to list generators that are available on your system
+```sh
+cmake --help
+```
 
 ## Examples
 
-[Mixamo Amy](https://www.mixamo.com/). Background elements by [Quaternius](https://quaternius.com/)  
+[Mixamo Amy](https://www.mixamo.com/). Background elements by [Quaternius](https://quaternius.com/).  
 ![example1](example1.png)  
 
 [Tarisland by Doctor A.](https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f)  
