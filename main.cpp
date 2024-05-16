@@ -37,25 +37,45 @@ int ANIM_INDEX = -1;
 glm::vec3 LIGHT_COLOR{1.0f, 1.0f, 1.0f};
 int DRAWCALL_COUNT;
 
-void printMat4(const glm::mat4 &matrix)
-{
-    const float *ptr = glm::value_ptr(matrix);
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            std::cout << ptr[j * 4 + i] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
+SDL_GameController *controller1;
 
-glm::mat4 TRS(const glm::vec3 &translation, float angle, const glm::vec3 &axis, const glm::vec3 &scale)
+namespace
 {
-    const glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
-    const glm::mat4 TR = glm::rotate(T, glm::radians(angle), axis);
-    const glm::mat4 TRS = glm::scale(TR, scale);
-    return TRS;
+    // Helpers
+
+    void printMat4(const glm::mat4 &matrix)
+    {
+        const float *ptr = glm::value_ptr(matrix);
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                std::cout << ptr[j * 4 + i] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    glm::mat4 TRS(const glm::vec3 &translation, float angle, const glm::vec3 &axis, const glm::vec3 &scale)
+    {
+        const glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
+        const glm::mat4 TR = glm::rotate(T, glm::radians(angle), axis);
+        const glm::mat4 TRS = glm::scale(TR, scale);
+        return TRS;
+    }
+
+    SDL_GameController *findController()
+    {
+        for (int i = 0; i < SDL_NumJoysticks(); i++)
+        {
+            if (SDL_IsGameController(i))
+            {
+                return SDL_GameControllerOpen(i);
+            }
+        }
+
+        return nullptr;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -77,11 +97,14 @@ int main(int argc, char *argv[])
 
     // Initialize SDL
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
     {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
         return 1;
     }
+
+    // Controllers
+    controller1 = findController();
 
     // OpenGL context attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
@@ -315,10 +338,34 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event); // Send events to ImGui
-            if (event.type == SDL_QUIT)
+
+            switch (event.type)
             {
+            case SDL_QUIT:
                 quit = true;
+                break;
+            case SDL_CONTROLLERDEVICEADDED:
+                if (!controller1)
+                {
+                    controller1 = SDL_GameControllerOpen(event.cdevice.which);
+                }
+                break;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (controller1 && event.cdevice.which == SDL_JoystickInstanceID(
+                                                              SDL_GameControllerGetJoystick(controller1)))
+                {
+                    SDL_GameControllerClose(controller1);
+                    controller1 = findController();
+                }
+                break;
+            case SDL_CONTROLLERBUTTONDOWN:
+                break;
             }
+        }
+
+        if (SDL_GameControllerGetButton(controller1, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X))
+        {
+            printf("X was pressed!\n");
         }
 
         // Start the ImGui frame
@@ -368,7 +415,7 @@ int main(int argc, char *argv[])
         {
             int curAnimIndex = ANIM_INDEX;
             std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
-            if (ImGui::BeginCombo("Animation Clip##animclip", label.c_str()))
+            if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
             {
                 // Bind pose item
                 const bool isSelected = (curAnimIndex == -1);
@@ -417,6 +464,34 @@ int main(int argc, char *argv[])
                               glm::value_ptr(LIGHT_COLOR),
                               ImGuiColorEditFlags_NoInputs))
         {
+        }
+
+        ImGui::Text("Controller State");
+
+        if (controller1 != nullptr)
+        {
+            ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
+
+            ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
+                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
+                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
+                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_X),
+                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_Y));
+
+            ImGui::Text("Left Stick: X:%.2f Y:%.2f",
+                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f,
+                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f);
+
+            ImGui::Text("Right Stick: X:%.2f Y:%.2f",
+                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
+                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
+
+            ImGui::EndChild();
+        }
+        else
+        {
+            ImGui::SameLine();
+            ImGui::Text("No controller connected");
         }
 
         ImGui::End(); // end config window
