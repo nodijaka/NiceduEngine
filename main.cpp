@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
 
         if (SDL_GameControllerGetButton(controller1, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X))
         {
-            printf("X was pressed!\n");
+            // printf("X was pressed!\n");
         }
 
         // Start the ImGui frame
@@ -439,9 +439,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        ImGui::Checkbox("Wireframe rendering", &WIREFRAME);
-
         ImGui::SliderFloat("Animation speed", &ANIM_SPEED, 0.1f, 5.0f);
+        
+        ImGui::Checkbox("Wireframe rendering", &WIREFRAME);
 
         if (SOUND_PLAY)
         {
@@ -471,7 +471,6 @@ int main(int argc, char *argv[])
         if (controller1 != nullptr)
         {
             ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
-
             ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
                         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
                         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
@@ -485,7 +484,6 @@ int main(int argc, char *argv[])
             ImGui::Text("Right Stick: X:%.2f Y:%.2f",
                         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
                         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
-
             ImGui::EndChild();
         }
         else
