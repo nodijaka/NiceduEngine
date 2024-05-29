@@ -34,18 +34,18 @@ bool WIREFRAME = false;
 float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
 int ANIM_INDEX = -1;
-glm::vec3 LIGHT_COLOR{1.0f, 1.0f, 1.0f};
+glm::vec3 LIGHT_COLOR{ 1.0f, 1.0f, 1.0f };
 int DRAWCALL_COUNT;
 
-SDL_GameController *controller1;
+SDL_GameController* controller1;
 
 namespace
 {
     // Helpers
 
-    void printMat4(const glm::mat4 &matrix)
+    void printMat4(const glm::mat4& matrix)
     {
-        const float *ptr = glm::value_ptr(matrix);
+        const float* ptr = glm::value_ptr(matrix);
         for (int i = 0; i < 4; ++i)
         {
             for (int j = 0; j < 4; ++j)
@@ -56,7 +56,7 @@ namespace
         }
     }
 
-    glm::mat4 TRS(const glm::vec3 &translation, float angle, const glm::vec3 &axis, const glm::vec3 &scale)
+    glm::mat4 TRS(const glm::vec3& translation, float angle, const glm::vec3& axis, const glm::vec3& scale)
     {
         const glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
         const glm::mat4 TR = glm::rotate(T, glm::radians(angle), axis);
@@ -64,7 +64,7 @@ namespace
         return TRS;
     }
 
-    SDL_GameController *findController()
+    SDL_GameController* findController()
     {
         for (int i = 0; i < SDL_NumJoysticks(); i++)
         {
@@ -78,7 +78,7 @@ namespace
     }
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     //    EENG_ASSERT(false, "Debug break test {0}", 123);
     auto renderer = std::make_shared<eeng::ForwardRenderer>();
@@ -117,12 +117,12 @@ int main(int argc, char *argv[])
 #endif
 
     // Create a window
-    SDL_Window *window = SDL_CreateWindow("SDL2 + Assimp + Dear ImGui",
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          WINDOW_WIDTH,
-                                          WINDOW_HEIGHT,
-                                          SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+    SDL_Window* window = SDL_CreateWindow("SDL2 + Assimp + Dear ImGui",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if (!window)
     {
         std::cerr << "Failed to create window: " << SDL_GetError() << std::endl;
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
     // Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     (void)io;
 
     // Setup Dear ImGui style
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 
     // Setup Platform/Renderer bindings
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    const char *glsl_version = "#version 410 core";
+    const char* glsl_version = "#version 410 core";
     if (!ImGui_ImplOpenGL3_Init(glsl_version))
     {
         std::cerr << "Failed to initialize ImGui with OpenGL backend" << std::endl;
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     // Load and play an audio clip
     SDL_AudioSpec wavSpec;
     Uint32 wavLength;
-    Uint8 *wavBuffer;
+    Uint8* wavBuffer;
     SDL_AudioDeviceID deviceId = 0; // Declare deviceId outside of the if block
     // Load sound
     std::cout << "Playing sound..." << std::endl;
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
                 break;
             case SDL_CONTROLLERDEVICEREMOVED:
                 if (controller1 && event.cdevice.which == SDL_JoystickInstanceID(
-                                                              SDL_GameControllerGetJoystick(controller1)))
+                    SDL_GameControllerGetJoystick(controller1)))
                 {
                     SDL_GameControllerClose(controller1);
                     controller1 = findController();
@@ -379,117 +379,123 @@ int main(int argc, char *argv[])
 
         ImGui::Begin("Config");
 
-        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-        ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
-
-        // Combo (drop-down) for fps settings
-        static const char *items[] = {"10", "30", "60", "120", "Uncapped"};
-        static int currentItem = 2;
-        if (ImGui::BeginCombo("Target framerate##targetfps", items[currentItem]))
+        if (ImGui::CollapsingHeader("Backend", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            for (int i = 0; i < IM_ARRAYSIZE(items); i++)
+            ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
+
+            // Combo (drop-down) for fps settings
+            static const char* items[] = { "10", "30", "60", "120", "Uncapped" };
+            static int currentItem = 2;
+            if (ImGui::BeginCombo("Target framerate##targetfps", items[currentItem]))
             {
-                const bool isSelected = (currentItem == i);
-                if (ImGui::Selectable(items[i], isSelected))
-                    currentItem = i;
-
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-        if (currentItem == 0)
-            FRAMETIME_MIN_MS = 1000.0f / 10;
-        else if (currentItem == 1)
-            FRAMETIME_MIN_MS = 1000.0f / 30;
-        else if (currentItem == 2)
-            FRAMETIME_MIN_MS = 1000.0f / 60;
-        else if (currentItem == 3)
-            FRAMETIME_MIN_MS = 1000.0f / 120;
-        else if (currentItem == 4)
-            FRAMETIME_MIN_MS = 0.0f;
-
-        // Combo (drop-down) for animation clip
-        if (characterMesh)
-        {
-            int curAnimIndex = ANIM_INDEX;
-            std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
-            if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
-            {
-                // Bind pose item
-                const bool isSelected = (curAnimIndex == -1);
-                if (ImGui::Selectable("Bind pose", isSelected))
-                    curAnimIndex = -1;
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-
-                // Clip items
-                for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
+                for (int i = 0; i < IM_ARRAYSIZE(items); i++)
                 {
-                    const bool isSelected = (curAnimIndex == i);
-                    const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
-                    if (ImGui::Selectable(label.c_str(), isSelected))
-                        curAnimIndex = i;
+                    const bool isSelected = (currentItem == i);
+                    if (ImGui::Selectable(items[i], isSelected))
+                        currentItem = i;
+
                     if (isSelected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
-                ANIM_INDEX = curAnimIndex;
             }
-        }
+            if (currentItem == 0)
+                FRAMETIME_MIN_MS = 1000.0f / 10;
+            else if (currentItem == 1)
+                FRAMETIME_MIN_MS = 1000.0f / 30;
+            else if (currentItem == 2)
+                FRAMETIME_MIN_MS = 1000.0f / 60;
+            else if (currentItem == 3)
+                FRAMETIME_MIN_MS = 1000.0f / 120;
+            else if (currentItem == 4)
+                FRAMETIME_MIN_MS = 0.0f;
 
-        ImGui::SliderFloat("Animation speed", &ANIM_SPEED, 0.1f, 5.0f);
-        
-        ImGui::Checkbox("Wireframe rendering", &WIREFRAME);
+            ImGui::Checkbox("Wireframe rendering", &WIREFRAME);
 
-        if (SOUND_PLAY)
-        {
-            if (ImGui::Button("Pause sound"))
+            if (SOUND_PLAY)
             {
-                SDL_PauseAudioDevice(deviceId, 1);
-                SOUND_PLAY = false;
+                if (ImGui::Button("Pause sound"))
+                {
+                    SDL_PauseAudioDevice(deviceId, 1);
+                    SOUND_PLAY = false;
+                }
             }
-        }
-        else
-        {
-            if (ImGui::Button("Play sound"))
+            else
             {
-                SDL_PauseAudioDevice(deviceId, 0);
-                SOUND_PLAY = true;
+                if (ImGui::Button("Play sound"))
+                {
+                    SDL_PauseAudioDevice(deviceId, 0);
+                    SOUND_PLAY = true;
+                }
+            }
+
+            ImGui::Text("Controller State");
+
+            if (controller1 != nullptr)
+            {
+                ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
+                ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
+                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
+                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
+                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_X),
+                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_Y));
+
+                ImGui::Text("Left Stick: X:%.2f Y:%.2f",
+                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f,
+                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f);
+
+                ImGui::Text("Right Stick: X:%.2f Y:%.2f",
+                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
+                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
+                ImGui::EndChild();
+            }
+            else
+            {
+                ImGui::SameLine();
+                ImGui::Text("No controller connected");
             }
         }
 
-        if (ImGui::ColorEdit3("Light color",
-                              glm::value_ptr(LIGHT_COLOR),
-                              ImGuiColorEditFlags_NoInputs))
+        if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
         {
-        }
+            if (ImGui::ColorEdit3("Light color",
+                glm::value_ptr(LIGHT_COLOR),
+                ImGuiColorEditFlags_NoInputs))
+            {
+            }
 
-        ImGui::Text("Controller State");
+            // Combo (drop-down) for animation clip
+            if (characterMesh)
+            {
+                int curAnimIndex = ANIM_INDEX;
+                std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
+                if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
+                {
+                    // Bind pose item
+                    const bool isSelected = (curAnimIndex == -1);
+                    if (ImGui::Selectable("Bind pose", isSelected))
+                        curAnimIndex = -1;
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
 
-        if (controller1 != nullptr)
-        {
-            ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
-            ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
-                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
-                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
-                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_X),
-                        SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_Y));
+                    // Clip items
+                    for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
+                    {
+                        const bool isSelected = (curAnimIndex == i);
+                        const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
+                        if (ImGui::Selectable(label.c_str(), isSelected))
+                            curAnimIndex = i;
+                        if (isSelected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                    ANIM_INDEX = curAnimIndex;
+                }
+            }
 
-            ImGui::Text("Left Stick: X:%.2f Y:%.2f",
-                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f,
-                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f);
-
-            ImGui::Text("Right Stick: X:%.2f Y:%.2f",
-                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
-                        SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
-            ImGui::EndChild();
-        }
-        else
-        {
-            ImGui::SameLine();
-            ImGui::Text("No controller connected");
+            ImGui::SliderFloat("Animation speed", &ANIM_SPEED, 0.1f, 5.0f);
         }
 
         ImGui::End(); // end config window
@@ -529,36 +535,36 @@ int main(int argc, char *argv[])
         }
 
         // Light & Camera position
-        glm::vec3 lightPos = glm::vec3(TRS({1000.0f, 1000.0f, 1000.0f}, time_s * 0.0f, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        glm::vec3 eye = glm::vec3(TRS({0.0f, 5.0f, 10.0f}, -glm::radians(45.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
+        glm::vec3 lightPos = glm::vec3(TRS({ 1000.0f, 1000.0f, 1000.0f }, time_s * 0.0f, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        glm::vec3 eye = glm::vec3(TRS({ 0.0f, 5.0f, 10.0f }, -glm::radians(45.0f), { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }) * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
 
         // Projection & View matrices
         const float aspectRatio = float(WINDOW_WIDTH) / WINDOW_HEIGHT;
         const float nearPlane = 1.0f, farPlane = 500.0f;
         glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
-        glm::mat4 V = glm::inverse(TRS(eye, 0.0f, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}));
+        glm::mat4 V = glm::inverse(TRS(eye, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
 
         renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
 
         // Grass
-        const auto grassWorldMatrix = TRS({0.0f, 0.0f, 0.0f}, 0.0f, {0, 1, 0}, {100.0f, 100.0f, 100.0f});
+        const auto grassWorldMatrix = TRS({ 0.0f, 0.0f, 0.0f }, 0.0f, { 0, 1, 0 }, { 100.0f, 100.0f, 100.0f });
         renderer->renderMesh(grassMesh, grassWorldMatrix);
 
         // Horse
-        const auto horseWorldMatrix = TRS({30.0f, 0.0f, -35.0f}, 35.0f, {0, 1, 0}, {0.01f, 0.01f, 0.01f});
+        const auto horseWorldMatrix = TRS({ 30.0f, 0.0f, -35.0f }, 35.0f, { 0, 1, 0 }, { 0.01f, 0.01f, 0.01f });
         horseMesh->animate(3, time_s); // clip 3 = 'eating'
         renderer->renderMesh(horseMesh, horseWorldMatrix);
 
         // Character
-        auto characterWorldMatrix = TRS({0, 0, 0}, time_s * 50.0f, {0, 1, 0}, {0.03f, 0.03f, 0.03f});
+        auto characterWorldMatrix = TRS({ 0, 0, 0 }, time_s * 50.0f, { 0, 1, 0 }, { 0.03f, 0.03f, 0.03f });
         characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, characterWorldMatrix);
         // Character #2
-        characterWorldMatrix = TRS({-3, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * characterWorldMatrix;
+        characterWorldMatrix = TRS({ -3, 0, 0 }, 0.0f, { 0, 1, 0 }, { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix;
         characterMesh->animate(1, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, characterWorldMatrix);
         // Character #3
-        characterWorldMatrix = TRS({6, 0, 0}, 0.0f, {0, 1, 0}, {1.0f, 1.0f, 1.0f}) * characterWorldMatrix;
+        characterWorldMatrix = TRS({ 6, 0, 0 }, 0.0f, { 0, 1, 0 }, { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix;
         characterMesh->animate(2, time_s * ANIM_SPEED);
         renderer->renderMesh(characterMesh, characterWorldMatrix);
 
