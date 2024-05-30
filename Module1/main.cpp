@@ -231,19 +231,18 @@ int main(int argc, char* argv[])
     scene->init();
 
     // Main loop
-    float time_s, time_ms, deltaTime_s = 0.016f;
+    float time_s = 0.0f, time_ms, deltaTime_s = 0.016f;
     bool quit = false;
     SDL_Event event;
     eeng::Log::log("Entering main loop...");
 
     while (!quit)
     {
-        const auto now = SDL_GetTicks();
-        deltaTime_s = now - time_s;
-        std::cout << deltaTime_s << std::endl;
-
-        time_ms = SDL_GetTicks();
-        time_s = time_ms * 0.001f;
+        const auto now_ms = SDL_GetTicks();
+        const auto now_s = now_ms * 0.001f;
+        deltaTime_s = now_s - time_s;
+        time_ms = now_ms;
+        time_s = now_s;;
 
         while (SDL_PollEvent(&event))
         {
