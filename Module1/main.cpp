@@ -1,9 +1,9 @@
 
+#include <iostream>
 #include "config.h"
 #include "glcommon.h"
-
-// OpenGL debug message callback requires 4.3
 #ifdef EENG_GLVERSION_43
+// OpenGL debug message callback requires 4.3
 #include "GLDebugMessageCallback.h"
 #endif
 
@@ -11,58 +11,24 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include <entt/entt.hpp> // -> Scene source
-
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-// -> UI source
-#include <iostream>
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
 #include "Log.hpp"
-#include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
+#include "Scene.hpp"
 
 const int WINDOW_WIDTH = 1600;
 const int WINDOW_HEIGHT = 900;
 float FRAMETIME_MIN_MS = 1000.0f / 60;
 bool WIREFRAME = false;
-float ANIM_SPEED = 1.0f;
 bool SOUND_PLAY = false;
-int ANIM_INDEX = -1;
-glm::vec3 LIGHT_COLOR{ 1.0f, 1.0f, 1.0f };
-int DRAWCALL_COUNT;
-
 SDL_GameController* controller1;
 
 namespace
 {
     // Helpers
-
-    void printMat4(const glm::mat4& matrix)
-    {
-        const float* ptr = glm::value_ptr(matrix);
-        for (int i = 0; i < 4; ++i)
-        {
-            for (int j = 0; j < 4; ++j)
-            {
-                std::cout << ptr[j * 4 + i] << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
-
-    glm::mat4 TRS(const glm::vec3& translation, float angle, const glm::vec3& axis, const glm::vec3& scale)
-    {
-        const glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
-        const glm::mat4 TR = glm::rotate(T, glm::radians(angle), axis);
-        const glm::mat4 TRS = glm::scale(TR, scale);
-        return TRS;
-    }
 
     SDL_GameController* findController()
     {
@@ -80,17 +46,6 @@ namespace
 
 int main(int argc, char* argv[])
 {
-    //    EENG_ASSERT(false, "Debug break test {0}", 123);
-    auto renderer = std::make_shared<eeng::ForwardRenderer>();
-
-    // Do some entt stuff
-    entt::registry registry;
-    auto ent1 = registry.create();
-    struct Tfm
-    {
-        float x, y, z;
-    };
-    registry.emplace<Tfm>(ent1, Tfm{});
 
     // Hello standard output
     std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
@@ -269,69 +224,24 @@ int main(int argc, char* argv[])
     }
 #endif
 
+    auto renderer = std::make_shared<eeng::ForwardRenderer>();
     renderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
 
-    // Grass
-    auto grassMesh = std::make_shared<eeng::RenderableMesh>();
-    grassMesh->load("assets/grass/grass_trees_merged2.fbx", false);
-
-    // Horse
-    auto horseMesh = std::make_shared<eeng::RenderableMesh>();
-    horseMesh->load("assets/Animals/Horse.fbx", false);
-
-    // Character
-    auto characterMesh = std::make_shared<eeng::RenderableMesh>();
-#if 0
-    // Sponza
-    characterMesh->load("/Users/ag1498/Dropbox/MAU/DA307A-CGM/Rendering/eduRend_2022/assets/crytek-sponza/sponza.obj", false);
-#endif
-#if 0
-    // Character
-    characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
-#endif
-#if 0
-    // Enemy
-    characterMesh->load("assets/Ultimate Platformer Pack/Enemies/Bee.fbx", false);
-#endif
-#if 0
-    // Dragon
-    // Requires MaxBones = 151;
-    // https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f
-    // characterMesh->load("assets/tarisland-dragon-high-poly/M_B_44_Qishilong_skin_Skeleton.FBX");
-#endif
-#if 0
-    // ExoRed 5.0.1 PACK FBX, 60fps, No keyframe reduction
-    characterMesh->load("assets/ExoRed/exo_red.fbx");
-    characterMesh->load("assets/ExoRed/idle (2).fbx", true);
-    characterMesh->load("assets/ExoRed/walking.fbx", true);
-    // Remove root motion
-    characterMesh->remove_translation_keys("mixamorig:Hips");
-#endif
-#if 1
-    // Amy 5.0.1 PACK FBX
-    characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
-    characterMesh->load("assets/Amy/idle.fbx", true);
-    characterMesh->load("assets/Amy/walking.fbx", true);
-    // Remove root motion
-    characterMesh->removeTranslationKeys("mixamorig:Hips");
-#endif
-#if 0
-    // Eve 5.0.1 PACK FBX
-    characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
-    characterMesh->load("assets/Eve/idle.fbx", true);
-    characterMesh->load("assets/Eve/walking.fbx", true);
-    // Remove root motion
-    characterMesh->remove_translation_keys("mixamorig:Hips");
-#endif
+    auto scene = std::make_shared<Scene>();
+    scene->init();
 
     // Main loop
-    float time_s, time_ms;
+    float time_s, time_ms, deltaTime_s = 0.016f;
     bool quit = false;
     SDL_Event event;
     eeng::Log::log("Entering main loop...");
 
     while (!quit)
     {
+        const auto now = SDL_GetTicks();
+        deltaTime_s = now - time_s;
+        std::cout << deltaTime_s << std::endl;
+
         time_ms = SDL_GetTicks();
         time_s = time_ms * 0.001f;
 
@@ -383,7 +293,7 @@ int main(int argc, char* argv[])
         {
             ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-            ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
+            // ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
 
             // Combo (drop-down) for fps settings
             static const char* items[] = { "10", "30", "60", "120", "Uncapped" };
@@ -454,48 +364,13 @@ int main(int argc, char* argv[])
             else
             {
                 ImGui::SameLine();
-                ImGui::Text("No controller connected");
+                ImGui::Text("(No controller connected)");
             }
         }
 
         if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            if (ImGui::ColorEdit3("Light color",
-                glm::value_ptr(LIGHT_COLOR),
-                ImGuiColorEditFlags_NoInputs))
-            {
-            }
-
-            // Combo (drop-down) for animation clip
-            if (characterMesh)
-            {
-                int curAnimIndex = ANIM_INDEX;
-                std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
-                if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
-                {
-                    // Bind pose item
-                    const bool isSelected = (curAnimIndex == -1);
-                    if (ImGui::Selectable("Bind pose", isSelected))
-                        curAnimIndex = -1;
-                    if (isSelected)
-                        ImGui::SetItemDefaultFocus();
-
-                    // Clip items
-                    for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
-                    {
-                        const bool isSelected = (curAnimIndex == i);
-                        const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
-                        if (ImGui::Selectable(label.c_str(), isSelected))
-                            curAnimIndex = i;
-                        if (isSelected)
-                            ImGui::SetItemDefaultFocus();
-                    }
-                    ImGui::EndCombo();
-                    ANIM_INDEX = curAnimIndex;
-                }
-            }
-
-            ImGui::SliderFloat("Animation speed", &ANIM_SPEED, 0.1f, 5.0f);
+            scene->renderUI();
         }
 
         ImGui::End(); // end config window
@@ -534,41 +409,8 @@ int main(int argc, char* argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        // Light & Camera position
-        glm::vec3 lightPos = glm::vec3(TRS({ 1000.0f, 1000.0f, 1000.0f }, time_s * 0.0f, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        glm::vec3 eye = glm::vec3(TRS({ 0.0f, 5.0f, 10.0f }, -glm::radians(45.0f), { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }) * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
-
-        // Projection & View matrices
-        const float aspectRatio = float(WINDOW_WIDTH) / WINDOW_HEIGHT;
-        const float nearPlane = 1.0f, farPlane = 500.0f;
-        glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
-        glm::mat4 V = glm::inverse(TRS(eye, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
-
-        renderer->beginPass(P, V, lightPos, LIGHT_COLOR, eye);
-
-        // Grass
-        const auto grassWorldMatrix = TRS({ 0.0f, 0.0f, 0.0f }, 0.0f, { 0, 1, 0 }, { 100.0f, 100.0f, 100.0f });
-        renderer->renderMesh(grassMesh, grassWorldMatrix);
-
-        // Horse
-        const auto horseWorldMatrix = TRS({ 30.0f, 0.0f, -35.0f }, 35.0f, { 0, 1, 0 }, { 0.01f, 0.01f, 0.01f });
-        horseMesh->animate(3, time_s); // clip 3 = 'eating'
-        renderer->renderMesh(horseMesh, horseWorldMatrix);
-
-        // Character
-        auto characterWorldMatrix = TRS({ 0, 0, 0 }, time_s * 50.0f, { 0, 1, 0 }, { 0.03f, 0.03f, 0.03f });
-        characterMesh->animate(ANIM_INDEX, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, characterWorldMatrix);
-        // Character #2
-        characterWorldMatrix = TRS({ -3, 0, 0 }, 0.0f, { 0, 1, 0 }, { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix;
-        characterMesh->animate(1, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, characterWorldMatrix);
-        // Character #3
-        characterWorldMatrix = TRS({ 6, 0, 0 }, 0.0f, { 0, 1, 0 }, { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix;
-        characterMesh->animate(2, time_s * ANIM_SPEED);
-        renderer->renderMesh(characterMesh, characterWorldMatrix);
-
-        DRAWCALL_COUNT = renderer->endPass();
+        scene->update(time_s, deltaTime_s);
+        scene->render(time_s, WINDOW_WIDTH, WINDOW_HEIGHT, renderer);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

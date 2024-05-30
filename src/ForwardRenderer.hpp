@@ -82,6 +82,8 @@ namespace eeng
                         const glm::mat4 &WorldMatrix);
     };
 
+using ForwardRendererPtr = std::shared_ptr<ForwardRenderer>;
+
 } // namespace eeng
 
 #endif
