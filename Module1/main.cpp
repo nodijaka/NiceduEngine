@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
         const auto now_s = now_ms * 0.001f;
         deltaTime_s = now_s - time_s;
         time_ms = now_ms;
-        time_s = now_s;;
+        time_s = now_s;
 
         while (SDL_PollEvent(&event))
         {
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
 
         // Render GUI here
 
-        ImGui::Begin("Config");
+        ImGui::Begin("Info");
 
         if (ImGui::CollapsingHeader("Backend", ImGuiTreeNodeFlags_DefaultOpen))
         {
@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
             scene->renderUI();
         }
 
-        ImGui::End(); // end config window
+        ImGui::End(); // end info window
 
         eeng::Log::draw();
 
