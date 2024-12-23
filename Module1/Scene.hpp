@@ -6,10 +6,14 @@
 #include "SceneBase.h"
 #include "RenderableMesh.hpp"
 
+#include "ShapeRenderer.hpp" // -> main?
+
 /// @brief TODO
 class Scene : public eeng::SceneBase
 {
 protected:
+    ShapeRendering::ShapeRenderer shapeRenderer {};
+
     // Entity registry - to use in labs
     entt::registry registry;
 

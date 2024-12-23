@@ -66,6 +66,8 @@ bool Scene::init()
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 
+shapeRenderer.init();
+
     return true;
 }
 
@@ -76,12 +78,6 @@ void Scene::update(float time_s, float deltaTime_s)
         time_s * 0.0f,
         { 0.0f, 1.0f, 0.0f },
         { 1.0f, 1.0f, 1.0f }) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    eyePos = glm::vec3(TRS(
-        { 0.0f, 5.0f, 10.0f },
-        -glm::radians(45.0f),
-        { 1.0f, 0.0f, 0.0f },
-        { 1.0f, 1.0f, 1.0f }) * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
 
     // Position of camera/eye
     eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
@@ -212,6 +208,12 @@ void Scene::render(
 
     // End rendering pass
     drawcallCount = renderer->endPass();
+
+    //
+    glm::vec3 p0 {0.0f, 0.0f, 0.0f}, p1 {10.0f, 10.0f, 0.0f};
+    shapeRenderer.push_line(p0, p1);
+    shapeRenderer.render(P * V);
+    shapeRenderer.post_render();
 }
 
 void Scene::destroy()

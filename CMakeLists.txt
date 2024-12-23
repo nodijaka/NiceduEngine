@@ -13,7 +13,7 @@ message(STATUS "Starting CMake configuration for DA376B_Labs project")
 #
 # CPP
 #
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
@@ -193,6 +193,7 @@ add_executable(Module1
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderableMesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ForwardRenderer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ShapeRenderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cpp
     )
