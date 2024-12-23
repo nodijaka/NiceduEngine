@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <cstddef>
+#include <array>
 
 //#include "Ray.h"
 //#include "glutil.h"
