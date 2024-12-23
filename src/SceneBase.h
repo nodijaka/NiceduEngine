@@ -5,6 +5,8 @@
 #include "ForwardRenderer.hpp"
 
 namespace eeng {
+
+    /// @brief TODO
     class SceneBase
     {
     public:

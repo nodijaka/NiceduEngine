@@ -83,6 +83,12 @@ void Scene::update(float time_s, float deltaTime_s)
         { 1.0f, 0.0f, 0.0f },
         { 1.0f, 1.0f, 1.0f }) * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
 
+    // Position of camera/eye
+    eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
+
+    // Position to look at
+    atPos = glm::vec3(0.0f, 0.0f, 0.0f);
+
     grassWorldMatrix = TRS(
         { 0.0f, 0.0f, 0.0f },
         0.0f,
@@ -172,7 +178,15 @@ void Scene::render(
     const glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
 
     // View matrix
-    const glm::mat4 V = glm::inverse(TRS(eyePos, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
+    //glm::mat4 V = glm::inverse(TRS(eyePos, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
+    const glm::mat4 V = glm::lookAt(eyePos, atPos, upVector);
+
+    // Compute world ray from a position (e.g. mouse), to use for somwthing perhaps ...
+    glm::vec4 viewport = { 0, 0, screenWidth, screenHeight };
+    glm::vec2 mousePos{ screenWidth / 2, screenHeight / 2 }; // placeholder
+    auto [rayOrigin, rayDirection] = ComputeWorldSpaceRay(mousePos, V, P, viewport);
+    //std::cout << "rayOrigin " << vec3ToString(rayOrigin) << ")\n";
+    //std::cout << "rayDirection " << vec3ToString(rayDirection) << ")\n";
 
     // Begin rendering pass
     renderer->beginPass(P, V, lightPos, lightColor, eyePos);
