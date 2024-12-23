@@ -181,7 +181,7 @@ void Scene::render(
     //glm::mat4 V = glm::inverse(TRS(eyePos, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
     const glm::mat4 V = glm::lookAt(eyePos, atPos, upVector);
 
-    // Compute world ray from a position (e.g. mouse), to use for somwthing perhaps ...
+    // Compute world ray from window position (e.g. mouse), to use for something perhaps ...
     glm::vec4 viewport = { 0, 0, screenWidth, screenHeight };
     glm::vec2 mousePos{ screenWidth / 2, screenHeight / 2 }; // placeholder
     auto [rayOrigin, rayDirection] = ComputeWorldSpaceRay(mousePos, V, P, viewport);
