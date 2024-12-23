@@ -66,7 +66,7 @@ bool Scene::init()
     characterMesh->remove_translation_keys("mixamorig:Hips");
 #endif
 
-shapeRenderer.init();
+    shapeRenderer.init(); // 
 
     return true;
 }
@@ -210,8 +210,41 @@ void Scene::render(
     drawcallCount = renderer->endPass();
 
     //
-    glm::vec3 p0 {0.0f, 0.0f, 0.0f}, p1 {10.0f, 10.0f, 0.0f};
+    glm::vec3 p0{ 0.0f, 0.0f, 0.0f }, p1{ 10.0f, 10.0f, 0.0f };
     shapeRenderer.push_line(p0, p1);
+
+    shapeRenderer.push_basis_basic(characterWorldMatrix1, 1.0f);
+    shapeRenderer.push_basis_basic(characterWorldMatrix2, 1.0f);
+    shapeRenderer.push_basis_basic(characterWorldMatrix3, 1.0f);
+    // shapeRenderer.push_basis_basic(grassWorldMatrix, 1.0f);
+    shapeRenderer.push_basis_basic(horseWorldMatrix, 1.0f);
+
+    const ShapeRendering::ArrowDescriptor arrowdesc
+    {
+        .cone_fraction = 0.2,
+        .cone_radius = 0.05f,
+        .cylinder_radius = 0.025f
+    };
+    shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
+
+    //characterMesh->mSceneAABB
+    auto aabbw = eeng::AABB {};
+    aabbw.grow(glm::vec3(0.0f, 0.0f, 0.0f));
+    aabbw.grow(glm::vec3(1.0f, 1.0f, 1.0f));
+    //auto aabbw = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
+    //AABB3d aabbw = submeshcomp.aabb.post_transform(tfm.global_tfm);
+//                AABB3d aabbw = re.mesh_->aabb.post_transform(re.transform_->global_tfm);
+// Render AABB
+    auto size = aabbw.max - aabbw.min;
+    auto pos = aabbw.min + size * 0.5f;
+    //mat4f M = mat4f::translation(pos) * mat4f::scaling(size);
+    const glm::mat4 M = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), size);
+    // const glm::mat4 M = T * R;
+    shapeRenderer.push_states(ShapeRendering::Color4u{ 0xFFE61A80 }, M); // {0.5f, 0.1f, 0.9f}
+    shapeRenderer.push_cube_wireframe();
+    shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4>();
+
+
     shapeRenderer.render(P * V);
     shapeRenderer.post_render();
 }

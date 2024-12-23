@@ -50,8 +50,6 @@
 
 namespace ShapeRendering {
 
-    // #define IM_COL32, imgui.h
-
     using uint = uint32_t;
     using uchar = unsigned char;
 
@@ -212,8 +210,6 @@ namespace ShapeRendering {
 
     struct ArrowDescriptor
     {
-        //ArrowDescriptor(const ArrowDescriptor&) = default;
-
         float cone_fraction;
         float cone_radius;
         float cylinder_radius;
@@ -400,7 +396,6 @@ namespace ShapeRendering {
             return to_integral(state_stack.top<T>());
         }
 
-#if 0
         void push_quad(const glm::vec3 points[4],
             const glm::vec3& n);
 
@@ -416,17 +411,16 @@ namespace ShapeRendering {
         template<unsigned N>
         void push_circle_ring()
         {
-            const auto [transform, color, depth_test] = get_states<m4f, Color4u, DepthTest>();
+            const auto [transform, color, depth_test] = get_states<glm::mat4, Color4u, DepthTest>();
 
             auto vertex_generator =
                 []()
                 {
-                    std::vector<v4f> vertices;
+                    std::vector<glm::vec4> vertices;
                     for (int i = 0; i < N; i++)
                     {
-                        const float theta = i * 2.0f * fPI / (N - 1);
-                        vertices.push_back(v4f{
-                            std::cos(theta), std::sin(theta), 0.0f, 1.0f });
+                        const float theta = i * 2.0f * 3.14159f / (N - 1);
+                        vertices.emplace_back(std::cos(theta), std::sin(theta), 0.0f, 1.0f);
                     }
                     return vertices;
                 };
@@ -438,7 +432,7 @@ namespace ShapeRendering {
             for (int i = 0; i < N; i++)
             {
                 line_vertices.push_back(LineVertex{
-                    xyz(transform * vertices[i]),
+                    glm::vec3(transform * vertices[i]),
                     color
                     });
                 if (i < N - 1) {
@@ -447,39 +441,38 @@ namespace ShapeRendering {
                 }
             }
         }
-#endif
 
         void push_line(const glm::vec3& pos0, const glm::vec3& pos1);
 
-#if 0
         void push_lines_from_cyclic_source(const LineVertex* vertices,
             int start_index,
             int nbr_vertices,
             int max_vertices);
 
-        void push_lines(const std::vector<v3f>& vertices,
+        void push_lines(const std::vector<glm::vec3>& vertices,
             const std::vector<unsigned>& indices);
 
-        void push_lines(const v3f* vertices,
+        void push_lines(const glm::vec3* vertices,
             size_t nbr_vertices,
             const unsigned* indices,
             size_t nbr_indices);
 
-        void push_lines(const v3f* vertices, size_t nbr_vertices);
+        void push_lines(const glm::vec3* vertices, size_t nbr_vertices);
 
-        void push_grid(const vec3f& pos, unsigned size, unsigned resolution);
+        void push_grid(const glm::vec3& pos, unsigned size, unsigned resolution);
 
-        void push_cone(const vec3f& from, const vec3f to, float r);
+        void push_cone(const glm::vec3& from, const glm::vec3 to, float r);
 
         void push_cone(float h, float r, bool flip_normals = false);
 
-        void push_cylinder(float height, float radius, Ray* ray = nullptr);
+        void push_cylinder(float height, float radius);
 
-        void push_arrow(const vec3f& from,
-            const vec3f& to,
-            ArrowDescriptor arrow_desc, // = {0.25f,0.15f,0.025f},
-            Ray* ray = nullptr);
+        void push_arrow(
+            const glm::vec3& from,
+            const glm::vec3& to,
+            ArrowDescriptor arrow_desc);
 
+#if 0
         void push_sphere(float h, float r);
 
         void push_sphere_wireframe(float h, float r);
@@ -496,22 +489,21 @@ namespace ShapeRendering {
             float revs);
 
         void push_frustum(const mat4f& invProjView);
+#endif
 
-        void push_basis_basic(const m4f& basis, float arrlen);
+        void push_basis_basic(const glm::mat4& basis, float arrlen);
 
-        void push_basis_basic2d(const m4f& basis, float arrlen);
+        void push_basis_basic2d(const glm::mat4& basis, float arrlen);
 
-        void push_basis(const m4f& basis,
+        void push_basis(const glm::mat4& basis,
             float arrlen,
-            const ArrowDescriptor& arrdesc,
-            Ray* ray = nullptr);
+            const ArrowDescriptor& arrdesc);
 
-        void push_point(const vec3f& p, unsigned size);
+        void push_point(const glm::vec3& p, unsigned size);
 
         void push_points(const PointVertex* p,
             unsigned nbr_points,
             unsigned size);
-#endif
 
         void render(const glm::mat4& PROJ_VIEW);
 

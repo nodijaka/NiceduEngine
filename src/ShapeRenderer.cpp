@@ -20,6 +20,29 @@
 
 namespace ShapeRendering {
 
+    namespace {
+        glm::mat3 createBasisMatrixFromVector(const glm::vec3& direction) {
+            // Ensure the direction is normalized
+            glm::vec3 forward = glm::normalize(direction);
+
+            // Create a temporary vector for perpendicular calculation
+            glm::vec3 temp = (glm::abs(forward.x) > 0.9f)
+                ? glm::vec3(0.0f, 1.0f, 0.0f)
+                : glm::vec3(1.0f, 0.0f, 0.0f);
+
+            // Calculate the right vector (perpendicular to forward and temp)
+            glm::vec3 right = glm::normalize(glm::cross(temp, forward));
+
+            // Calculate the up vector (perpendicular to forward and right)
+            glm::vec3 up = glm::cross(forward, right);
+
+            // Create the basis matrix
+            glm::mat3 basis(right, up, forward);
+
+            return basis;
+        }
+    }
+
     const Color4u Color4u::Black = Color4u(0xff000000u);
     const Color4u Color4u::White = Color4u(0xffffffffu);
     const Color4u Color4u::Red = Color4u(0xff0000ffu);
@@ -164,7 +187,6 @@ namespace ShapeRendering {
 
     } // Anon. namespace
 
-#if 0
     //
     // CONE
     //
@@ -258,11 +280,11 @@ namespace ShapeRendering {
             float z = h * hi / (hres - 1);
             for (int ri = 0; ri < rres; ri++)
             {
-                float alpha = 2.0f * fPI * ri / (rres - 1);
-                vec3f v = { r * cos(alpha), r * sin(alpha), z };
-                vec3f n = { r * cos(alpha), r * sin(alpha), 0 };
+                float alpha = 2.0f * 3.14159f * ri / (rres - 1);
+                glm::vec3 v = { r * cos(alpha), r * sin(alpha), z };
+                glm::vec3 n = { r * cos(alpha), r * sin(alpha), 0 };
 
-                vertices.push_back({ v, normalize(n) });
+                vertices.emplace_back(v, normalize(n));
             }
         }
 
@@ -325,27 +347,25 @@ namespace ShapeRendering {
     {
         // Vertices
         //
-        float   theta = 0.0f,			/* 'stepping'-variable for theta: will go 0 - 2PI */
-            dtheta = 2.0f * fPI / (thetares - 1),	/* step size, depending on the resolution */
-            phi = 0.0f,						/* 'stepping'-variable for phi: will go 0 - 2PI */
-            dphi = fPI / (phires - 1);			/* step size, depending on the resolution */
+        float theta = 0.0f;			            // steps 0 - 2PI
+        float dtheta = 2.0f * 3.14159f / (thetares - 1);	// theta step size, depending on the resolution
+        float phi = 0.0f;						// steps 0 - 2PI
+        float dphi = 3.14159f / (phires - 1);	// phi step size, depending on the resolution
 
         for (int phii = 0; phii < phires; phii++)
         {
-            float   cos_phi = cos(phi),
-                sin_phi = sin(phi);
+            float cos_phi = cos(phi);
+            float sin_phi = sin(phi);
             theta = 0;
 
             for (int thetai = 0; thetai < thetares; thetai++)
             {
-                float   cos_theta = cos(theta),
-                    sin_theta = sin(theta);
+                float cos_theta = cos(theta);
+                float sin_theta = sin(theta);
 
-                vec3f v = { r * sin_theta * sin_phi, -r * cos_phi, r * cos_theta * sin_phi };
-                vec3f n = { sin_theta * sin_phi, -cos_phi, cos_theta * sin_phi };
-
-                vertices.push_back({ v, normalize(n) });
-
+                glm::vec3 v = { r * sin_theta * sin_phi, -r * cos_phi, r * cos_theta * sin_phi };
+                glm::vec3 n = { sin_theta * sin_phi, -cos_phi, cos_theta * sin_phi };
+                vertices.push_back({ v, glm::normalize(n) });
                 theta += dtheta;
             }
             phi += dphi;
@@ -387,15 +407,15 @@ namespace ShapeRendering {
 
     void generate_normals(std::vector<PolyVertex>& vertices, std::vector<unsigned>& indices)
     {
-        std::vector<vec3f>* v_bin = new std::vector<vec3f>[vertices.size()];
+        std::vector<glm::vec3>* v_bin = new std::vector<glm::vec3>[vertices.size()];
 
         /* Compute triangle normals and bin to vertices */
         for (int i = 0; i < indices.size(); i += 3)
         {
-            vec3f   v0 = vertices[indices[i + 0]].p,
-                v1 = vertices[indices[i + 1]].p,
-                v2 = vertices[indices[i + 2]].p;
-            vec3f n = linalg::normalize((v1 - v0) % (v2 - v0));
+            glm::vec3 v0 = vertices[indices[i + 0]].p;
+            glm::vec3 v1 = vertices[indices[i + 1]].p;
+            glm::vec3 v2 = vertices[indices[i + 2]].p;
+            glm::vec3 n = glm::normalize(glm::cross(v1 - v0, v2 - v0));
 
             v_bin[indices[i + 0]].push_back(n);
             v_bin[indices[i + 1]].push_back(n);
@@ -405,20 +425,18 @@ namespace ShapeRendering {
         /* Average binned normals */
         for (int i = 0; i < vertices.size(); i++)
         {
-            vec3f n = vec3f(0, 0, 0);
+            glm::vec3 n(0, 0, 0);
             for (int j = 0; j < v_bin[i].size(); j++)
             {
                 n += v_bin[i][j];
             }
-            n = linalg::normalize(n);
+            n = glm::normalize(n);
 
             vertices[i].normal = n;
         }
 
         delete[] v_bin;
     }
-
-#endif
 
     void ShapeRenderer::init()
     {
@@ -427,10 +445,10 @@ namespace ShapeRendering {
         //
 
 // TODO
-        // create_cone(1, 1, 2, 8, unitcone_vbo.vertices, unitcone_vbo.indices);
-        // create_cylinder(1, 1, 2, 8, unitcylinder_vbo.vertices, unitcylinder_vbo.indices);
-        // create_sphere(1, 8, 8, unitsphere_vbo.vertices, unitsphere_vbo.indices, false);
-        // create_sphere(1, 8, 8, unitspherewireframe_vbo.vertices, unitspherewireframe_vbo.indices, true);
+        create_cone(1, 1, 2, 8, unitcone_vbo.vertices, unitcone_vbo.indices);
+        create_cylinder(1, 1, 2, 8, unitcylinder_vbo.vertices, unitcylinder_vbo.indices);
+        create_sphere(1, 8, 8, unitsphere_vbo.vertices, unitsphere_vbo.indices, false);
+        create_sphere(1, 8, 8, unitspherewireframe_vbo.vertices, unitspherewireframe_vbo.indices, true);
 
         push_states(BackfaceCull::True, DepthTest::True, Color4u::White, glm::mat4{ 1.0f });
 
@@ -628,9 +646,8 @@ namespace ShapeRendering {
         initialized = true;
     }
 
-#if 0
-    void ShapeRenderer::push_quad(const v3f points[4],
-        const v3f& n)
+    void ShapeRenderer::push_quad(const glm::vec3 points[4],
+        const glm::vec3& n)
     {
         const auto [color, depth_test, cull_face] = get_states<Color4u, DepthTest, BackfaceCull>();
         static const unsigned tri_indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -652,23 +669,23 @@ namespace ShapeRendering {
     }
 
     // TODO: What's this? A 2D quad in the xy-plane?
-    void ShapeRenderer::push_quad(const vec3f& pos,
+    void ShapeRenderer::push_quad(const glm::vec3& pos,
         float scale)
     {
         const auto [color, depth_test, cull_face] = get_states<Color4u, DepthTest, BackfaceCull>();
 
-        static const v3f quad_vertices[] =
+        static const glm::vec3 quad_vertices[] =
         {
-            v3f {-0.5,-0.5,0},
-            v3f {0.5,-0.5,0},
-            v3f {0.5,0.5,0},
-            v3f {-0.5,0.5,0}
+            glm::vec3 {-0.5,-0.5,0},
+            glm::vec3 {0.5,-0.5,0},
+            glm::vec3 {0.5,0.5,0},
+            glm::vec3 {-0.5,0.5,0}
         };
         static const unsigned tri_indices[] = { 0, 1, 2, 0, 2, 3 };
 
         unsigned vertex_ofs = (unsigned)polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
-        vec3f N = v3f_001; // = linalg::normalize(vec3f(qua))
+        glm::vec3 N(0.0f, 0.0f, 1.0f); // = linalg::normalize(vec3f(qua))
 
         for (auto& v : quad_vertices)
             polygon_vertices.push_back({ pos + v * scale, N, color });
@@ -685,19 +702,19 @@ namespace ShapeRendering {
 
     void ShapeRenderer::push_quad_wireframe()
     {
-        const auto& transform = get_states<m4f>();
+        const auto& transform = get_states<glm::mat4>();
 
         auto vertices = unitquad.vertices;
         std::for_each(vertices.begin(),
             vertices.end(),
-            [&transform](vec3f& v) { v = (transform * v.xyz1()).xyz(); });
+            [&transform](glm::vec3& v) { v = glm::vec3(transform * glm::vec4(v, 1.0f)); });
 
         push_lines(vertices, unitquad.edges);
     }
 
     void ShapeRenderer::push_cube()
     {
-        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, m4f>();
+        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, glm::mat4>();
         unsigned vertex_ofs = (unsigned)polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
@@ -716,8 +733,8 @@ namespace ShapeRendering {
         // Use normals á la sphere (8 vertices)
         for (auto& v : unitcube.vertices)
         {
-            const v3f& vm = xyz(M * xyz1(v));
-            const v3f nm = normalize(xyz(M * xyz0(v)));
+            const glm::vec3& vm = glm::vec3(M * glm::vec4(v, 1.0f));
+            const glm::vec3 nm = glm::normalize(glm::vec3(M * glm::vec4(v, 0.0f)));
             polygon_vertices.push_back(PolyVertex{ vm, nm, color });
         }
 
@@ -734,12 +751,12 @@ namespace ShapeRendering {
 
     void ShapeRenderer::push_cube_wireframe()
     {
-        const auto& transform = get_states<m4f>();
+        const auto& transform = get_states<glm::mat4>();
 
         auto vertices = unitcube.vertices;
         std::for_each(vertices.begin(),
             vertices.end(),
-            [&transform](vec3f& v) { v = (transform * v.xyz1()).xyz(); });
+            [&transform](glm::vec3& v) { v = glm::vec3((transform * glm::vec4(v, 1.0f))); });
 
         push_lines(vertices.data(),
             vertices.size(),
@@ -764,7 +781,6 @@ namespace ShapeRendering {
     //        p0 = p1;
     //    }
     //}
-#endif
 
     void ShapeRenderer::push_line(const glm::vec3& pos0, const glm::vec3& pos1)
     {
@@ -773,14 +789,13 @@ namespace ShapeRendering {
         const LineDrawcall ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
-        line_vertices.push_back(LineVertex { pos0, color });
-        line_vertices.push_back(LineVertex { pos1, color });
+        line_vertices.push_back(LineVertex{ pos0, color });
+        line_vertices.push_back(LineVertex{ pos1, color });
 
         line_hash[ldc].push_back(vertex_ofs + 0);
         line_hash[ldc].push_back(vertex_ofs + 1);
     }
 
-#if 0
     void ShapeRenderer::push_lines_from_cyclic_source(const LineVertex* vertices,
         int start_index,
         int nbr_vertices,
@@ -791,18 +806,12 @@ namespace ShapeRendering {
         const LineDrawcall ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
-        //    line_vertices.insert(line_vertices.end(),
-        //                         vertices,
-        //                         vertices + nbr_vertices);
-        //    for (int i = 0; i < nbr_vertices; i++)
-        //        line_vertices.push_back({vertices[i], color});
         for (int i = 0; i < nbr_vertices; i++)
         {
             unsigned index = (start_index + i) % max_vertices;
             line_vertices.push_back(vertices[index]);
         }
 
-        // TODO: No need to hash for color anymore. Using an arbitrary hash (color) value.
         for (int i = 0; i < nbr_vertices - 1; i++)
         {
             line_hash[ldc].push_back(vertex_ofs + i);
@@ -813,7 +822,7 @@ namespace ShapeRendering {
     //    line_hash[0].push_back(vertex_ofs);
     }
 
-    void ShapeRenderer::push_lines(const std::vector<v3f>& vertices,
+    void ShapeRenderer::push_lines(const std::vector<glm::vec3>& vertices,
         const std::vector<unsigned>& indices)
     {
         push_lines(vertices.data(),
@@ -822,7 +831,7 @@ namespace ShapeRendering {
             indices.size());
     }
 
-    void ShapeRenderer::push_lines(const v3f* vertices,
+    void ShapeRenderer::push_lines(const glm::vec3* vertices,
         size_t nbr_vertices,
         const unsigned* indices,
         size_t nbr_indices)
@@ -839,10 +848,10 @@ namespace ShapeRendering {
             line_hash[ldc].push_back(vertex_ofs + indices[i]);
     }
 
-    void ShapeRenderer::push_lines(const v3f* vertices,
+    void ShapeRenderer::push_lines(const glm::vec3* vertices,
         size_t nbr_vertices)
     {
-        const auto [transform, color, depth_test] = get_states<m4f, Color4u, DepthTest>();
+        const auto [transform, color, depth_test] = get_states<glm::mat4, Color4u, DepthTest>();
 
         assert(vertices);
         assert(nbr_vertices > 0);
@@ -852,13 +861,10 @@ namespace ShapeRendering {
         //    if (M)
         //    {
         for (int i = 0; i < nbr_vertices; i++)
-            line_vertices.push_back({ xyz(transform * xyz1(vertices[i])), color });
-        //    }
-        //    else
-        //    {
-        //        for (int i = 0; i < nbr_vertices; i++)
-        //            line_vertices.push_back({vertices[i], color});
-        //    }
+            // line_vertices.push_back({ xyz(transform * xyz1(vertices[i])), color });
+            //line_vertices.push_back(LineVertex { glm::vec3(transform * glm::vec4(vertices[i], 1.0f)), color });
+            line_vertices.emplace_back(glm::vec3(transform * glm::vec4(vertices[i], 1.0f)), color);
+
 
         for (int i = 0; i < nbr_vertices - 1; i++)
         {
@@ -870,7 +876,7 @@ namespace ShapeRendering {
         line_hash[ldc].push_back(vertex_ofs);
     }
 
-    void ShapeRenderer::push_grid(const vec3f& pos,
+    void ShapeRenderer::push_grid(const glm::vec3& pos,
         unsigned size,
         unsigned resolution)
     {
@@ -879,46 +885,52 @@ namespace ShapeRendering {
         for (int i = 0; i < resolution; i++)
         {
             push_line(
-                { pos.x - sizef / 2 + i * sizef / (resolution - 1), pos.y, pos.z - sizef / 2 },
-                { pos.x - sizef / 2 + i * sizef / (resolution - 1), pos.y, pos.z + sizef / 2 });
+                glm::vec3{ pos.x - sizef / 2 + i * sizef / (resolution - 1), pos.y, pos.z - sizef / 2 },
+                glm::vec3{ pos.x - sizef / 2 + i * sizef / (resolution - 1), pos.y, pos.z + sizef / 2 });
             push_line(
-                { pos.x - sizef / 2, pos.y, pos.z - sizef / 2 + i * sizef / (resolution - 1) },
-                { pos.x + sizef / 2, pos.y, pos.z - sizef / 2 + i * sizef / (resolution - 1) });
+                glm::vec3{ pos.x - sizef / 2, pos.y, pos.z - sizef / 2 + i * sizef / (resolution - 1) },
+                glm::vec3{ pos.x + sizef / 2, pos.y, pos.z - sizef / 2 + i * sizef / (resolution - 1) });
         }
     }
 
-    void ShapeRenderer::push_cone(const vec3f& from,
-        const vec3f to,
+    void ShapeRenderer::push_cone(const glm::vec3& from,
+        const glm::vec3 to,
         float r)
     {
-        const vec3f conev = (to - from);
-        const float conel = conev.norm2();
+        const glm::vec3 conev = (to - from);
+        const float conel = glm::length(conev);
 
         // Main transform
-        const mat4f R = mat4f(mat3f::base(conev));
-        const mat4f M = mat4f::translation(from) * R;
+        // const mat4f R = mat4f(mat3f::base(conev));
+        // const mat4f M = mat4f::translation(from) * R;
+        const glm::mat4 R = glm::mat4(createBasisMatrixFromVector(conev));
+        const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
+        const glm::mat4 M = T * R;
 
         push_states(M);
         push_cone(conel, r);
-        pop_states<m4f>();
+        pop_states<glm::mat4>();
     }
 
     void ShapeRenderer::push_cone(float h,
         float r,
         bool flip_normals)
     {
-        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, m4f>();
+        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, glm::mat4>();
         const auto vertex_ofs = polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
-        const mat4f N = M * mat4f::scaling(r, r, h);
-        mat4f Nit = N.inverse(); Nit.transpose();
+        //const mat4f N = M * mat4f::scaling(r, r, h);
+        //mat4f Nit = N.inverse(); Nit.transpose();
+        glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(r, r, h));
+        glm::mat4 N = M * S;
+        glm::mat4 Nit = glm::transpose(glm::inverse(N));
 
         for (auto& v : unitcone_vbo.vertices)
         {
-            vec3f vw = (N * (v.p.xyz1())).xyz();
-            vec3f nw = (Nit * (v.normal.xyz0())).xyz() * (flip_normals ? -1.0f : 1.0f);
-            polygon_vertices.push_back({ vw, normalize(nw), color });
+            glm::vec3 vw = glm::vec3(N * glm::vec4(v.p, 1.0f));
+            glm::vec3 nw = glm::vec3(Nit * glm::vec4(v.normal, 0.0f)) * (flip_normals ? -1.0f : 1.0f);
+            polygon_vertices.push_back({ vw, glm::normalize(nw), color });
         }
 
         polygon_indices.insert(polygon_indices.end(),
@@ -945,22 +957,24 @@ namespace ShapeRendering {
     }
 
     void ShapeRenderer::push_cylinder(float h,
-        float r,
-        Ray* ray)
+        float r)
     {
-        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, m4f>();
+        const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, glm::mat4>();
         const auto vertex_ofs = polygon_vertices.size();
         const auto index_ofs = polygon_indices.size();
 
-        mat4f N = M * mat4f::scaling(r, r, h);
-        mat4f Nit = N; // Scaling is uniform in the plane of all normals (xy), so inverse-transform not needed.
-        //        mat4f Nit = N.inverse(); Nit.transpose();
+        // mat4f N = M * mat4f::scaling(r, r, h);
+        // mat4f Nit = N; // Scaling is uniform in the plane of all normals (xy), so inverse-transform not needed.
+        // //        mat4f Nit = N.inverse(); Nit.transpose();
+
+        glm::mat4 N = M * glm::scale(glm::mat4(1.0f), glm::vec3(r, r, h));
+        glm::mat4 Nit = N;
 
         for (auto& v : unitcylinder_vbo.vertices)
         {
-            vec3f vw = (N * (v.p.xyz1())).xyz();
-            vec3f nw = (Nit * (v.normal.xyz0())).xyz();
-            polygon_vertices.push_back({ vw, normalize(nw), color });
+            glm::vec3 vw = glm::vec3(N * glm::vec4(v.p, 1.0f));
+            glm::vec3 nw = glm::vec3(Nit * glm::vec4(v.normal, 0.0f));
+            polygon_vertices.push_back({ vw, glm::normalize(nw), color });
         }
         polygon_indices.insert(polygon_indices.end(),
             unitcylinder_vbo.indices.begin(),
@@ -971,13 +985,13 @@ namespace ShapeRendering {
             IndexRange {(GLsizei)index_ofs, (GLsizei)unitcylinder_vbo.indices.size(), (GLint)vertex_ofs}
             });
 
-        if (ray)
-            for (int i = 0; i < unitcylinder_vbo.indices.size(); i += 3) {
-                const v3f& v0 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 0]].p;
-                const v3f& v1 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 1]].p;
-                const v3f& v2 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 2]].p;
-                RayTriangleIntersection(*ray, v0, v1, v2);
-            }
+        // if (ray)
+        //     for (int i = 0; i < unitcylinder_vbo.indices.size(); i += 3) {
+        //         const v3f& v0 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 0]].p;
+        //         const v3f& v1 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 1]].p;
+        //         const v3f& v2 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 2]].p;
+        //         RayTriangleIntersection(*ray, v0, v1, v2);
+        //     }
 
 #if 0
         // Add normals (last [vertex_ofs] added normals)
@@ -988,6 +1002,41 @@ namespace ShapeRendering {
 #endif
     }
 
+    void ShapeRenderer::push_arrow(
+        const glm::vec3& from,
+        const glm::vec3& to,
+        ArrowDescriptor arrow_desc)
+    {
+        glm::vec3 arrowv = (to - from);
+        float arrowl = glm::length(arrowv);
+
+        // Main arrow transform
+        // mat4f R = mat4f(mat3f::base(arrowv));
+        // mat4f M = mat4f::translation(from) * R;
+        const glm::mat4 R = glm::mat4(createBasisMatrixFromVector(arrowv));
+        const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
+        const glm::mat4 M = T * R;
+
+        // Cone
+        float conel = arrowl * arrow_desc.cone_fraction;
+        // Skip cone part if arrow is very short
+        if (conel > 0.0f)
+        {
+            // mat4f Mcone = M * mat4f::translation({ 0,0,arrowl - conel });
+            const glm::mat4 Mcone = M * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, arrowl - conel));
+            push_states(Mcone);
+            push_cone(conel, arrow_desc.cone_radius);
+            pop_states<glm::mat4>();
+        }
+
+        // Cylinder
+        float cyll = arrowl - conel;
+        push_states(M);
+        push_cylinder(cyll, arrow_desc.cylinder_radius);
+        pop_states<glm::mat4>();
+    }
+
+#if 0
     void ShapeRenderer::push_sphere(float h, float r)
     {
         const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, m4f>();
@@ -1022,7 +1071,7 @@ namespace ShapeRendering {
             add_line2(it->p, it->p + it->normal * 0.2f, { 0,1,0 });
         }
 #endif
-    }
+        }
 
     void ShapeRenderer::push_sphere_wireframe(float h, float r)
     {
@@ -1056,39 +1105,6 @@ namespace ShapeRendering {
             add_line2(it->p, it->p + it->normal * 0.2f, { 0,1,0 });
         }
 #endif
-    }
-
-    void ShapeRenderer::push_arrow(const vec3f& from,
-        const vec3f& to,
-        ArrowDescriptor arrow_desc,
-        Ray* ray)
-    {
-        vec3f arrowv = (to - from);
-        float arrowl = arrowv.norm2();
-
-        // Main arrow transform
-        mat4f R = mat4f(mat3f::base(arrowv));
-        mat4f M = mat4f::translation(from) * R;
-
-        // Cone
-        float conel = arrowl * arrow_desc.cone_fraction; // cone_frac;
-        // Skip cone part if arrow is very short
-        if (conel > 0.0f)
-        {
-            mat4f Mcone = M * mat4f::translation({ 0,0,arrowl - conel });
-            push_states(Mcone);
-            push_cone(conel, arrow_desc.cone_radius);
-            pop_states<m4f>();
-        }
-
-        // Cylinder
-        float cyll = arrowl - conel;
-        push_states(M);
-        push_cylinder(cyll, arrow_desc.cylinder_radius, ray);
-        pop_states<m4f>();
-
-        // Additional debug line
-        //        push_line(from, to, {0,1,0});
     }
 
     void ShapeRenderer::push_helix(const vec3f& from,
@@ -1150,7 +1166,7 @@ namespace ShapeRendering {
             v->p = (M * v->p.xyz1()).xyz();
             v->normal = normalize((M * v->normal.xyz0()).xyz());
             v->color = color;
-        }
+    }
 
         // Now push the helix:ified vertex & index arrays to the main batch
 
@@ -1215,58 +1231,69 @@ namespace ShapeRendering {
             push_line(f_points_world[i].xyz(), f_points_world[i + 4].xyz());
         }
     }
+#endif
 
-    void ShapeRenderer::push_basis_basic(const m4f& basis, float arrlen)
+    void ShapeRenderer::push_basis_basic(const glm::mat4& basis, float arrlen)
     {
-        const vec3f wpos = basis.column(3).xyz();
+        // const vec3f wpos = basis.column(3).xyz();
+        const glm::vec3 wpos = glm::vec3(basis[3]);
 
         push_states(Color4u::Red);
-        push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
+        // push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
+        push_line(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
+        // push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
+        push_line(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Blue);
-        push_line(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen);
+        // push_line(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen);
+        push_line(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen);
         pop_states<Color4u>();
     }
 
-    void ShapeRenderer::push_basis_basic2d(const m4f& basis, float arrlen)
+    void ShapeRenderer::push_basis_basic2d(const glm::mat4& basis, float arrlen)
     {
-        const vec3f wpos = basis.column(3).xyz();
+        // const vec3f wpos = basis.column(3).xyz();
+        const glm::vec3 wpos = glm::vec3(basis[3]);
 
         push_states(Color4u::Red);
-        push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
+        // push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
+        push_line(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
+        // push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
+        push_line(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen);
         pop_states<Color4u>();
     }
 
-    void ShapeRenderer::push_basis(const m4f& basis,
+    void ShapeRenderer::push_basis(const glm::mat4& basis,
         float arrlen,
-        const ArrowDescriptor& arrdesc,
-        Ray* ray)
+        const ArrowDescriptor& arrdesc)
     {
-        const vec3f wpos = basis.column(3).xyz();
+        // const vec3f wpos = basis.column(3).xyz();
+        const glm::vec3 wpos = glm::vec3(basis[3]);
 
         push_states(Color4u::Red);
-        push_arrow(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen, arrdesc, ray);
+        // push_arrow(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen, arrdesc, ray);
+        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen, arrdesc);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        push_arrow(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen, arrdesc, ray);
+        // push_arrow(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen, arrdesc, ray);
+        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen, arrdesc);
         pop_states<Color4u>();
 
         push_states(Color4u::Blue);
-        push_arrow(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen, arrdesc, ray);
+        // push_arrow(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen, arrdesc, ray);
+        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen, arrdesc);
         pop_states<Color4u>();
     }
 
-    void ShapeRenderer::push_point(const vec3f& p, unsigned size)
+    void ShapeRenderer::push_point(const glm::vec3& p, unsigned size)
     {
         const auto [color, depth_test] = get_states<Color4u, DepthTest>();
         const PointDrawcall dc{ size, depth_test };
@@ -1285,8 +1312,6 @@ namespace ShapeRendering {
             points,
             points + nbr_points);
     }
-
-#endif
 
     void ShapeRenderer::render(const glm::mat4& PROJ_VIEW /* Proj * WorldToView */)
     {
@@ -1413,7 +1438,7 @@ namespace ShapeRendering {
                 void* destptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
                 memcpy((char*)destptr + ofs, data, size);
                 glUnmapBuffer(GL_ARRAY_BUFFER);
-            }
+    }
 
             // == IBO ==
             {
@@ -1439,12 +1464,12 @@ namespace ShapeRendering {
 
             // Uniforms
             glUniformMatrix4fv(
-                glGetUniformLocation(lambert_shader, "PROJ_VIEW"), 
-                1, 
-                0, 
+                glGetUniformLocation(lambert_shader, "PROJ_VIEW"),
+                1,
+                0,
                 glm::value_ptr(PROJ_VIEW));
             glUniform1f(
-                glGetUniformLocation(lambert_shader, "ambient_ratio"), 
+                glGetUniformLocation(lambert_shader, "ambient_ratio"),
                 0.6);
 
             CheckAndThrowGLErrors();
@@ -1501,7 +1526,7 @@ namespace ShapeRendering {
             glBindVertexArray(0);
             glUseProgram(0);
             CheckAndThrowGLErrors();
-        }
+    }
 #endif
 
 
@@ -1532,9 +1557,9 @@ namespace ShapeRendering {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lines_IBO);
 
             glUniformMatrix4fv(
-                glGetUniformLocation(line_shader, "PROJ_VIEW"), 
-                1, 
-                0, 
+                glGetUniformLocation(line_shader, "PROJ_VIEW"),
+                1,
+                0,
                 glm::value_ptr(PROJ_VIEW));
 
             // lines v3 (unorderded_map with vectors)
@@ -1576,9 +1601,9 @@ namespace ShapeRendering {
             glBindBuffer(GL_ARRAY_BUFFER, point_vbo);
 
             glUniformMatrix4fv(
-                glGetUniformLocation(point_shader, "PROJ_VIEW"), 
-                1, 
-                0, 
+                glGetUniformLocation(point_shader, "PROJ_VIEW"),
+                1,
+                0,
                 glm::value_ptr(PROJ_VIEW));
 
             for (auto& it : point_hash)
@@ -1617,7 +1642,7 @@ namespace ShapeRendering {
 #ifdef GL_POLYGON_MODE
         //    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
 #endif
-    }
+}
 
     void ShapeRenderer::post_render()
     {

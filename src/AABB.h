@@ -23,7 +23,7 @@ namespace eeng
         }
 
         /// Grow AABB to include point
-        inline void grow(const glm::vec3 &p)
+        inline void grow(const glm::vec3& p)
         {
             min[0] = std::fminf(min[0], p[0]);
             max[0] = std::fmaxf(max[0], p[0]);
@@ -46,7 +46,7 @@ namespace eeng
         }
 
         /// Grow AABB to include another AABB
-        inline void grow(const AABB &aabb)
+        inline void grow(const AABB& aabb)
         {
             grow(aabb.min);
             grow(aabb.max);
@@ -68,7 +68,7 @@ namespace eeng
             return bs;
         }
 
-        inline AABB operator+(const glm::vec3 &v)
+        inline AABB operator+(const glm::vec3& v)
         {
             AABB aabb = *this;
             aabb.min += v;
@@ -79,7 +79,7 @@ namespace eeng
 
         /// AABB resulting from this AABB being rotated and translated.
         /// Based on Ericsson, Real-time Collision Detection, page 86.
-        inline AABB post_transform(const glm::vec3 &T, const glm::mat3 &R) const
+        inline AABB post_transform(const glm::vec3& T, const glm::mat3& R) const
         {
             AABB aabb;
 
@@ -107,6 +107,31 @@ namespace eeng
             return aabb;
         }
 
+        inline AABB post_transform(const glm::mat4& M) const
+        {
+            AABB aabb;
+
+            // For all three axes
+            for (int i = 0; i < 3; i++) {
+                // Start by adding in translation
+                aabb.min[i] = aabb.max[i] = M[3][i];
+                // Form extent by summing smaller and larger terms respectively
+                for (int j = 0; j < 3; j++) {
+                    float e = M[j][i] * min[j];
+                    float f = M[j][i] * max[j];
+                    if (e < f) {
+                        aabb.min[i] += e;
+                        aabb.max[i] += f;
+                    }
+                    else {
+                        aabb.min[i] += f;
+                        aabb.max[i] += e;
+                    }
+                }
+            }
+            return aabb;
+        }
+
         operator bool()
         {
             return max.x > min.x && max.y > min.y && max.z > min.z;
@@ -114,7 +139,7 @@ namespace eeng
 
 #define AABB_EPS FLT_EPSILON
 
-        inline bool intersect(const AABB &aabb) const
+        inline bool intersect(const AABB& aabb) const
         {
             if (max[0] < aabb.min[0] - AABB_EPS || min[0] > aabb.max[0] + AABB_EPS)
                 return false;
@@ -127,7 +152,7 @@ namespace eeng
 
     private:
         /// Split AABB at frac ∈ [0,1] in the dim:th dimension
-        void split2(int dim, float frac, AABB &aabb_left, AABB &aabb_right)
+        void split2(int dim, float frac, AABB& aabb_left, AABB& aabb_right)
         {
             aabb_left = *this;
             aabb_right = *this;
