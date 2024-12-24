@@ -746,18 +746,7 @@ namespace ShapeRendering {
         unsigned vertex_ofs = (unsigned)polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
-#if 0
-        // Use unique normals per vertex (36 vertices)
-        v3f n;
-        for (int i = 0; i < unitcube.tris.size(); i++)
-        {
-            const unsigned index = unitcube.tris[i];
-            const v3f& v = xyz(M * xyz1(unitcube.vertices[index]));
-            if (i % 6 == 0) n = normalize(xyz(M * xyz0(unitcube.tri_normals[i / 6])));
-            polygon_vertices.push_back(PolyVertex{ v, n, color });
-            polygon_indices.push_back(i);
-    }
-#else
+
         // Use normals á la sphere (8 vertices)
         for (auto& v : unitcube.vertices)
         {
@@ -769,7 +758,6 @@ namespace ShapeRendering {
         polygon_indices.insert(polygon_indices.end(),
             unitcube.tris.begin(),
             unitcube.tris.end());
-#endif
 
         polygon_hash.insert({
             PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
@@ -782,9 +770,9 @@ namespace ShapeRendering {
         const auto& transform = get_states<glm::mat4>();
 
         auto vertices = unitcube.vertices;
-        std::for_each(vertices.begin(),
-            vertices.end(),
-            [&transform](glm::vec3& v) { v = glm::vec3((transform * glm::vec4(v, 1.0f))); });
+        // std::for_each(vertices.begin(),
+        //     vertices.end(),
+        //     [&transform](glm::vec3& v) { v = glm::vec3((transform * glm::vec4(v, 1.0f))); });
 
         push_lines(vertices.data(),
             vertices.size(),

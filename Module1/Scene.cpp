@@ -226,19 +226,21 @@ void Scene::render(
     shapeRenderer.push_basis_basic(grassWorldMatrix, 1.0f);
     shapeRenderer.push_basis_basic(horseWorldMatrix, 1.0f);
 
-    // const ShapeRendering::ArrowDescriptor arrowdesc
-    // {
-    //     .cone_fraction = 0.2,
-    //     .cone_radius = 0.05f,
-    //     .cylinder_radius = 0.025f
-    // };
-    const ShapeRendering::ArrowDescriptor arrowdesc
     {
-        .cone_fraction = 0.2,
-        .cone_radius = 0.15f,
-        .cylinder_radius = 0.075f
-    };
-    shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
+        // const ShapeRendering::ArrowDescriptor arrowdesc
+        // {
+        //     .cone_fraction = 0.2,
+        //     .cone_radius = 0.05f,
+        //     .cylinder_radius = 0.025f
+        // };
+        const auto arrowdesc = ShapeRendering::ArrowDescriptor
+        {
+            .cone_fraction = 0.2,
+            .cone_radius = 0.15f,
+            .cylinder_radius = 0.075f
+        };
+        shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
+    }
 
     // Draw AABBs
     shapeRenderer.push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
@@ -249,18 +251,52 @@ void Scene::render(
     shapeRenderer.push_AABB(grass_aabb.min, grass_aabb.max);
     shapeRenderer.pop_states<ShapeRendering::Color4u>();
 
-    // More tests
+    // Push quads
     {
-        glm::vec3 points[4]{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) };
-        shapeRenderer.push_states(ShapeRendering::Color4u::Yellow);
+        glm::vec3 points[4]{ {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f} };
+        shapeRenderer.push_states(ShapeRendering::Color4u{ 0x8000ffff });
         shapeRenderer.push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
+
+        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         shapeRenderer.push_quad(points, glm::vec3(0.0f, 0.0f, 1.0f));
+
         shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         shapeRenderer.push_quad_wireframe();
-        shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4>();
-        // shapeRenderer.pop_states<glm::mat4>();
+
+        shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
     }
 
+    // Push cube
+    {
+        shapeRenderer.push_states(ShapeRendering::Color4u{ 0x8000ffff });
+        shapeRenderer.push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
+
+        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f)));
+        shapeRenderer.push_cube();
+
+        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        shapeRenderer.push_cube_wireframe();
+
+        shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
+    }
+
+    // Push cube
+    {
+        shapeRenderer.push_states(ShapeRendering::Color4u{ 0xff808080 });
+        shapeRenderer.push_grid(glm::vec3(0.0f, 1.0e-6f, 0.0f), 20.0f, 21);
+        shapeRenderer.pop_states<ShapeRendering::Color4u>();
+    }
+
+    // Arrows
+    {
+        const auto arrowdesc = ShapeRendering::ArrowDescriptor
+        {
+            .cone_fraction = 0.2,
+            .cone_radius = 0.15f,
+            .cylinder_radius = 0.075f
+        };
+        shapeRenderer.push_basis(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f)), 1.0f, arrowdesc);
+    }
 
     shapeRenderer.render(P * V);
     shapeRenderer.post_render();
