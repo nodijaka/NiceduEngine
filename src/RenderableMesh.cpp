@@ -13,17 +13,17 @@ namespace eeng
 {
     namespace
     {
-        inline glm::vec3 aivec_to_glmvec(const aiVector3D &vec)
+        inline glm::vec3 aivec_to_glmvec(const aiVector3D& vec)
         {
             return glm::vec3(vec.x, vec.y, vec.z);
         }
 
-        inline glm::quat aiquat_to_glmquat(const aiQuaternion &aiq)
+        inline glm::quat aiquat_to_glmquat(const aiQuaternion& aiq)
         {
             return glm::quat(aiq.w, aiq.x, aiq.y, aiq.z);
         }
 
-        inline glm::mat4 aimat_to_glmmat(const aiMatrix4x4 &aim)
+        inline glm::mat4 aimat_to_glmmat(const aiMatrix4x4& aim)
         {
             glm::mat4 glmm;
             glmm[0][0] = aim.a1;
@@ -50,12 +50,12 @@ namespace eeng
     namespace
     {
         /// Dump tree node to stream
-        void dump_tree_to_stream(const VectorTree<SkeletonNode> &tree,
-                                 unsigned i,
-                                 const std::string &indent,
-                                 logstreamer_t &outstream)
+        void dump_tree_to_stream(const VectorTree<SkeletonNode>& tree,
+            unsigned i,
+            const std::string& indent,
+            logstreamer_t& outstream)
         {
-            const auto &node = tree.nodes[i];
+            const auto& node = tree.nodes[i];
             outstream << indent;
             outstream << " [node " << i << "]";
             if (node.bone_index != EENG_NULL_INDEX)
@@ -63,9 +63,9 @@ namespace eeng
             if (node.nbr_meshes)
                 outstream << "[" << node.nbr_meshes << " meshes]";
             outstream << " " << node.name
-                      << " (children " << node.m_nbr_children
-                      << ", stride " << node.m_branch_stride
-                      << ", parent ofs " << node.m_parent_ofs << ")";
+                << " (children " << node.m_nbr_children
+                << ", stride " << node.m_branch_stride
+                << ", parent ofs " << node.m_parent_ofs << ")";
             outstream << std::endl;
             int ci = i + 1;
             for (int j = 0; j < node.m_nbr_children; j++)
@@ -76,8 +76,8 @@ namespace eeng
         }
 
         /// Dump node tree to stream
-        void dump_tree_to_stream(const VectorTree<SkeletonNode> &tree,
-                                 logstreamer_t &&outstream)
+        void dump_tree_to_stream(const VectorTree<SkeletonNode>& tree,
+            logstreamer_t&& outstream)
         {
             int i = 0;
             while (i < tree.nodes.size())
@@ -111,7 +111,7 @@ namespace eeng
     {
     }
 
-    void RenderableMesh::load(const std::string &file, bool append_animations)
+    void RenderableMesh::load(const std::string& file, bool append_animations)
     {
         unsigned xiflags = (append_animations ? xi_load_animations : (xi_load_meshes | xi_load_animations));
 
@@ -140,9 +140,9 @@ namespace eeng
         load(file, xiflags, aiflags);
     }
 
-    void RenderableMesh::load(const std::string &file,
-                              unsigned xiflags,
-                              unsigned aiflags)
+    void RenderableMesh::load(const std::string& file,
+        unsigned xiflags,
+        unsigned aiflags)
 
     {
         // Plan is to utilize xiflags with more detail
@@ -179,7 +179,7 @@ namespace eeng
         log << priority(PRTVERBOSE) << "Format " << fileext << " supported: " << (ext_supported ? "YES" : "NO") << std::endl;
 
         // Load
-        const aiScene *aiscene = aiimporter.ReadFile(file, aiflags);
+        const aiScene* aiscene = aiimporter.ReadFile(file, aiflags);
 
         if (!aiscene)
             throw std::runtime_error(aiimporter.GetErrorString());
@@ -206,35 +206,36 @@ namespace eeng
         glBindVertexArray(0);
 
         loadNodes(aiscene->mRootNode);
-        dump_tree_to_stream(m_nodetree, logstreamer_t{filepath + filename + "_nodetree.txt", PRTVERBOSE});
+        dump_tree_to_stream(m_nodetree, logstreamer_t{ filepath + filename + "_nodetree.txt", PRTVERBOSE });
         // m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
 
         loadAnimations(aiscene);
 
-        mSceneAABB = measureScene(aiscene); // Only captures bind pose.
 
         // Traverse the hierarchy.
         // Animated meshes must be traversed before each frame.
         animate(-1, 0.0f);
+
+        mSceneAABB = measureScene(aiscene); // Only captures bind pose.
     }
 
-    void RenderableMesh::removeTranslationKeys(const std::string &node_name)
+    void RenderableMesh::removeTranslationKeys(const std::string& node_name)
     {
         removeTranslationKeys(m_nodetree.find_node_index(node_name));
     }
 
     void RenderableMesh::removeTranslationKeys(int node_index)
     {
-        for (auto &anim : m_animations)
+        for (auto& anim : m_animations)
         {
             EENG_ASSERT(node_index <= anim.node_animations.size(), "{0} is not a valid node index", node_index);
-            auto &pos_keys = anim.node_animations[node_index].pos_keys;
-            for (auto &pk : pos_keys)
-                pk = {0, pk.y, 0};
+            auto& pos_keys = anim.node_animations[node_index].pos_keys;
+            for (auto& pk : pos_keys)
+                pk = { 0, pk.y, 0 };
         }
     }
 
-    bool RenderableMesh::loadScene(const aiScene *aiscene, const std::string &filename)
+    bool RenderableMesh::loadScene(const aiScene* aiscene, const std::string& filename)
     {
         unsigned scene_nbr_meshes = aiscene->mNumMeshes;
         unsigned scene_nbr_mtl = aiscene->mNumMaterials;
@@ -253,7 +254,7 @@ namespace eeng
         log << "Animations:\n";
         for (int i = 0; i < aiscene->mNumAnimations; i++)
         {
-            aiAnimation *anim = aiscene->mAnimations[i];
+            aiAnimation* anim = aiscene->mAnimations[i];
             log
                 << "\t" << anim->mName.C_Str()
                 << ", channels " << anim->mNumChannels
@@ -310,16 +311,16 @@ namespace eeng
         // Initialize the meshes in the scene one by one
         for (uint i = 0; i < m_meshes.size(); i++)
         {
-            const aiMesh *paiMesh = aiscene->mMeshes[i];
+            const aiMesh* paiMesh = aiscene->mMeshes[i];
             loadMesh(i,
-                     paiMesh,
-                     scene_positions,
-                     scene_normals,
-                     scene_tangents,
-                     scene_binormals,
-                     scene_texcoords,
-                     scene_skinweights,
-                     scene_indices);
+                paiMesh,
+                scene_positions,
+                scene_normals,
+                scene_tangents,
+                scene_binormals,
+                scene_texcoords,
+                scene_skinweights,
+                scene_indices);
         }
 
         log << priority(PRTSTRICT);
@@ -337,7 +338,7 @@ namespace eeng
 
         for (int i = 0; i < m_meshes.size(); i++)
         {
-            const auto &mesh = m_meshes[i];
+            const auto& mesh = m_meshes[i];
             if (mesh.is_skinned)
             {
                 // bones
@@ -398,9 +399,9 @@ namespace eeng
         glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BoneBuffer]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(scene_skinweights[0]) * scene_skinweights.size(), &scene_skinweights[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(BONE_INDEX_LOCATION);
-        glVertexAttribIPointer(BONE_INDEX_LOCATION, 4, GL_UNSIGNED_INT, sizeof(SkinData), (const GLvoid *)0);
+        glVertexAttribIPointer(BONE_INDEX_LOCATION, 4, GL_UNSIGNED_INT, sizeof(SkinData), (const GLvoid*)0);
         glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
-        glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(SkinData), (const GLvoid *)16);
+        glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(SkinData), (const GLvoid*)16);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[IndexBuffer]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(scene_indices[0]) * scene_indices.size(), &scene_indices[0], GL_STATIC_DRAW);
@@ -410,14 +411,14 @@ namespace eeng
     }
 
     void RenderableMesh::loadMesh(uint meshindex,
-                                  const aiMesh *aimesh,
-                                  std::vector<glm::vec3> &scene_positions,
-                                  std::vector<glm::vec3> &scene_normals,
-                                  std::vector<glm::vec3> &scene_tangents,
-                                  std::vector<glm::vec3> &scene_binormals,
-                                  std::vector<glm::vec2> &scene_texcoords,
-                                  std::vector<SkinData> &scene_skindata,
-                                  std::vector<unsigned int> &scene_indices)
+        const aiMesh* aimesh,
+        std::vector<glm::vec3>& scene_positions,
+        std::vector<glm::vec3>& scene_normals,
+        std::vector<glm::vec3>& scene_tangents,
+        std::vector<glm::vec3>& scene_binormals,
+        std::vector<glm::vec2>& scene_texcoords,
+        std::vector<SkinData>& scene_skindata,
+        std::vector<unsigned int>& scene_indices)
     {
         log << priority(PRTVERBOSE);
         log << "Loading mesh " << aimesh->mName.C_Str() << std::endl;
@@ -433,17 +434,17 @@ namespace eeng
         const aiVector3D v3zero(0.0f, 0.0f, 0.0f);
         for (uint i = 0; i < aimesh->mNumVertices; i++)
         {
-            const aiVector3D *pPos = &(aimesh->mVertices[i]);
-            const aiVector3D *pNormal = (aimesh->HasNormals() ? &(aimesh->mNormals[i]) : &v3zero);
-            const aiVector3D *pTangent = (aimesh->HasTangentsAndBitangents() ? &(aimesh->mTangents[i]) : &v3zero);
-            const aiVector3D *pBinormal = (aimesh->HasTangentsAndBitangents() ? &(aimesh->mBitangents[i]) : &v3zero);
-            const aiVector3D *pTexCoord = (aimesh->HasTextureCoords(0) ? &(aimesh->mTextureCoords[0][i]) : &v3zero);
+            const aiVector3D* pPos = &(aimesh->mVertices[i]);
+            const aiVector3D* pNormal = (aimesh->HasNormals() ? &(aimesh->mNormals[i]) : &v3zero);
+            const aiVector3D* pTangent = (aimesh->HasTangentsAndBitangents() ? &(aimesh->mTangents[i]) : &v3zero);
+            const aiVector3D* pBinormal = (aimesh->HasTangentsAndBitangents() ? &(aimesh->mBitangents[i]) : &v3zero);
+            const aiVector3D* pTexCoord = (aimesh->HasTextureCoords(0) ? &(aimesh->mTextureCoords[0][i]) : &v3zero);
 
-            scene_positions.push_back({pPos->x, pPos->y, pPos->z});
-            scene_normals.push_back({pNormal->x, pNormal->y, pNormal->z});
-            scene_tangents.push_back({pTangent->x, pTangent->y, pTangent->z});
-            scene_binormals.push_back({pBinormal->x, pBinormal->y, pBinormal->z});
-            scene_texcoords.push_back({pTexCoord->x, pTexCoord->y});
+            scene_positions.push_back({ pPos->x, pPos->y, pPos->z });
+            scene_normals.push_back({ pNormal->x, pNormal->y, pNormal->z });
+            scene_tangents.push_back({ pTangent->x, pTangent->y, pTangent->z });
+            scene_binormals.push_back({ pBinormal->x, pBinormal->y, pBinormal->z });
+            scene_texcoords.push_back({ pTexCoord->x, pTexCoord->y });
         }
 
         loadBones(meshindex, aimesh, scene_skindata);
@@ -451,7 +452,7 @@ namespace eeng
         // Populate the index buffer
         for (uint i = 0; i < aimesh->mNumFaces; i++)
         {
-            const aiFace &Face = aimesh->mFaces[i];
+            const aiFace& Face = aimesh->mFaces[i];
             assert(Face.mNumIndices == 3);
             scene_indices.push_back(Face.mIndices[0]);
             scene_indices.push_back(Face.mIndices[1]);
@@ -459,30 +460,30 @@ namespace eeng
         }
     }
 
-    AABB RenderableMesh::measureScene(const aiScene *aiscene)
+    AABB RenderableMesh::measureScene(const aiScene* aiscene)
     {
         AABB aabb;
-        measureNode(aiscene, aiscene->mRootNode, glm::mat4{1.0f}, aabb);
+        measureNode(aiscene, aiscene->mRootNode, glm::mat4{ 1.0f }, aabb);
 
         return aabb;
     }
 
-    void RenderableMesh::measureNode(const aiScene *aiscene,
-                                     const aiNode *pNode,
-                                     const glm::mat4 &M_roottfm,
-                                     AABB &aabb)
+    void RenderableMesh::measureNode(const aiScene* aiscene,
+        const aiNode* pNode,
+        const glm::mat4& M_roottfm,
+        AABB& aabb)
     {
-        glm::mat4 M_identity{1.0f};
+        glm::mat4 M_identity{ 1.0f };
         glm::mat4 M_nodetfm = M_roottfm * aimat_to_glmmat(pNode->mTransformation);
 
         for (int i = 0; i < pNode->mNumMeshes; i++)
         {
-            aiMesh *mesh = aiscene->mMeshes[pNode->mMeshes[i]];
+            aiMesh* mesh = aiscene->mMeshes[pNode->mMeshes[i]];
 
             // Skinned meshes are expressed in world/model space,
             // non-skinned meshes are expressed in node space.
             if (mesh->mNumBones)
-                measureMesh(mesh, glm::mat4{1.0f}, aabb);
+                measureMesh(mesh, glm::mat4{ 1.0f }, aabb);
             else
                 measureMesh(mesh, M_nodetfm, aabb);
         }
@@ -493,19 +494,19 @@ namespace eeng
         }
     }
 
-    void RenderableMesh::measureMesh(const aiMesh *pMesh,
-                                     const glm::mat4 &M_roottfm,
-                                     AABB &aabb)
+    void RenderableMesh::measureMesh(const aiMesh* pMesh,
+        const glm::mat4& M_roottfm,
+        AABB& aabb)
     {
         for (int i = 0; i < pMesh->mNumVertices; i++)
         {
             glm::vec3 v = aivec_to_glmvec(*(pMesh->mVertices + i));
-            aabb.grow(glm::vec3{M_roottfm * glm::vec4(v, 1.0f)});
+            aabb.grow(glm::vec3{ M_roottfm * glm::vec4(v, 1.0f) });
         }
     }
 
     // Load node hierarchy and link nodes to bones & meshes
-    void RenderableMesh::loadNodes(aiNode *ainode_root)
+    void RenderableMesh::loadNodes(aiNode* ainode_root)
     {
         // Load node hierarchy recursively from root
         loadNode(ainode_root);
@@ -517,7 +518,7 @@ namespace eeng
             // Link node<->meshes (re-retrieve the original assimp node by name)
             // Note: the node transform is ignored during rendering if the mesh
             // is skinned, since it is part of the inverse-transpose matrix.
-            aiNode *ainode = ainode_root->FindNode(m_nodetree.nodes[i].name.c_str());
+            aiNode* ainode = ainode_root->FindNode(m_nodetree.nodes[i].name.c_str());
             for (int j = 0; j < ainode->mNumMeshes; j++)
             {
                 m_meshes[ainode->mMeshes[j]].node_index = i;
@@ -539,7 +540,7 @@ namespace eeng
             m_nodehash[m_nodetree.nodes[i].name] = i;
     }
 
-    void RenderableMesh::loadNode(aiNode *ainode)
+    void RenderableMesh::loadNode(aiNode* ainode)
     {
         // Node data
         std::string node_name;   //
@@ -547,7 +548,7 @@ namespace eeng
         glm::mat4 transform;     // Local transform = transform relative parent
         // Fetch node data from assimp
         node_name = std::string(ainode->mName.C_Str());
-        const aiNode *parent_node = ainode->mParent;
+        const aiNode* parent_node = ainode->mParent;
         parent_name = parent_node ? std::string(parent_node->mName.C_Str()) : "";
         transform = aimat_to_glmmat(ainode->mTransformation);
 
@@ -563,8 +564,8 @@ namespace eeng
     }
 
     void RenderableMesh::loadBones(uint mesh_index,
-                                   const aiMesh *aimesh,
-                                   std::vector<SkinData> &scene_skindata)
+        const aiMesh* aimesh,
+        std::vector<SkinData>& scene_skindata)
     {
         log << priority(PRTVERBOSE) << aimesh->mNumBones << " bones (nbr weights):\n";
 
@@ -608,7 +609,7 @@ namespace eeng
     /// @param tex_type
     /// @param modelDir
     /// @return An index to the loaded texture
-    int RenderableMesh::loadTexture(const aiMaterial *material, aiTextureType textureType, const std::string &modelDir)
+    int RenderableMesh::loadTexture(const aiMaterial* material, aiTextureType textureType, const std::string& modelDir)
     {
         unsigned nbr_textures = material->GetTextureCount(textureType);
 
@@ -625,17 +626,17 @@ namespace eeng
         aiTextureOp ai_texop;           // unused
         aiTextureMapMode ai_texmapmode; //
         if (material->GetTexture(textureType,
-                                 0,
-                                 &ai_texpath,
-                                 &ai_texmap,
-                                 &ai_uvindex,
-                                 &ai_blend,
-                                 &ai_texop,
-                                 &ai_texmapmode) != AI_SUCCESS)
+            0,
+            &ai_texpath,
+            &ai_texmap,
+            &ai_uvindex,
+            &ai_blend,
+            &ai_texop,
+            &ai_texmapmode) != AI_SUCCESS)
             return NO_TEXTURE;
 
         // Relative texture path, e.g. "/textures/texture.png"
-        std::string textureRelPath{ai_texpath.C_Str()};
+        std::string textureRelPath{ ai_texpath.C_Str() };
 
         // Find an index to this texture, either by retrieving it (embedded texture)
         // or by creating it (texture on file)
@@ -706,14 +707,14 @@ namespace eeng
                 adr_mode = GL_REPEAT;
                 break;
             }
-            m_textures[textureIndex].set_address_mode({adr_mode, adr_mode});
+            m_textures[textureIndex].set_address_mode({ adr_mode, adr_mode });
         }
 
         return textureIndex;
     }
 
     // bool SkinnedMesh::InitMaterials(const aiScene* pScene, const string& Filename)
-    void RenderableMesh::loadMaterials(const aiScene *aiscene, const std::string &file)
+    void RenderableMesh::loadMaterials(const aiScene* aiscene, const std::string& file)
     {
         std::string local_filepath = get_parentdir(file);
 
@@ -731,7 +732,7 @@ namespace eeng
         m_embedded_textures_ofs = (unsigned)m_textures.size();
         for (int i = 0; i < aiscene->mNumTextures; i++)
         {
-            aiTexture *aitexture = aiscene->mTextures[i];
+            aiTexture* aitexture = aiscene->mTextures[i];
             std::string filename = get_filename(aitexture->mFilename.C_Str());
             // std::string filename = std::to_string(i);
 
@@ -740,18 +741,18 @@ namespace eeng
             {
                 // Raw embedded image data
                 texture.load_image(filename,
-                                   (unsigned char *)aitexture->pcData,
-                                   aitexture->mWidth,
-                                   aitexture->mHeight,
-                                   4);
+                    (unsigned char*)aitexture->pcData,
+                    aitexture->mWidth,
+                    aitexture->mHeight,
+                    4);
                 log << priority(PRTSTRICT) << "Loaded uncompressed embedded texture " << texture << std::endl;
             }
             else
             {
                 // Compressed embedded image data
                 texture.load_from_memory(filename,
-                                         (unsigned char *)aitexture->pcData,
-                                         sizeof(aiTexel) * (aitexture->mWidth));
+                    (unsigned char*)aitexture->pcData,
+                    sizeof(aiTexel) * (aitexture->mWidth));
                 log << priority(PRTSTRICT) << "Loaded compressed embedded texture " << texture << std::endl;
             }
 
@@ -763,7 +764,7 @@ namespace eeng
         // Initialize the materials
         for (uint i = 0; i < aiscene->mNumMaterials; i++)
         {
-            const aiMaterial *pMaterial = aiscene->mMaterials[i];
+            const aiMaterial* pMaterial = aiscene->mMaterials[i];
             PhongMaterial mtl;
 
             aiString mtlname;
@@ -795,11 +796,11 @@ namespace eeng
             // Fetch common color attributes
             aiColor3D aic;
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, aic))
-                mtl.Ka = glm::vec3{aic.r, aic.g, aic.b};
+                mtl.Ka = glm::vec3{ aic.r, aic.g, aic.b };
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aic))
-                mtl.Kd = glm::vec3{aic.r, aic.g, aic.b};
+                mtl.Kd = glm::vec3{ aic.r, aic.g, aic.b };
             if (AI_SUCCESS == pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, aic))
-                mtl.Ks = glm::vec3{aic.r, aic.g, aic.b};
+                mtl.Ks = glm::vec3{ aic.r, aic.g, aic.b };
             pMaterial->Get(AI_MATKEY_SHININESS, mtl.shininess);
 
             // Fetch common textures
@@ -824,17 +825,17 @@ namespace eeng
 
         log << priority(PRTSTRICT) << "Num textures " << m_textures.size() << std::endl;
         log << priority(PRTVERBOSE);
-        for (auto &t : m_textures)
+        for (auto& t : m_textures)
             log << "\t" << t.m_name << std::endl;
     }
 
-    void RenderableMesh::loadAnimations(const aiScene *scene)
+    void RenderableMesh::loadAnimations(const aiScene* scene)
     {
         log << priority(PRTSTRICT) << "Loading animations..." << std::endl;
 
         for (int i = 0; i < scene->mNumAnimations; i++)
         {
-            aiAnimation *aianim = scene->mAnimations[i];
+            aiAnimation* aianim = scene->mAnimations[i];
 
             AnimationClip anim;
             anim.name = std::string(aianim->mName.C_Str());
@@ -851,7 +852,7 @@ namespace eeng
 
             for (int j = 0; j < aianim->mNumChannels; j++)
             {
-                aiNodeAnim *ainode_anim = aianim->mChannels[j];
+                aiNodeAnim* ainode_anim = aianim->mChannels[j];
                 NodeKeyframes node_anim;
                 node_anim.is_used = true;
                 auto name = std::string(ainode_anim->mNodeName.C_Str());
@@ -890,9 +891,9 @@ namespace eeng
         log << priority(PRTSTRICT) << "Animations in total " << m_animations.size() << std::endl;
     }
 
-    glm::mat4 RenderableMesh::blendTransformAtTime(const AnimationClip *anim,
-                                                   const NodeKeyframes &nodeanim,
-                                                   float time) const
+    glm::mat4 RenderableMesh::blendTransformAtTime(const AnimationClip* anim,
+        const NodeKeyframes& nodeanim,
+        float time) const
     {
         float dur_ticks = anim->duration_ticks;
         float animdur_sec = dur_ticks / (anim->tps * 1);
@@ -903,38 +904,38 @@ namespace eeng
         return blendTransformAtFrac(anim, nodeanim, animtime_nrm);
     }
 
-    glm::mat4 RenderableMesh::blendTransformAtFrac(const AnimationClip *anim,
-                                                   const NodeKeyframes &nodeanim,
-                                                   float frac) const
+    glm::mat4 RenderableMesh::blendTransformAtFrac(const AnimationClip* anim,
+        const NodeKeyframes& nodeanim,
+        float frac) const
     {
         // Blend translation keys
         float pos_indexf = frac * (nodeanim.pos_keys.size() - 1);
         unsigned pos_index0 = std::floor(pos_indexf);
         unsigned pos_index1 = std::min<unsigned>(pos_index0 + 1,
-                                                 (unsigned)nodeanim.pos_keys.size() - 1);
+            (unsigned)nodeanim.pos_keys.size() - 1);
         const auto blendpos = glm::mix(nodeanim.pos_keys[pos_index0],
-                                       nodeanim.pos_keys[pos_index1],
-                                       pos_indexf - pos_index0);
+            nodeanim.pos_keys[pos_index1],
+            pos_indexf - pos_index0);
 
         // Blend rotation keys
         float rot_indexf = frac * (nodeanim.rot_keys.size() - 1);
         unsigned rot_index0 = std::floor(rot_indexf);
         unsigned rot_index1 = std::min<unsigned>(rot_index0 + 1,
-                                                 (unsigned)nodeanim.rot_keys.size() - 1);
-        const auto &rot0 = nodeanim.rot_keys[rot_index0];
-        const auto &rot1 = nodeanim.rot_keys[rot_index1];
+            (unsigned)nodeanim.rot_keys.size() - 1);
+        const auto& rot0 = nodeanim.rot_keys[rot_index0];
+        const auto& rot1 = nodeanim.rot_keys[rot_index1];
         const auto blendrot = glm::slerp(rot0,
-                                         rot1,
-                                         rot_indexf - rot_index0);
+            rot1,
+            rot_indexf - rot_index0);
 
         // Blend scaling keys
         float scale_indexf = frac * (nodeanim.scale_keys.size() - 1);
         unsigned scale_index0 = std::floor(scale_indexf);
         unsigned scale_index1 = std::min<unsigned>(scale_index0 + 1,
-                                                   (unsigned)nodeanim.scale_keys.size() - 1);
+            (unsigned)nodeanim.scale_keys.size() - 1);
         const auto blendscale = glm::mix(nodeanim.scale_keys[scale_index0],
-                                         nodeanim.scale_keys[scale_index1],
-                                         scale_indexf - scale_index0);
+            nodeanim.scale_keys[scale_index1],
+            scale_indexf - scale_index0);
 
         const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), blendpos);
         const glm::mat4 rotationMatrix = glm::mat4_cast(blendrot);
@@ -944,25 +945,25 @@ namespace eeng
     }
 
     void RenderableMesh::animate(int anim_index,
-                                 float time,
-                                 AnmationTimeFormat animTimeFormat)
+        float time,
+        AnmationTimeFormat animTimeFormat)
     {
-        glm::mat4 (RenderableMesh::*blendFunc)(const AnimationClip *anim,
-                                               const NodeKeyframes &keys,
-                                               float time) const;
+        glm::mat4(RenderableMesh:: * blendFunc)(const AnimationClip * anim,
+            const NodeKeyframes & keys,
+            float time) const;
         if (animTimeFormat == AnmationTimeFormat::RealTime)
             blendFunc = &RenderableMesh::blendTransformAtTime;
         else
             blendFunc = &RenderableMesh::blendTransformAtFrac;
 
-        AnimationClip *anim = nullptr;
+        AnimationClip* anim = nullptr;
         if (anim_index >= 0 && anim_index < getNbrAnimations())
         {
             anim = &m_animations[anim_index];
         }
 
-        for (auto &node : m_nodetree.nodes)
-            node.global_tfm = glm::mat4{1.0f};
+        for (auto& node : m_nodetree.nodes)
+            node.global_tfm = glm::mat4{ 1.0f };
 
         int node_index = 0;
         while (node_index < m_nodetree.nodes.size())
@@ -973,7 +974,7 @@ namespace eeng
             // If an animation key is available, use it to replace the node tfm
             if (anim)
             {
-                const auto &node_anim = anim->node_animations[node_index];
+                const auto& node_anim = anim->node_animations[node_index];
                 if (node_anim.is_used)
                     // node_tfm = blendTransformAtTime(anim, node_anim, time);
                     node_tfm = std::invoke(blendFunc, this, anim, node_anim, time);
@@ -983,7 +984,7 @@ namespace eeng
             const auto parent_ofs = m_nodetree.nodes[node_index].m_parent_ofs;
             if (parent_ofs)
             {
-                const auto &parent_tfm = m_nodetree.nodes[node_index - parent_ofs].global_tfm;
+                const auto& parent_tfm = m_nodetree.nodes[node_index - parent_ofs].global_tfm;
                 node_tfm = parent_tfm * node_tfm;
             }
             m_nodetree.nodes[node_index].global_tfm = node_tfm;
@@ -994,16 +995,19 @@ namespace eeng
         m_model_aabb.reset();
         for (int i = 0; i < m_bones.size(); i++)
         {
-            const auto &node_tfm = m_nodetree.nodes[m_bones[i].node_index].global_tfm;
-            const auto &boneIB_tfm = m_bones[i].inversebind_tfm;
+            const auto& node_tfm = m_nodetree.nodes[m_bones[i].node_index].global_tfm;
+            const auto& boneIB_tfm = m_bones[i].inversebind_tfm;
             glm::mat4 M = node_tfm * boneIB_tfm;
 
             // Bone matrices
             boneMatrices[i] = M;
 
             // AABBs
-            m_bone_aabbs_pose[i] = m_bone_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
-            m_model_aabb.grow(m_bone_aabbs_pose[i]);
+            if (m_bone_aabbs_bind[i])
+            {
+                m_bone_aabbs_pose[i] = m_bone_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
+                m_model_aabb.grow(m_bone_aabbs_pose[i]);
+            }
         }
 
         // Puts mesh AABB's in pose and have them grow model AABB
@@ -1038,7 +1042,7 @@ namespace eeng
 
     RenderableMesh::~RenderableMesh()
     {
-        for (auto &t : m_textures)
+        for (auto& t : m_textures)
             t.free();
 
         if (m_Buffers[0] != 0)

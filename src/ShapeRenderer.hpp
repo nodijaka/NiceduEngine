@@ -408,6 +408,10 @@ namespace ShapeRendering {
 
         void push_cube_wireframe();
 
+        void push_AABB(
+            const glm::vec3& min,
+            const glm::vec3& max);
+
         template<unsigned N>
         void push_circle_ring()
         {

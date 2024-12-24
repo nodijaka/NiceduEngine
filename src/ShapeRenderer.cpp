@@ -21,6 +21,17 @@
 namespace ShapeRendering {
 
     namespace {
+
+        inline glm::vec3 transform_vec(const glm::mat4& mat, const glm::vec3& vec) 
+        {
+            return glm::vec3(mat * glm::vec4(vec, 0.0f));
+        }
+
+        inline glm::vec3 transform_pos(const glm::mat4& mat, const glm::vec3& pos) 
+        {
+            return glm::vec3(mat * glm::vec4(pos, 1.0f));
+        }
+
         glm::mat3 createBasisMatrixFromVector(const glm::vec3& direction) {
             // Ensure the direction is normalized
             glm::vec3 forward = glm::normalize(direction);
@@ -315,7 +326,7 @@ namespace ShapeRendering {
                 indices.push_back(j + rres);
                 indices.push_back(i + rres);
             }
-    }
+        }
 
     //
     // SPHERE
@@ -764,6 +775,29 @@ namespace ShapeRendering {
             unitcube.edges.size());
     }
 
+    void ShapeRenderer::push_AABB(
+        const glm::vec3& min,
+        const glm::vec3& max)
+    {
+        // Bottom face
+        push_line(glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z));
+        push_line(glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, max.z));
+        push_line(glm::vec3(max.x, min.y, max.z), glm::vec3(min.x, min.y, max.z));
+        push_line(glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, min.y, min.z));
+
+        // Top face
+        push_line(glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z));
+        push_line(glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, max.z));
+        push_line(glm::vec3(max.x, max.y, max.z), glm::vec3(min.x, max.y, max.z));
+        push_line(glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, max.y, min.z));
+
+        // Vertical edges connecting top and bottom faces
+        push_line(glm::vec3(min.x, min.y, min.z), glm::vec3(min.x, max.y, min.z));
+        push_line(glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, max.y, min.z));
+        push_line(glm::vec3(max.x, min.y, max.z), glm::vec3(max.x, max.y, max.z));
+        push_line(glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, max.y, max.z));
+    }
+
     //void ShapeRenderer::push_circle_ring(float r,
     //                                           const m4f& m,
     //                                           float subdiv,
@@ -782,15 +816,16 @@ namespace ShapeRendering {
     //    }
     //}
 
+    // push_line direct ???
     void ShapeRenderer::push_line(const glm::vec3& pos0, const glm::vec3& pos1)
     {
-        const auto [color, depth_test] = get_states<Color4u, DepthTest>();
+        const auto [color, depth_test, M] = get_states<Color4u, DepthTest, glm::mat4>();
 
         const LineDrawcall ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
-        line_vertices.push_back(LineVertex{ pos0, color });
-        line_vertices.push_back(LineVertex{ pos1, color });
+        line_vertices.emplace_back(transform_pos(M, pos0), color);
+        line_vertices.emplace_back(transform_pos(M, pos1), color);
 
         line_hash[ldc].push_back(vertex_ofs + 0);
         line_hash[ldc].push_back(vertex_ofs + 1);
@@ -1000,7 +1035,7 @@ namespace ShapeRendering {
             add_line2(it->p, it->p + it->normal * 0.2f, { 0,1,0 });
         }
 #endif
-    }
+        }
 
     void ShapeRenderer::push_arrow(
         const glm::vec3& from,
@@ -1071,7 +1106,7 @@ namespace ShapeRendering {
             add_line2(it->p, it->p + it->normal * 0.2f, { 0,1,0 });
         }
 #endif
-        }
+    }
 
     void ShapeRenderer::push_sphere_wireframe(float h, float r)
     {
@@ -1166,7 +1201,7 @@ namespace ShapeRendering {
             v->p = (M * v->p.xyz1()).xyz();
             v->normal = normalize((M * v->normal.xyz0()).xyz());
             v->color = color;
-    }
+        }
 
         // Now push the helix:ified vertex & index arrays to the main batch
 
@@ -1438,7 +1473,7 @@ namespace ShapeRendering {
                 void* destptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
                 memcpy((char*)destptr + ofs, data, size);
                 glUnmapBuffer(GL_ARRAY_BUFFER);
-    }
+            }
 
             // == IBO ==
             {
@@ -1459,7 +1494,7 @@ namespace ShapeRendering {
                 void* destptr = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
                 memcpy((char*)destptr + ofs, data, size);
                 glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-            }
+        }
 #endif
 
             // Uniforms
@@ -1642,7 +1677,7 @@ namespace ShapeRendering {
 #ifdef GL_POLYGON_MODE
         //    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
 #endif
-}
+    }
 
     void ShapeRenderer::post_render()
     {
@@ -1667,4 +1702,4 @@ namespace ShapeRendering {
         // point_array.clear(); // Clear keys as well?
     }
 
-} // namespace gl_batch_renderer
+    } // namespace gl_batch_renderer

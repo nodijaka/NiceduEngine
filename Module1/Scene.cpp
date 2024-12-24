@@ -168,6 +168,8 @@ void Scene::render(
     // float ANIM_SPEED = 1.0f;
     // glm::vec3 LIGHT_COLOR{ 1.0f, 1.0f, 1.0f };
 
+    // If we want to draw AABBs
+    eeng::AABB character_aabb1, character_aabb2, character_aabb3, horse_aabb, grass_aabb;
 
     // Projection matrix
     const float aspectRatio = float(screenWidth) / screenHeight;
@@ -189,22 +191,27 @@ void Scene::render(
 
     // Grass
     renderer->renderMesh(grassMesh, grassWorldMatrix);
+    grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
 
     // Horse
     horseMesh->animate(3, time_s);
     renderer->renderMesh(horseMesh, horseWorldMatrix);
+    horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
     // Character, instance 1
     characterMesh->animate(characterAnimIndex, time_s * characterAnimSpeed);
     renderer->renderMesh(characterMesh, characterWorldMatrix1);
+    character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
 
     // Character, instance 2
     characterMesh->animate(1, time_s * characterAnimSpeed);
     renderer->renderMesh(characterMesh, characterWorldMatrix2);
+    character_aabb2 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix2);
 
     // Character, instance 3
     characterMesh->animate(2, time_s * characterAnimSpeed);
     renderer->renderMesh(characterMesh, characterWorldMatrix3);
+    character_aabb3 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix3);
 
     // End rendering pass
     drawcallCount = renderer->endPass();
@@ -216,7 +223,7 @@ void Scene::render(
     shapeRenderer.push_basis_basic(characterWorldMatrix1, 1.0f);
     shapeRenderer.push_basis_basic(characterWorldMatrix2, 1.0f);
     shapeRenderer.push_basis_basic(characterWorldMatrix3, 1.0f);
-    // shapeRenderer.push_basis_basic(grassWorldMatrix, 1.0f);
+    shapeRenderer.push_basis_basic(grassWorldMatrix, 1.0f);
     shapeRenderer.push_basis_basic(horseWorldMatrix, 1.0f);
 
     const ShapeRendering::ArrowDescriptor arrowdesc
@@ -227,22 +234,14 @@ void Scene::render(
     };
     shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
 
-    //characterMesh->mSceneAABB
-    auto aabbw = eeng::AABB {};
-    aabbw.grow(glm::vec3(0.0f, 0.0f, 0.0f));
-    aabbw.grow(glm::vec3(1.0f, 1.0f, 1.0f));
-    //auto aabbw = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
-    //AABB3d aabbw = submeshcomp.aabb.post_transform(tfm.global_tfm);
-//                AABB3d aabbw = re.mesh_->aabb.post_transform(re.transform_->global_tfm);
-// Render AABB
-    auto size = aabbw.max - aabbw.min;
-    auto pos = aabbw.min + size * 0.5f;
-    //mat4f M = mat4f::translation(pos) * mat4f::scaling(size);
-    const glm::mat4 M = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), size);
-    // const glm::mat4 M = T * R;
-    shapeRenderer.push_states(ShapeRendering::Color4u{ 0xFFE61A80 }, M); // {0.5f, 0.1f, 0.9f}
-    shapeRenderer.push_cube_wireframe();
-    shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4>();
+    // Draw AABBs
+    shapeRenderer.push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
+    shapeRenderer.push_AABB(character_aabb1.min, character_aabb1.max);
+    shapeRenderer.push_AABB(character_aabb2.min, character_aabb2.max);
+    shapeRenderer.push_AABB(character_aabb3.min, character_aabb3.max);
+    shapeRenderer.push_AABB(horse_aabb.min, horse_aabb.max);
+    shapeRenderer.push_AABB(grass_aabb.min, grass_aabb.max);
+    shapeRenderer.pop_states<ShapeRendering::Color4u>();
 
 
     shapeRenderer.render(P * V);
