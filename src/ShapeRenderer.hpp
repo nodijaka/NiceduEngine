@@ -73,7 +73,18 @@ namespace ShapeRendering {
         template<typename T>
         void push_impl(const T& value)
         {
-            getStack<T>().push(value);
+            if constexpr (std::is_same_v<T, glm::mat4>) 
+            {
+                if (!empty<T>()) 
+                {
+                    T transform = value * top_impl<T>();
+                    getStack<T>().push(transform);
+                }
+                else
+                    getStack<T>().push(value);
+            }
+            else
+                getStack<T>().push(value);
         }
 
         template<typename T>
@@ -119,12 +130,6 @@ namespace ShapeRendering {
         {
             return top_impl<T>();
         }
-
-        //    template<typename T>
-        //    T& top() {
-        //        assert(!empty<T>());
-        //        return getStack<T>().top();
-        //    }
 
         template<typename T>
         bool empty() const
@@ -396,11 +401,13 @@ namespace ShapeRendering {
             return to_integral(state_stack.top<T>());
         }
 
-        void push_quad(const glm::vec3 points[4],
+        void push_quad(
+            const glm::vec3 points[4],
             const glm::vec3& n);
 
-        void push_quad(const glm::vec3& pos,
-            float scale);
+        // void push_quad(
+        //     const glm::vec3& pos,
+        //     float scale);
 
         void push_quad_wireframe();
 
@@ -446,30 +453,48 @@ namespace ShapeRendering {
             }
         }
 
-        void push_line(const glm::vec3& pos0, const glm::vec3& pos1);
+        void push_line(
+            const glm::vec3& pos0,
+            const glm::vec3& pos1);
 
-        void push_lines_from_cyclic_source(const LineVertex* vertices,
+        void push_lines_from_cyclic_source(
+            const LineVertex* vertices,
             int start_index,
             int nbr_vertices,
             int max_vertices);
 
-        void push_lines(const std::vector<glm::vec3>& vertices,
+        void push_lines(
+            const std::vector<glm::vec3>& vertices,
             const std::vector<unsigned>& indices);
 
-        void push_lines(const glm::vec3* vertices,
+        void push_lines(
+            const glm::vec3* vertices,
             size_t nbr_vertices,
             const unsigned* indices,
             size_t nbr_indices);
 
-        void push_lines(const glm::vec3* vertices, size_t nbr_vertices);
+        void push_lines(
+            const glm::vec3* vertices,
+            size_t nbr_vertices);
 
-        void push_grid(const glm::vec3& pos, unsigned size, unsigned resolution);
+        void push_grid(
+            const glm::vec3& pos,
+            unsigned size,
+            unsigned resolution);
 
-        void push_cone(const glm::vec3& from, const glm::vec3 to, float r);
+        void push_cone(
+            const glm::vec3& from,
+            const glm::vec3 to,
+            float r);
 
-        void push_cone(float h, float r, bool flip_normals = false);
+        void push_cone(
+            float h,
+            float r,
+            bool flip_normals = false);
 
-        void push_cylinder(float height, float radius);
+        void push_cylinder(
+            float height,
+            float radius);
 
         void push_arrow(
             const glm::vec3& from,
@@ -495,21 +520,30 @@ namespace ShapeRendering {
         void push_frustum(const mat4f& invProjView);
 #endif
 
-        void push_basis_basic(const glm::mat4& basis, float arrlen);
+        void push_basis_basic(
+            const glm::mat4& basis,
+            float arrlen);
 
-        void push_basis_basic2d(const glm::mat4& basis, float arrlen);
+        void push_basis_basic2d(
+            const glm::mat4& basis,
+            float arrlen);
 
-        void push_basis(const glm::mat4& basis,
+        void push_basis(
+            const glm::mat4& basis,
             float arrlen,
             const ArrowDescriptor& arrdesc);
 
-        void push_point(const glm::vec3& p, unsigned size);
+        void push_point(
+            const glm::vec3& p,
+            unsigned size);
 
-        void push_points(const PointVertex* p,
+        void push_points(
+            const PointVertex* p,
             unsigned nbr_points,
             unsigned size);
 
-        void render(const glm::mat4& PROJ_VIEW);
+        void render(
+            const glm::mat4& PROJ_VIEW);
 
         void post_render();
     };
