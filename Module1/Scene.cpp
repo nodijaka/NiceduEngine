@@ -92,6 +92,7 @@ void Scene::update(
     auto mouse = input->GetMouseState();
     // std::cout << "mouse (" << mouse.x << ", " << mouse.y << ")\n";
     
+    // std::cout << "Connected controllers: " << input->GetConnectedControllerCount() << std::endl;
     // auto controller = input->GetControllerState(0);
 
     lightPos = glm::vec3(glm_aux::TRS(

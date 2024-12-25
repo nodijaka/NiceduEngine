@@ -1,73 +1,65 @@
-#ifndef INPUTMANAGER_HPP
-#define INPUTMANAGER_HPP
+#ifndef InputManager_hpp
+#define InputManager_hpp
 
+#include <memory>
 #include <unordered_map>
+#include <vector>
+#include <string>
 
 namespace eeng {
 
-class InputManager {
-public:
-    enum class Key {
-        // Letters
-        A, B, C, D, E, F, G, H, I, J, K, L, M,
-        N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+    class InputManager
+    {
+    public:
+        enum class Key {
+            A, B, C, D, E, F, G, H, I, J, K, L, M,
+            N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+            Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
+            LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt,
+            Up, Down, Left, Right,
+            Space, Enter, Backspace, Tab, Escape,
+            F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12
+        };
 
-        // Numbers
-        Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
+        struct MouseState 
+        {
+            int x = 0, y = 0;
+            bool leftButton = false;
+            bool rightButton = false;
+        };
 
-        // Modifiers
-        LeftShift, RightShift,
-        LeftCtrl, RightCtrl,
-        LeftAlt, RightAlt,
+        struct ControllerState 
+        {
+            float axisLeftX = 0.0f, axisLeftY = 0.0f;
+            float axisRightX = 0.0f, axisRightY = 0.0f;
+            float triggerLeft = 0.0f, triggerRight = 0.0f;
+            std::unordered_map<int, bool> buttonStates;
+            std::string name;
+        };
+        using ControllerMap = std::unordered_map<int, ControllerState>;
 
-        // Navigation Keys
-        Up, Down, Left, Right,
+        InputManager();
+        ~InputManager();
 
-        // Space and Other Special Keys
-        Space,
-        Enter,
-        Backspace,
-        Tab,
-        Escape,
+        void HandleEvent(const void* event);
+        void Update();
 
-        // Function Keys
-        F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+        // Query functions
+        bool IsKeyPressed(Key key) const;
+        bool IsMouseButtonDown(int button) const;
+        const MouseState& GetMouseState() const;
+        const ControllerState& GetControllerState(int controllerIndex) const;
+        int GetConnectedControllerCount() const;
+        ControllerMap& get_controllers();
 
-        // Add any other keys you need...
+    private:
+
+        // pImpl pattern to make the header more light weight
+        struct Impl;
+        Impl* pImpl;
     };
-
-    struct MouseState {
-        int x = 0, y = 0;
-        bool leftButton = false;
-        bool rightButton = false;
-    };
-
-    struct ControllerState {
-        float axisLeftX = 0.0f, axisLeftY = 0.0f;
-        float axisRightX = 0.0f, axisRightY = 0.0f;
-        std::unordered_map<int, bool> buttonStates;
-    };
-
-    InputManager();
-    ~InputManager();
-
-    // Input handling
-    void HandleEvent(const void* event); // Abstract to avoid SDL dependency
-    void Update();
-
-    // Query functions
-    bool IsKeyPressed(Key key) const;
-    bool IsMouseButtonDown(int button) const;
-    const MouseState& GetMouseState() const;
-    const ControllerState& GetControllerState(int controllerIndex) const;
-
-private:
-    struct Impl;                   // Forward declaration for the PImpl idiom
-    Impl* pImpl;                   // Pointer to implementation
-};
-
 } // namespace eeng
 
-using InputManagerPtr = std::shared_ptr<const eeng::InputManager>;
+using InputManagerPtr = std::shared_ptr<eeng::InputManager>;
 
 #endif // INPUTMANAGER_H

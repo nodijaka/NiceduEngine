@@ -1,17 +1,17 @@
 #include "InputManager.hpp"
 #include <SDL2/SDL.h>
-#include <unordered_map>
+#include <iostream>
 
-namespace eeng {
-
-struct InputManager::Impl {
+struct eeng::InputManager::Impl 
+{
     std::unordered_map<SDL_Keycode, Key> sdlToKeyMap;
     std::unordered_map<Key, bool> keyStates;
 
     MouseState mouseState;
-    std::unordered_map<int, ControllerState> controllers;
+    ControllerMap controllers;
 
-    Impl() {
+    Impl() 
+    {
         // Letters
         sdlToKeyMap[SDLK_a] = Key::A; sdlToKeyMap[SDLK_b] = Key::B; sdlToKeyMap[SDLK_c] = Key::C;
         sdlToKeyMap[SDLK_d] = Key::D; sdlToKeyMap[SDLK_e] = Key::E; sdlToKeyMap[SDLK_f] = Key::F;
@@ -52,11 +52,18 @@ struct InputManager::Impl {
         sdlToKeyMap[SDLK_F10] = Key::F10; sdlToKeyMap[SDLK_F11] = Key::F11; sdlToKeyMap[SDLK_F12] = Key::F12;
     }
 
+    ~Impl() 
+    {
+        for (auto& [id, state] : controllers) 
+        {
+            SDL_GameControllerClose(SDL_GameControllerFromInstanceID(id));
+        }
+    }
 
-    ~Impl() = default;
-
-    void HandleEvent(const SDL_Event& event) {
-        switch (event.type) {
+    void HandleEvent(const SDL_Event& event) 
+    {
+        switch (event.type) 
+        {
         case SDL_MOUSEMOTION:
             mouseState.x = event.motion.x;
             mouseState.y = event.motion.y;
@@ -80,16 +87,24 @@ struct InputManager::Impl {
             }
             break;
         }
-
         case SDL_CONTROLLERAXISMOTION:
-            if (controllers.find(event.caxis.which) != controllers.end()) {
+            if (auto controller = controllers.find(event.caxis.which); controller != controllers.end()) 
+            {
+                auto& state = controller->second;
                 if (event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
-                    controllers[event.caxis.which].axisLeftX = event.caxis.value / 32767.0f;
+                    state.axisLeftX = event.caxis.value / 32767.0f;
                 else if (event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
-                    controllers[event.caxis.which].axisLeftY = event.caxis.value / 32767.0f;
+                    state.axisLeftY = event.caxis.value / 32767.0f;
+                else if (event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX)
+                    state.axisRightX = event.caxis.value / 32767.0f;
+                else if (event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY)
+                    state.axisRightY = event.caxis.value / 32767.0f;
+                else if (event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+                    state.triggerLeft = event.caxis.value / 32767.0f;
+                else if (event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+                    state.triggerRight = event.caxis.value / 32767.0f;
             }
             break;
-
         case SDL_CONTROLLERBUTTONDOWN:
             controllers[event.cbutton.which].buttonStates[event.cbutton.button] = true;
             break;
@@ -98,43 +113,82 @@ struct InputManager::Impl {
             controllers[event.cbutton.which].buttonStates[event.cbutton.button] = false;
             break;
 
-            // Handle controller connections/disconnections if needed...
+        case SDL_CONTROLLERDEVICEADDED: {
+            SDL_GameController* controller = SDL_GameControllerOpen(event.cdevice.which);
+            if (controller) {
+                int id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+                controllers[id] = ControllerState{
+                    .name = SDL_GameControllerName(controller) ? SDL_GameControllerName(controller) : "Unknown"
+                };
+                std::cout << "Controller connected: " << id << ", " << controllers[id].name << std::endl;
+            }
+            break;
         }
+
+        case SDL_CONTROLLERDEVICEREMOVED: {
+            int id = event.cdevice.which;
+            if (controllers.find(id) != controllers.end()) {
+                std::cout << "Controller disconnected: " << id << ", " << controllers[id].name << std::endl;
+                SDL_GameControllerClose(SDL_GameControllerFromInstanceID(id));
+                controllers.erase(id);
+            }
+            break;
+        }
+        }
+    }
+
+    int GetConnectedControllerCount() const 
+    {
+        return static_cast<int>(controllers.size());
     }
 };
 
 // InputManager implementation
 
-InputManager::InputManager() : pImpl(new Impl()) {}
-InputManager::~InputManager() { delete pImpl; }
+eeng::InputManager::InputManager() : pImpl(new Impl()) {}
+eeng::InputManager::~InputManager() { delete pImpl; }
 
-void InputManager::HandleEvent(const void* event) {
+void eeng::InputManager::HandleEvent(const void* event) 
+{
     pImpl->HandleEvent(*reinterpret_cast<const SDL_Event*>(event));
 }
 
-void InputManager::Update() {
-    // Optional: Add per-frame update logic here
+void eeng::InputManager::Update() 
+{
+
 }
 
-bool InputManager::IsKeyPressed(Key key) const {
+bool eeng::InputManager::IsKeyPressed(Key key) const 
+{
     auto it = pImpl->keyStates.find(key);
     return it != pImpl->keyStates.end() && it->second;
 }
 
-bool InputManager::IsMouseButtonDown(int button) const {
+bool eeng::InputManager::IsMouseButtonDown(int button) const 
+{
     if (button == SDL_BUTTON_LEFT) return pImpl->mouseState.leftButton;
     if (button == SDL_BUTTON_RIGHT) return pImpl->mouseState.rightButton;
     return false;
 }
 
-const InputManager::MouseState& InputManager::GetMouseState() const {
+const eeng::InputManager::MouseState& eeng::InputManager::GetMouseState() const 
+{
     return pImpl->mouseState;
 }
 
-const InputManager::ControllerState& InputManager::GetControllerState(int controllerIndex) const {
+const eeng::InputManager::ControllerState& eeng::InputManager::GetControllerState(int controllerIndex) const 
+{
     static ControllerState emptyController;
     auto it = pImpl->controllers.find(controllerIndex);
     return it != pImpl->controllers.end() ? it->second : emptyController;
 }
 
-} // namespace eeng
+int eeng::InputManager::GetConnectedControllerCount() const 
+{
+    return pImpl->GetConnectedControllerCount();
+}
+
+eeng::InputManager::ControllerMap& eeng::InputManager::get_controllers()
+{
+    return pImpl->controllers;
+}

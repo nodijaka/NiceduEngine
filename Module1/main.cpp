@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    auto inputManager = std::make_shared<eeng::InputManager>();
+    auto input = std::make_shared<eeng::InputManager>();
 
     auto scene = std::make_shared<Scene>();
     scene->init();
@@ -247,29 +247,29 @@ int main(int argc, char* argv[])
         {
             ImGui_ImplSDL2_ProcessEvent(&event); // Send events to ImGui
 
-            inputManager->HandleEvent(&event);
+            input->HandleEvent(&event);
 
             switch (event.type)
             {
             case SDL_QUIT:
                 quit = true;
                 break;
-            case SDL_CONTROLLERDEVICEADDED:
-                if (!controller1)
-                {
-                    controller1 = SDL_GameControllerOpen(event.cdevice.which);
-                }
-                break;
-            case SDL_CONTROLLERDEVICEREMOVED:
-                if (controller1 && event.cdevice.which == SDL_JoystickInstanceID(
-                    SDL_GameControllerGetJoystick(controller1)))
-                {
-                    SDL_GameControllerClose(controller1);
-                    controller1 = findController();
-                }
-                break;
-            case SDL_CONTROLLERBUTTONDOWN:
-                break;
+                // case SDL_CONTROLLERDEVICEADDED:
+                //     if (!controller1)
+                //     {
+                //         controller1 = SDL_GameControllerOpen(event.cdevice.which);
+                //     }
+                //     break;
+                // case SDL_CONTROLLERDEVICEREMOVED:
+                //     if (controller1 && event.cdevice.which == SDL_JoystickInstanceID(
+                //         SDL_GameControllerGetJoystick(controller1)))
+                //     {
+                //         SDL_GameControllerClose(controller1);
+                //         controller1 = findController();
+                //     }
+                //     break;
+                // case SDL_CONTROLLERBUTTONDOWN:
+                //     break;
             }
         }
 
@@ -341,31 +341,51 @@ int main(int argc, char* argv[])
                 }
             }
 
-            ImGui::Text("Controller State");
+            ImGui::Text("Controllers connected: %i", input->GetConnectedControllerCount());
 
-            if (controller1 != nullptr)
+            for (auto& [id, state] : input->get_controllers())
             {
-                ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
-                ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
-                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
-                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
-                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_X),
-                    SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_Y));
+                //const auto& controller = input->GetControllerState(i);
 
-                ImGui::Text("Left Stick: X:%.2f Y:%.2f",
-                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f,
-                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f);
+                ImGui::PushID(id);
+                ImGui::BeginChild("Controller", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 6), true);
 
-                ImGui::Text("Right Stick: X:%.2f Y:%.2f",
-                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
-                    SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
+                ImGui::Text("Controller %i: '%s'", id, state.name.c_str());
+                ImGui::Text("Left stick:  X: %.2f  Y: %.2f", state.axisLeftX, state.axisLeftY);
+                ImGui::Text("Right stick: X: %.2f  Y: %.2f", state.axisRightX, state.axisRightY);
+                ImGui::Text("Triggers:    L: %.2f  R: %.2f", state.triggerLeft, state.triggerRight);
+                std::string buttons;
+                for (const auto& [buttonId, isPressed] : state.buttonStates)
+                    buttons += "#" + std::to_string(buttonId) + "(" + (isPressed ? "1) " : "0) ");
+                ImGui::Text("Buttons: %s", buttons.c_str());
+
                 ImGui::EndChild();
+                ImGui::PopID();
             }
-            else
-            {
-                ImGui::SameLine();
-                ImGui::Text("(No controller connected)");
-            }
+
+            // if (controller1 != nullptr)
+            // {
+            //     ImGui::BeginChild("Controller State Frame", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4), true);
+            //     ImGui::Text("Buttons: A:%d B:%d X:%d Y:%d",
+            //         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_A),
+            //         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_B),
+            //         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_X),
+            //         SDL_GameControllerGetButton(controller1, SDL_CONTROLLER_BUTTON_Y));
+
+            //     ImGui::Text("Left Stick: X:%.2f Y:%.2f",
+            //         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f,
+            //         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f);
+
+            //     ImGui::Text("Right Stick: X:%.2f Y:%.2f",
+            //         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f,
+            //         SDL_GameControllerGetAxis(controller1, SDL_CONTROLLER_AXIS_RIGHTY) / 32767.0f);
+            //     ImGui::EndChild();
+            // }
+            // else
+            // {
+            //     ImGui::SameLine();
+            //     ImGui::Text("(No controller connected)");
+            // }
         }
 
         if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
@@ -409,9 +429,9 @@ int main(int argc, char* argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        inputManager->Update();
+        input->Update();
 
-        scene->update(time_s, deltaTime_s, inputManager);
+        scene->update(time_s, deltaTime_s, input);
         scene->render(time_s, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         ImGui::Render();
