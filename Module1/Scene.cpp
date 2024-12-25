@@ -78,8 +78,22 @@ bool Scene::init()
     return true;
 }
 
-void Scene::update(float time_s, float deltaTime_s)
+void Scene::update(
+    float time_s, 
+    float deltaTime_s,
+    InputManagerPtr input)
 {
+    using Key = eeng::InputManager::Key;
+    if (input->IsKeyPressed(Key::A))
+    {
+        std::cout << "A\n";
+    }
+
+    auto mouse = input->GetMouseState();
+    // std::cout << "mouse (" << mouse.x << ", " << mouse.y << ")\n";
+    
+    // auto controller = input->GetControllerState(0);
+
     lightPos = glm::vec3(glm_aux::TRS(
         { 1000.0f, 1000.0f, 1000.0f },
         time_s * 0.0f,

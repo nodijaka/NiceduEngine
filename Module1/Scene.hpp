@@ -50,7 +50,10 @@ public:
     /// @brief TODO
     /// @param time_s 
     /// @param deltaTime_s 
-    void update(float time_s, float deltaTime_s) override;
+    void update(
+        float time_s, 
+        float deltaTime_s,
+        InputManagerPtr input) override;
 
     /// @brief 
     void renderUI() override;

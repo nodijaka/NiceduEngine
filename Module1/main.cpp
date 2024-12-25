@@ -15,6 +15,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
+#include "InputManager.hpp"
 #include "Log.hpp"
 #include "Scene.hpp"
 
@@ -223,6 +224,8 @@ int main(int argc, char* argv[])
     }
 #endif
 
+    auto inputManager = std::make_shared<eeng::InputManager>();
+
     auto scene = std::make_shared<Scene>();
     scene->init();
 
@@ -243,6 +246,8 @@ int main(int argc, char* argv[])
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event); // Send events to ImGui
+
+            inputManager->HandleEvent(&event);
 
             switch (event.type)
             {
@@ -404,7 +409,9 @@ int main(int argc, char* argv[])
             glEnable(GL_CULL_FACE);
         }
 
-        scene->update(time_s, deltaTime_s);
+        inputManager->Update();
+
+        scene->update(time_s, deltaTime_s, inputManager);
         scene->render(time_s, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         ImGui::Render();

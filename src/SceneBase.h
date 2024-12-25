@@ -2,6 +2,8 @@
 #define SceneBase_h
 #pragma once
 
+#include "InputManager.hpp"
+
 namespace eeng {
 
     /// @brief TODO
@@ -10,7 +12,10 @@ namespace eeng {
     public:
         virtual bool init() = 0;
 
-        virtual void update(float time_s, float deltaTime_s) = 0;
+        virtual void update(
+            float time_s, 
+            float deltaTime_s,
+            InputManagerPtr input) = 0;
 
         virtual void renderUI() = 0;
 

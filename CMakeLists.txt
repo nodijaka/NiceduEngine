@@ -190,11 +190,12 @@ add_executable(Module1
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/InputManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderableMesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ForwardRenderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ShapeRenderer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cpp
     )
 

@@ -695,15 +695,6 @@ namespace ShapeRendering {
 
     void ShapeRenderer::push_quad_wireframe()
     {
-        // const auto& transform = get_states<glm::mat4>();
-
-        // auto vertices = unitquad.vertices;
-        // std::for_each(vertices.begin(),
-        //     vertices.end(),
-        //     [&transform](glm::vec3& v) { v = glm::vec3(transform * glm::vec4(v, 1.0f)); });
-
-        // push_lines(vertices, unitquad.edges);
-
         push_lines(unitquad.vertices, unitquad.edges);
     }
 
@@ -713,8 +704,6 @@ namespace ShapeRendering {
         unsigned vertex_ofs = (unsigned)polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
-
-        // Use normals á la sphere (8 vertices)
         for (auto& v : unitcube.vertices)
         {
             const glm::vec3& vm = glm::vec3(M * glm::vec4(v, 1.0f));
