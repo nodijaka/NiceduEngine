@@ -1,45 +1,21 @@
 //
-//  debug_renderer.h
-//  tau3d
+//  ShapeRenderer.hpp
 //
-//  Created by Carl Johan Gribel on 2016-12-12.
-//
+//  CJ Gribel 2024
 //
 
-#ifndef debug_renderer_h
-#define debug_renderer_h
+#ifndef ShapeRenderer_h
+#define ShapeRenderer_h
 
-#include <glm/glm.hpp>
 #include <vector>
-#include <list>
 #include <unordered_map>
 #include <stack>
 
+#include <glm/glm.hpp>
+
 #include "glmcommon.h"
 #include "hash_combine.h"
-#include "ShaderLoader.h"
 
-
-
-//
-// Debug Renderer
-// Dynamic Batching / Immediate Mode / Draw-and-Dispose type of renderer
-//
-// Supports polygon, line and point geometry
-
-//
-// Hash specialization for vec3f
-// Has to reside in global namespace
-//
-//template<> struct std::hash<vec3f>
-//{
-//    std::size_t operator () (const vec3f& v) const
-//    {
-//        return ((std::hash<float>()(v.x) ^
-//                 (std::hash<float>()(v.y) << 1)) >> 1) ^
-//        (std::hash<float>()(v.z) << 1);
-//    }
-//};
 
 namespace ShapeRendering {
 
@@ -229,7 +205,6 @@ namespace ShapeRendering {
     {
         long framenbr = 0;
 
-        // Shaders
         GLuint lambert_shader;
         GLuint line_shader;
         GLuint point_shader;
@@ -240,25 +215,14 @@ namespace ShapeRendering {
             std::vector<PolyVertex> vertices;
             std::vector<unsigned> indices;
         }
-        unitcone_vbo,
-            unitcylinder_vbo,
-            unitsphere_vbo,
-            unitspherewireframe_vbo;
+        unitcone_buffers, unitcylinder_buffers, unitsphere_buffers, unitspherewireframe_buffers;
 
-        //
-        // Line hash
-        //
-        // Topology:    GL_LINES
-        // Key:         color (vec3f) + [Todo] line width. Consider which hash function to use (avoid changing line width often).
-        // Value:       indices
-        //
-
-        struct LineDrawcall
+        struct LineBatch
         {
             GLenum topology = GL_LINES;
             DepthTest depth_test = DepthTest::True;
 
-            bool operator == (const LineDrawcall& dc) const
+            bool operator == (const LineBatch& dc) const
             {
                 return
                     topology == dc.topology &&
@@ -266,36 +230,28 @@ namespace ShapeRendering {
             }
         };
 
-        struct LineDrawcallHashFunction
+        struct LineBatchHashFunction
         {
-            std::size_t operator () (const LineDrawcall& ldc) const
+            std::size_t operator () (const LineBatch& ldc) const
             {
                 return hash_combine(ldc.topology, ldc.depth_test);
             }
         };
 
         std::vector<LineVertex> line_vertices;
-        std::unordered_map<LineDrawcall, std::vector<unsigned>, LineDrawcallHashFunction> line_hash;
+        std::unordered_map<LineBatch, std::vector<unsigned>, LineBatchHashFunction> line_hash;
 
         GLuint lines_VBO = 0;
         GLuint lines_IBO = 0;
         GLuint lines_VAO = 0;
 
-        //
-        // Polygon/general hash
-        //
-        // Topology:    custom
-        // Key:         { topology, color (int) }
-        // Value:       index-range
-        //
-
-        struct PolygonDrawcall
+        struct PolygonBatch
         {
             GLenum topology = GL_TRIANGLES;
             DepthTest depth_test = DepthTest::True;
             BackfaceCull cull_face = BackfaceCull::True;
 
-            bool operator == (const PolygonDrawcall& dc) const
+            bool operator == (const PolygonBatch& dc) const
             {
                 return
                     topology == dc.topology &&
@@ -304,9 +260,9 @@ namespace ShapeRendering {
             }
         };
 
-        struct PolygonDrawcallHashfunction
+        struct PolygonBatchHashfunction
         {
-            std::size_t operator () (const PolygonDrawcall& pdc) const
+            std::size_t operator () (const PolygonBatch& pdc) const
             {
                 return hash_combine(pdc.topology, pdc.depth_test);
             }
@@ -323,62 +279,50 @@ namespace ShapeRendering {
         // Motivation for unordered_multimap over multimap:
         // insertion: avg constant (N worst case) vs avg logN
         // count (if used in iteration) avg N in nbr of matches (N in size worst case) vs logN, plus N in the number of matches.
-        std::unordered_multimap<PolygonDrawcall, IndexRange, PolygonDrawcallHashfunction> polygon_hash;
-
+        std::unordered_multimap<PolygonBatch, IndexRange, PolygonBatchHashfunction> polygon_hash;
         GLuint polygon_vbo = 0;
         GLuint polygon_ibo = 0;
         GLuint polygon_vao = 0;
 
-        //
-        // Point batch
-        //
-        // Topology:    GL_POINTS
-        // Key:         point-size
-        // Value:       { position, color }
-        //
-
-        struct PointDrawcall
+        struct PointBatch
         {
             unsigned size;
             DepthTest depth_test = DepthTest::True;
 
-            bool operator == (const PointDrawcall& pdc) const
+            bool operator == (const PointBatch& pdc) const
             {
                 return depth_test == pdc.depth_test && size == pdc.size;
             }
         };
 
-        struct PointDrawcallHashFunction
+        struct PointBatchHashFunction
         {
-            std::size_t operator () (const PointDrawcall& pdc) const
+            std::size_t operator () (const PointBatch& pdc) const
             {
                 return  std::hash<GLenum>{}(pdc.size);
-                //            return  ((std::hash<GLenum>()(pdc.topology) ^ (std::hash<int>()(pdc.color) << 1)) >> 1);
             }
         };
 
-        std::unordered_map<PointDrawcall, std::vector<PointVertex>, PointDrawcallHashFunction > point_hash;
-
-        StateStack<DepthTest, BackfaceCull, glm::mat4, Color4u> state_stack;
-
-        std::stack<DepthTest> depthtest_stack;
-        std::stack<BackfaceCull> cullface_stack;
-
+        std::unordered_map<PointBatch, std::vector<PointVertex>, PointBatchHashFunction > point_hash;
         GLuint point_vbo = 0;
         GLuint point_vao = 0;
 
+        StateStack<DepthTest, BackfaceCull, glm::mat4, Color4u> state_stack;
+        
         bool initialized = false;
 
     public:
         void init();
 
         template<typename... Args>
-        void push_states(Args&&... args) {
+        void push_states(Args&&... args) 
+        {
             state_stack.push(std::forward<Args>(args)...);
         }
 
         template<typename... Args>
-        void pop_states() {
+        void pop_states() 
+        {
             state_stack.pop<Args...>();
         }
 
@@ -397,10 +341,6 @@ namespace ShapeRendering {
         void push_quad(
             const glm::vec3 points[4],
             const glm::vec3& n);
-
-        // void push_quad(
-        //     const glm::vec3& pos,
-        //     float scale);
 
         void push_quad_wireframe();
 
@@ -430,7 +370,7 @@ namespace ShapeRendering {
                 };
             static const auto vertices = vertex_generator();
 
-            auto& index_batch = line_hash[LineDrawcall{ GL_LINES, depth_test }];
+            auto& index_batch = line_hash[LineBatch{ GL_LINES, depth_test }];
             unsigned vertex_ofs = (unsigned)line_vertices.size();
 
             for (int i = 0; i < N; i++)
@@ -520,11 +460,6 @@ namespace ShapeRendering {
         void push_basis_basic2d(
             const glm::mat4& basis,
             float arrlen);
-
-        // void push_basis(
-        //     const glm::mat4& basis,
-        //     float arrlen,
-        //     const ArrowDescriptor& arrdesc);
 
         void push_basis(
             const ArrowDescriptor& arrow_desc,

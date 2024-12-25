@@ -1,22 +1,19 @@
 //
-//  debug_renderer.cpp
-//  tau3d
+//  ShapeRenderer.cpp
 //
-//  Created by Carl Johan Gribel on 2016-12-26.
-//
+//  CJ Gribel 2024
 //
 
 #include <stdio.h>
 #include <cstddef>
 #include <array>
 
-//#include "Ray.h"
-//#include "glutil.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "glcommon.h"
+
 #include "config.h"
+#include "glcommon.h"
+#include "ShaderLoader.h"
 #include "ShapeRenderer.hpp"
-//#include "interp.h"
 
 namespace ShapeRendering {
 
@@ -67,7 +64,8 @@ namespace ShapeRendering {
             return glm::transpose(glm::inverse(glm::mat3(mat)));
         }
 
-        glm::mat3 create_basis_from_vector(const glm::vec3& direction) {
+        glm::mat3 create_basis_from_vector(const glm::vec3& direction) 
+        {
             // Ensure the direction is normalized
             glm::vec3 forward = glm::normalize(direction);
 
@@ -206,7 +204,7 @@ namespace ShapeRendering {
 
         } unitquad;
 
-    } // Anon. namespace
+    } // anon namespace
 
     //
     // CONE
@@ -467,10 +465,10 @@ namespace ShapeRendering {
     void ShapeRenderer::init()
     {
         // Create default primitives
-        create_cone(1, 1, 2, 8, unitcone_vbo.vertices, unitcone_vbo.indices);
-        create_cylinder(1, 1, 2, 8, unitcylinder_vbo.vertices, unitcylinder_vbo.indices);
-        create_sphere(1, 8, 8, unitsphere_vbo.vertices, unitsphere_vbo.indices, false);
-        create_sphere(1, 8, 8, unitspherewireframe_vbo.vertices, unitspherewireframe_vbo.indices, true);
+        create_cone(1, 1, 2, 8, unitcone_buffers.vertices, unitcone_buffers.indices);
+        create_cylinder(1, 1, 2, 8, unitcylinder_buffers.vertices, unitcylinder_buffers.indices);
+        create_sphere(1, 8, 8, unitsphere_buffers.vertices, unitsphere_buffers.indices, false);
+        create_sphere(1, 8, 8, unitspherewireframe_buffers.vertices, unitspherewireframe_buffers.indices, true);
 
         // Default state
         push_states(BackfaceCull::True, DepthTest::True, Color4u::White, glm::mat4{ 1.0f });
@@ -690,43 +688,10 @@ namespace ShapeRendering {
             tri_indices + 6);
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
             IndexRange {index_ofs, 6, (GLint)vertex_ofs}
             });
     }
-
-    // TODO: What's this? A 2D quad in the xy-plane?
-    // void ShapeRenderer::push_quad(
-    //     const glm::vec3& pos,
-    //     float scale)
-    // {
-    //     const auto [color, depth_test, cull_face] = get_states<Color4u, DepthTest, BackfaceCull>();
-
-    //     static const glm::vec3 quad_vertices[] =
-    //     {
-    //         glm::vec3 {-0.5,-0.5,0},
-    //         glm::vec3 {0.5,-0.5,0},
-    //         glm::vec3 {0.5,0.5,0},
-    //         glm::vec3 {-0.5,0.5,0}
-    //     };
-    //     static const unsigned tri_indices[] = { 0, 1, 2, 0, 2, 3 };
-
-    //     unsigned vertex_ofs = (unsigned)polygon_vertices.size();
-    //     GLsizei index_ofs = (GLsizei)polygon_indices.size();
-    //     glm::vec3 N(0.0f, 0.0f, 1.0f); // = linalg::normalize(vec3f(qua))
-
-    //     for (auto& v : quad_vertices)
-    //         polygon_vertices.push_back({ pos + v * scale, N, color });
-
-    //     polygon_indices.insert(polygon_indices.end(),
-    //         tri_indices,
-    //         tri_indices + 6);
-
-    //     polygon_hash.insert({
-    //         PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
-    //         IndexRange {index_ofs, 6, (GLint)vertex_ofs}
-    //         });
-    // }
 
     void ShapeRenderer::push_quad_wireframe()
     {
@@ -762,7 +727,7 @@ namespace ShapeRendering {
             unitcube.tris.end());
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
             IndexRange {index_ofs, unitcube.tris.size(), (GLint)vertex_ofs}
             });
     }
@@ -805,30 +770,11 @@ namespace ShapeRendering {
         push_line(glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, max.y, max.z));
     }
 
-    //void ShapeRenderer::push_circle_ring(float r,
-    //                                           const m4f& m,
-    //                                           float subdiv,
-    //                                           Color4u color,
-    //                                           DepthTest depth_test)
-    //{
-    //    vec3f p0 = pos + vec3f(r, 0, 0);
-    //    vec3f p1;
-    //    
-    //    for (int i = 0; i < subdiv; i++)
-    //    {
-    //        float theta = i*2.0f*fPI/(subdiv-1);
-    //        p1 = pos + vec3f(cos(theta), sin(theta), 0)*r;
-    //        push_line(p0, p1, color, depth_test);
-    //        p0 = p1;
-    //    }
-    //}
-
-    // push_line direct ???
     void ShapeRenderer::push_line(const glm::vec3& pos0, const glm::vec3& pos1)
     {
         const auto [color, depth_test, M] = get_states<Color4u, DepthTest, glm::mat4>();
 
-        const LineDrawcall ldc{ GL_LINES, depth_test };
+        const LineBatch ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
         line_vertices.emplace_back(transform_pos(M, pos0), color);
@@ -845,7 +791,7 @@ namespace ShapeRendering {
     {
         const auto& depth_test = get_states<DepthTest>();
 
-        const LineDrawcall ldc{ GL_LINES, depth_test };
+        const LineBatch ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
         for (int i = 0; i < nbr_vertices; i++)
@@ -880,7 +826,7 @@ namespace ShapeRendering {
     {
         const auto [color, depth_test, M] = get_states<Color4u, DepthTest, glm::mat4>();
 
-        const LineDrawcall ldc{ GL_LINES, depth_test };
+        const LineBatch ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
         for (int i = 0; i < nbr_vertices; i++)
@@ -897,7 +843,7 @@ namespace ShapeRendering {
 
         assert(vertices);
         assert(nbr_vertices > 0);
-        const LineDrawcall ldc{ GL_LINES, depth_test };
+        const LineBatch ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
         //    if (M)
@@ -968,7 +914,7 @@ namespace ShapeRendering {
         glm::mat4 N = M * S;
         glm::mat4 Nit = glm::transpose(glm::inverse(N));
 
-        for (auto& v : unitcone_vbo.vertices)
+        for (auto& v : unitcone_buffers.vertices)
         {
             glm::vec3 vw = glm::vec3(N * glm::vec4(v.p, 1.0f));
             glm::vec3 nw = glm::vec3(Nit * glm::vec4(v.normal, 0.0f)) * (flip_normals ? -1.0f : 1.0f);
@@ -976,8 +922,8 @@ namespace ShapeRendering {
         }
 
         polygon_indices.insert(polygon_indices.end(),
-            unitcone_vbo.indices.begin(),
-            unitcone_vbo.indices.end());
+            unitcone_buffers.indices.begin(),
+            unitcone_buffers.indices.end());
 
         // Hacky way to flip the cone inside out
         if (flip_normals)
@@ -985,8 +931,8 @@ namespace ShapeRendering {
                 std::swap(polygon_indices[i], polygon_indices[i + 1]);
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
-            IndexRange {index_ofs, (GLsizei)unitcone_vbo.indices.size(), (GLint)vertex_ofs}
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
+            IndexRange {index_ofs, (GLsizei)unitcone_buffers.indices.size(), (GLint)vertex_ofs}
             });
 
 #if 0
@@ -1012,26 +958,26 @@ namespace ShapeRendering {
         glm::mat4 N = M * glm::scale(glm::mat4(1.0f), glm::vec3(r, r, h));
         glm::mat4 Nit = N;
 
-        for (auto& v : unitcylinder_vbo.vertices)
+        for (auto& v : unitcylinder_buffers.vertices)
         {
             glm::vec3 vw = glm::vec3(N * glm::vec4(v.p, 1.0f));
             glm::vec3 nw = glm::vec3(Nit * glm::vec4(v.normal, 0.0f));
             polygon_vertices.push_back({ vw, glm::normalize(nw), color });
         }
         polygon_indices.insert(polygon_indices.end(),
-            unitcylinder_vbo.indices.begin(),
-            unitcylinder_vbo.indices.end());
+            unitcylinder_buffers.indices.begin(),
+            unitcylinder_buffers.indices.end());
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
-            IndexRange {(GLsizei)index_ofs, (GLsizei)unitcylinder_vbo.indices.size(), (GLint)vertex_ofs}
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
+            IndexRange {(GLsizei)index_ofs, (GLsizei)unitcylinder_buffers.indices.size(), (GLint)vertex_ofs}
             });
 
         // if (ray)
-        //     for (int i = 0; i < unitcylinder_vbo.indices.size(); i += 3) {
-        //         const v3f& v0 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 0]].p;
-        //         const v3f& v1 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 1]].p;
-        //         const v3f& v2 = polygon_vertices[vertex_ofs + unitcylinder_vbo.indices[i + 2]].p;
+        //     for (int i = 0; i < unitcylinder_buffers.indices.size(); i += 3) {
+        //         const v3f& v0 = polygon_vertices[vertex_ofs + unitcylinder_buffers.indices[i + 0]].p;
+        //         const v3f& v1 = polygon_vertices[vertex_ofs + unitcylinder_buffers.indices[i + 1]].p;
+        //         const v3f& v2 = polygon_vertices[vertex_ofs + unitcylinder_buffers.indices[i + 2]].p;
         //         RayTriangleIntersection(*ray, v0, v1, v2);
         //     }
 
@@ -1091,7 +1037,7 @@ namespace ShapeRendering {
         if (h == r) Nit = N;
         else { Nit = N.inverse(); Nit.transpose(); }
 
-        for (auto& v : unitsphere_vbo.vertices)
+        for (auto& v : unitsphere_buffers.vertices)
         {
             vec3f vw = (N * (v.p.xyz1())).xyz();
             vec3f nw = (Nit * (v.normal.xyz0())).xyz();
@@ -1099,12 +1045,12 @@ namespace ShapeRendering {
         }
 
         polygon_indices.insert(polygon_indices.end(),
-            unitsphere_vbo.indices.begin(),
-            unitsphere_vbo.indices.end());
+            unitsphere_buffers.indices.begin(),
+            unitsphere_buffers.indices.end());
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
-            IndexRange {(GLsizei)index_ofs, (GLsizei)unitsphere_vbo.indices.size(), (GLint)vertex_ofs}
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
+            IndexRange {(GLsizei)index_ofs, (GLsizei)unitsphere_buffers.indices.size(), (GLint)vertex_ofs}
             });
 
 #if 0
@@ -1125,7 +1071,7 @@ namespace ShapeRendering {
         mat4f N = M * mat4f::scaling(r, h, r);
         mat4f Nit = N; // N.inverse(); Nit.transpose(); // ugly, only inv-transpose when needed
 
-        for (auto& v : unitspherewireframe_vbo.vertices)
+        for (auto& v : unitspherewireframe_buffers.vertices)
         {
             vec3f vw = (N * (v.p.xyz1())).xyz();
             vec3f nw = (Nit * (v.normal.xyz0())).xyz();
@@ -1133,12 +1079,12 @@ namespace ShapeRendering {
         }
 
         polygon_indices.insert(polygon_indices.end(),
-            unitspherewireframe_vbo.indices.begin(),
-            unitspherewireframe_vbo.indices.end());
+            unitspherewireframe_buffers.indices.begin(),
+            unitspherewireframe_buffers.indices.end());
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_LINES, depth_test, cull_face},
-            IndexRange {(GLsizei)index_ofs, (GLsizei)unitspherewireframe_vbo.indices.size(), (GLint)vertex_ofs}
+            PolygonBatch {GL_LINES, depth_test, cull_face},
+            IndexRange {(GLsizei)index_ofs, (GLsizei)unitspherewireframe_buffers.indices.size(), (GLint)vertex_ofs}
             });
 
 #if 0
@@ -1224,7 +1170,7 @@ namespace ShapeRendering {
             hind.end());
 
         polygon_hash.insert({
-            PolygonDrawcall {GL_TRIANGLES, depth_test, cull_face},
+            PolygonBatch {GL_TRIANGLES, depth_test, cull_face},
             IndexRange {index_ofs, (GLsizei)hind.size(), (GLint)vertex_ofs}
             });
 
@@ -1356,7 +1302,7 @@ namespace ShapeRendering {
     void ShapeRenderer::push_point(const glm::vec3& p, unsigned size)
     {
         const auto [color, depth_test] = get_states<Color4u, DepthTest>();
-        const PointDrawcall dc{ size, depth_test };
+        const PointBatch dc{ size, depth_test };
         point_hash[dc].push_back(PointVertex{ p, color });
     }
 
@@ -1365,7 +1311,7 @@ namespace ShapeRendering {
         unsigned size)
     {
         const auto& depth_test = get_states<DepthTest>();
-        const PointDrawcall dc{ size, depth_test };
+        const PointBatch dc{ size, depth_test };
 
         auto& point_vector = point_hash[dc];
         point_hash[dc].insert(point_vector.end(),
@@ -1543,7 +1489,7 @@ namespace ShapeRendering {
 
             for (auto it = polygon_hash.begin(); it != polygon_hash.end(); )
             {
-                const PolygonDrawcall& dcgroup = it->first;
+                const PolygonBatch& dcgroup = it->first;
 
                 // TODO: keep track of state and only actually change GL state when needed
 
@@ -1629,7 +1575,7 @@ namespace ShapeRendering {
                 int size = (int)it.second.size();
                 if (!size) continue;
 
-                const LineDrawcall& dc = it.first;
+                const LineBatch& dc = it.first;
 
                 if (to_integral(dc.depth_test)) glEnable(GL_DEPTH_TEST);
                 else                            glDisable(GL_DEPTH_TEST);
@@ -1671,7 +1617,7 @@ namespace ShapeRendering {
                 int size = (int)it.second.size();
                 if (!size) continue;
 
-                const PointDrawcall& dc = it.first;
+                const PointBatch& dc = it.first;
                 if (to_integral(dc.depth_test))
                     glEnable(GL_DEPTH_TEST);
                 else

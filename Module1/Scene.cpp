@@ -261,7 +261,7 @@ void Scene::render(
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
 
         shapeRenderer->push_states(glm_aux::TS(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
-        shapeRenderer->push_quad(points, glm::vec3(0.0f, 0.0f, 1.0f));
+        shapeRenderer->push_quad(points, glm_aux::vec3_001);
         shapeRenderer->pop_states<glm::mat4>();
 
         shapeRenderer->push_states(glm_aux::TS(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
@@ -276,18 +276,16 @@ void Scene::render(
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
         shapeRenderer->push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
 
-        // shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f)));
         shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 4.0f, 0.0f)));
         shapeRenderer->push_cube();
 
-        // shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 1.5f, 0.0f)));
         shapeRenderer->push_cube_wireframe();
 
         shapeRenderer->pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
     }
 
-    // Push cube
+    // Push grid
     {
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0xff808080 });
         shapeRenderer->push_grid(glm::vec3(0.0f, 1.0e-6f, 0.0f), 20.0f, 21);
