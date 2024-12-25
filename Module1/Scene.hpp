@@ -2,20 +2,26 @@
 #define Scene_hpp
 #pragma once
 
-#include <entt/entt.hpp> // -> Scene source
+// #include <entt/entt.hpp> // -> Scene source
+#include <entt/fwd.hpp>
 #include "SceneBase.h"
 #include "RenderableMesh.hpp"
-
-#include "ShapeRenderer.hpp" // -> main?
+#include "ForwardRenderer.hpp"
+#include "ShapeRenderer.hpp"
 
 /// @brief TODO
 class Scene : public eeng::SceneBase
 {
 protected:
-    ShapeRendering::ShapeRenderer shapeRenderer {};
+
+    // Renderer for rendering imported animated or non-animated models
+    eeng::ForwardRendererPtr forwardRenderer;
+
+    // Immediate-mode renderer for basic 2D or 3D primitives
+    ShapeRendererPtr shapeRenderer;
 
     // Entity registry - to use in labs
-    entt::registry registry;
+    std::shared_ptr<entt::registry> entity_registry;
 
     // Camera properties
     glm::vec3 eyePos, atPos, upVector {0.0f, 1.0f, 0.0f};
@@ -57,8 +63,7 @@ public:
     void render(
         float time_s,
         int screenWidth,
-        int screenHeight,
-        eeng::ForwardRendererPtr renderer) override;
+        int screenHeight) override;
 
     /// @brief TODO
     void destroy() override;

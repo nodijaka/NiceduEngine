@@ -2,8 +2,6 @@
 #define SceneBase_h
 #pragma once
 
-#include "ForwardRenderer.hpp"
-
 namespace eeng {
 
     /// @brief TODO
@@ -19,8 +17,7 @@ namespace eeng {
         virtual void render(
             float time_s,
             int screenWidth,
-            int screenHeight,
-            ForwardRendererPtr renderer) = 0;
+            int screenHeight) = 0;
 
         virtual void destroy() = 0;
     };

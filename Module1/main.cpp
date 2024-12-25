@@ -16,7 +16,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include "Log.hpp"
-#include "ForwardRenderer.hpp"
 #include "Scene.hpp"
 
 const int WINDOW_WIDTH = 1600;
@@ -224,9 +223,6 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    auto renderer = std::make_shared<eeng::ForwardRenderer>();
-    renderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
-
     auto scene = std::make_shared<Scene>();
     scene->init();
 
@@ -409,7 +405,7 @@ int main(int argc, char* argv[])
         }
 
         scene->update(time_s, deltaTime_s);
-        scene->render(time_s, WINDOW_WIDTH, WINDOW_HEIGHT, renderer);
+        scene->render(time_s, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -432,6 +428,8 @@ int main(int argc, char* argv[])
     eeng::Log::log("Exiting...");
 
     // Cleanup
+    scene->destroy();
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

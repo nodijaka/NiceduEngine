@@ -547,4 +547,6 @@ namespace ShapeRendering {
 
 }
 
+using ShapeRendererPtr = std::shared_ptr<ShapeRendering::ShapeRenderer>;
+
 #endif /* debug_renderer_h */
