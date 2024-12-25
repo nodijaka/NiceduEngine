@@ -73,7 +73,7 @@ bool Scene::init()
 
 void Scene::update(float time_s, float deltaTime_s)
 {
-    lightPos = glm::vec3(TRS(
+    lightPos = glm::vec3(glm_aux::TRS(
         { 1000.0f, 1000.0f, 1000.0f },
         time_s * 0.0f,
         { 0.0f, 1.0f, 0.0f },
@@ -85,31 +85,31 @@ void Scene::update(float time_s, float deltaTime_s)
     // Position to look at
     atPos = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    grassWorldMatrix = TRS(
+    grassWorldMatrix = glm_aux::TRS(
         { 0.0f, 0.0f, 0.0f },
         0.0f,
         { 0, 1, 0 },
         { 100.0f, 100.0f, 100.0f });
 
-    horseWorldMatrix = TRS(
+    horseWorldMatrix = glm_aux::TRS(
         { 30.0f, 0.0f, -35.0f },
         35.0f,
         { 0, 1, 0 },
         { 0.01f, 0.01f, 0.01f });
 
-    characterWorldMatrix1 = TRS(
+    characterWorldMatrix1 = glm_aux::TRS(
         { 0, 0, 0 },
         time_s * 50.0f,
         { 0, 1, 0 },
         { 0.03f, 0.03f, 0.03f });
 
-    characterWorldMatrix2 = TRS(
+    characterWorldMatrix2 = glm_aux::TRS(
         { -3, 0, 0 },
         0.0f,
         { 0, 1, 0 },
         { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix1;
 
-    characterWorldMatrix3 = TRS(
+    characterWorldMatrix3 = glm_aux::TRS(
         { 6, 0, 0 },
         0.0f,
         { 0, 1, 0 },
@@ -182,9 +182,9 @@ void Scene::render(
     // Compute world ray from window position (e.g. mouse), to use for something perhaps ...
     glm::vec4 viewport = { 0, 0, screenWidth, screenHeight };
     glm::vec2 mousePos{ screenWidth / 2, screenHeight / 2 }; // placeholder
-    auto [rayOrigin, rayDirection] = ComputeWorldSpaceRay(mousePos, V, P, viewport);
-    //std::cout << "rayOrigin " << vec3ToString(rayOrigin) << ")\n";
-    //std::cout << "rayDirection " << vec3ToString(rayDirection) << ")\n";
+    auto [rayOrigin, rayDirection] = glm_aux::world_ray_from_window_coords(mousePos, V, P, viewport);
+    //std::cout << "rayOrigin " << to_string(rayOrigin) << ")\n";
+    //std::cout << "rayDirection " << to_string(rayDirection) << ")\n";
 
     // Begin rendering pass
     renderer->beginPass(P, V, lightPos, lightColor, eyePos);
@@ -226,6 +226,7 @@ void Scene::render(
     shapeRenderer.push_basis_basic(grassWorldMatrix, 1.0f);
     shapeRenderer.push_basis_basic(horseWorldMatrix, 1.0f);
 
+#if 0
     {
         // const ShapeRendering::ArrowDescriptor arrowdesc
         // {
@@ -241,6 +242,7 @@ void Scene::render(
         };
         shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
     }
+#endif
 
     // Draw AABBs
     shapeRenderer.push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
@@ -255,15 +257,16 @@ void Scene::render(
     {
         glm::vec3 points[4]{ {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f} };
         shapeRenderer.push_states(ShapeRendering::Color4u{ 0x8000ffff });
-        shapeRenderer.push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
 
-        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        shapeRenderer.push_states(glm_aux::TS(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
         shapeRenderer.push_quad(points, glm::vec3(0.0f, 0.0f, 1.0f));
+        shapeRenderer.pop_states<glm::mat4>();
 
-        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        shapeRenderer.push_states(glm_aux::TS(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
         shapeRenderer.push_quad_wireframe();
+        shapeRenderer.pop_states<glm::mat4>();
 
-        shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
+        shapeRenderer.pop_states<ShapeRendering::Color4u>();
     }
 
     // Push cube
@@ -271,10 +274,12 @@ void Scene::render(
         shapeRenderer.push_states(ShapeRendering::Color4u{ 0x8000ffff });
         shapeRenderer.push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
 
-        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f)));
+        // shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f)));
+        shapeRenderer.push_states(glm_aux::T(glm::vec3(0.0f, 4.0f, 0.0f)));
         shapeRenderer.push_cube();
 
-        shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        // shapeRenderer.push_states(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        shapeRenderer.push_states(glm_aux::T(glm::vec3(0.0f, 1.5f, 0.0f)));
         shapeRenderer.push_cube_wireframe();
 
         shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
@@ -287,7 +292,7 @@ void Scene::render(
         shapeRenderer.pop_states<ShapeRendering::Color4u>();
     }
 
-    // Arrows
+    // Cones, Cylinders
     {
         const auto arrowdesc = ShapeRendering::ArrowDescriptor
         {
@@ -295,7 +300,24 @@ void Scene::render(
             .cone_radius = 0.15f,
             .cylinder_radius = 0.075f
         };
-        shapeRenderer.push_basis(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f)), 1.0f, arrowdesc);
+        shapeRenderer.push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, 2.0f)));
+        shapeRenderer.push_basis(arrowdesc, glm::vec3(5.0f, 1.0f, 3.0f));
+        shapeRenderer.pop_states<glm::mat4>();
+    }
+
+    // Points
+    {
+        shapeRenderer.push_states(ShapeRendering::Color4u::Red);
+        shapeRenderer.push_point(glm::vec3(2.0f, 1.0f, 0.0f), 4);
+        shapeRenderer.push_point(glm::vec3(2.0f, 2.0f, 0.0f), 4);
+        shapeRenderer.push_point(glm::vec3(2.0f, 3.0f, 0.0f), 4);
+        shapeRenderer.pop_states<ShapeRendering::Color4u>();
+    }
+
+    {
+        // shapeRenderer.push_states(ShapeRendering::Color4u{ 0x8000ffff });
+        // shapeRenderer.push_circle_ring<8>();
+        // shapeRenderer.pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
     }
 
     shapeRenderer.render(P * V);

@@ -20,6 +20,8 @@
 
 namespace ShapeRendering {
 
+    #define BUFOFS(offset) ( (GLvoid*)(offset) )
+
     const Color4u Color4u::Black = Color4u(0xff000000u);
     const Color4u Color4u::White = Color4u(0xffffffffu);
     const Color4u Color4u::Red = Color4u(0xff0000ffu);
@@ -65,7 +67,7 @@ namespace ShapeRendering {
             return glm::transpose(glm::inverse(glm::mat3(mat)));
         }
 
-        glm::mat3 createBasisMatrixFromVector(const glm::vec3& direction) {
+        glm::mat3 create_basis_from_vector(const glm::vec3& direction) {
             // Ensure the direction is normalized
             glm::vec3 forward = glm::normalize(direction);
 
@@ -943,7 +945,7 @@ namespace ShapeRendering {
         // Main transform
         // const mat4f R = mat4f(mat3f::base(conev));
         // const mat4f M = mat4f::translation(from) * R;
-        const glm::mat4 R = glm::mat4(createBasisMatrixFromVector(conev));
+        const glm::mat4 R = glm::mat4(create_basis_from_vector(conev));
         const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
         const glm::mat4 M = T * R;
 
@@ -1053,7 +1055,7 @@ namespace ShapeRendering {
         // Main arrow transform
         // mat4f R = mat4f(mat3f::base(arrowv));
         // mat4f M = mat4f::translation(from) * R;
-        const glm::mat4 R = glm::mat4(createBasisMatrixFromVector(arrowv));
+        const glm::mat4 R = glm::mat4(create_basis_from_vector(arrowv));
         const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
         const glm::mat4 M = T * R;
 
@@ -1071,6 +1073,7 @@ namespace ShapeRendering {
 
         // Cylinder
         float cyll = arrowl - conel;
+        
         push_states(M);
         push_cylinder(cyll, arrow_desc.cylinder_radius);
         pop_states<glm::mat4>();
@@ -1310,26 +1313,43 @@ namespace ShapeRendering {
         pop_states<Color4u>();
     }
 
-    void ShapeRenderer::push_basis(const glm::mat4& basis,
-        float arrlen,
-        const ArrowDescriptor& arrdesc)
-    {
-        // const vec3f wpos = basis.column(3).xyz();
-        const glm::vec3 wpos = glm::vec3(basis[3]);
+    // void ShapeRenderer::push_basis(const glm::mat4& basis,
+    //     float arrlen,
+    //     const ArrowDescriptor& arrdesc)
+    // {
+    //     // const vec3f wpos = basis.column(3).xyz();
+    //     const glm::vec3 wpos = glm::vec3(basis[3]);
 
+    //     push_states(Color4u::Red);
+    //     // push_arrow(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen, arrdesc, ray);
+    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen, arrdesc);
+    //     pop_states<Color4u>();
+
+    //     push_states(Color4u::Lime);
+    //     // push_arrow(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen, arrdesc, ray);
+    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen, arrdesc);
+    //     pop_states<Color4u>();
+
+    //     push_states(Color4u::Blue);
+    //     // push_arrow(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen, arrdesc, ray);
+    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen, arrdesc);
+    //     pop_states<Color4u>();
+    // }
+
+    void ShapeRenderer::push_basis(
+        const ArrowDescriptor& arrow_desc,
+        const glm::vec3 arrow_lengths)
+    {
         push_states(Color4u::Red);
-        // push_arrow(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen, arrdesc, ray);
-        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen, arrdesc);
+        push_arrow(glm_aux::vec3_000, glm_aux::vec3_100 * arrow_lengths.x, arrow_desc);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        // push_arrow(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen, arrdesc, ray);
-        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen, arrdesc);
+        push_arrow(glm_aux::vec3_000, glm_aux::vec3_010 * arrow_lengths.y, arrow_desc);
         pop_states<Color4u>();
 
         push_states(Color4u::Blue);
-        // push_arrow(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen, arrdesc, ray);
-        push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen, arrdesc);
+        push_arrow(glm_aux::vec3_000, glm_aux::vec3_001 * arrow_lengths.z, arrow_desc);
         pop_states<Color4u>();
     }
 

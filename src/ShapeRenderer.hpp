@@ -15,24 +15,17 @@
 #include <unordered_map>
 #include <stack>
 
-//#include "glutil.h"
-#include "ShaderLoader.h"
-//#include "vec.h"
-//#include "mat.h"
+#include "glmcommon.h"
 #include "hash_combine.h"
+#include "ShaderLoader.h"
 
-#define BUFOFS(offset) ( (GLvoid*)(offset) )
 
-// using namespace linalg;
-// class Ray;
 
 //
 // Debug Renderer
 // Dynamic Batching / Immediate Mode / Draw-and-Dispose type of renderer
 //
 // Supports polygon, line and point geometry
-//
-// Spec: https://docs.google.com/document/d/12gMZiiiGAL2spWb5T30PNCTAmi-0PFzTNL0XMvbPtxQ/edit#heading=h.odm9z4h5t34
 
 //
 // Hash specialization for vec3f
@@ -73,11 +66,11 @@ namespace ShapeRendering {
         template<typename T>
         void push_impl(const T& value)
         {
-            if constexpr (std::is_same_v<T, glm::mat4>) 
+            if constexpr (std::is_same_v<T, glm::mat4>)
             {
-                if (!empty<T>()) 
+                if (!empty<T>())
                 {
-                    T transform = value * top_impl<T>();
+                    T transform = top_impl<T>() * value;
                     getStack<T>().push(transform);
                 }
                 else
@@ -528,10 +521,14 @@ namespace ShapeRendering {
             const glm::mat4& basis,
             float arrlen);
 
+        // void push_basis(
+        //     const glm::mat4& basis,
+        //     float arrlen,
+        //     const ArrowDescriptor& arrdesc);
+
         void push_basis(
-            const glm::mat4& basis,
-            float arrlen,
-            const ArrowDescriptor& arrdesc);
+            const ArrowDescriptor& arrow_desc,
+            const glm::vec3 arrow_lengths = glm_aux::vec3_111);
 
         void push_point(
             const glm::vec3& p,
