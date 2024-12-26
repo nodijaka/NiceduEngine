@@ -50,7 +50,7 @@ namespace eeng {
         const MouseState& GetMouseState() const;
         const ControllerState& GetControllerState(int controllerIndex) const;
         int GetConnectedControllerCount() const;
-        ControllerMap& get_controllers();
+        ControllerMap& GetControllers();
 
     private:
 

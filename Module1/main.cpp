@@ -343,7 +343,7 @@ int main(int argc, char* argv[])
 
             ImGui::Text("Controllers connected: %i", input->GetConnectedControllerCount());
 
-            for (auto& [id, state] : input->get_controllers())
+            for (auto& [id, state] : input->GetControllers())
             {
                 //const auto& controller = input->GetControllerState(i);
 

@@ -188,7 +188,7 @@ int eeng::InputManager::GetConnectedControllerCount() const
     return pImpl->GetConnectedControllerCount();
 }
 
-eeng::InputManager::ControllerMap& eeng::InputManager::get_controllers()
+eeng::InputManager::ControllerMap& eeng::InputManager::GetControllers()
 {
     return pImpl->controllers;
 }

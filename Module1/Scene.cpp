@@ -89,23 +89,40 @@ void Scene::update(
     float deltaTime_s,
     InputManagerPtr input)
 {
-    // using Key = eeng::InputManager::Key;
+    auto mouse = input->GetMouseState();
+    glm::vec2 mouse_xy{ mouse.x, mouse.y }; // INT
+    glm::vec2 mouse_dxdy{ 0.0f, 0.0f };
+    if (mouse_xy_prev.x >= 0.0f) mouse_dxdy = mouse_xy - mouse_xy_prev;
+    mouse_xy_prev = mouse_xy;
+
+    // Move camera
+    if (mouse.leftButton)
+    {
+        std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
+        updateCameraRotation(-mouse_dxdy.x, mouse_dxdy.y);
+    }
+
+    using Key = eeng::InputManager::Key;
     // if (input->IsKeyPressed(Key::A))
     // {
     //     std::cout << "A\n";
     // }
+    bool W = input->IsKeyPressed(Key::W);
+    bool A = input->IsKeyPressed(Key::A);
+    bool S = input->IsKeyPressed(Key::S);
+    bool D = input->IsKeyPressed(Key::D);
+    auto fwd = glm::vec3(glm_aux::R(yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+    std::cout << glm_aux::to_string(fwd) << std::endl;
+    auto right = glm::cross(fwd, glm_aux::vec3_010);
+    //
+    auto movement =
+        fwd * player_velocity * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
+        right * player_velocity * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
 
-    auto mouse = input->GetMouseState();
-    glm::vec2 mouse_xy{ mouse.x, mouse.y }; // INT
-    glm::vec2 mouse_dxdy{ 0.0f, 0.0f };
-    if (mouse_xy_prev.x >= 0.0f) mouse_dxdy = mouse_xy_prev - mouse_xy;
-    mouse_xy_prev = mouse_xy;
-
-    if (mouse.leftButton)
-    {
-        std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
-        updateCameraRotation(mouse_dxdy.x, mouse_dxdy.y);
-    }
+    // 
+    player_pos += movement;
+    eyeAt += movement;
+    eyePos += movement;
 
     // std::cout << "mouse (" << mouse.x << ", " << mouse.y << ")\n";
 
@@ -137,8 +154,8 @@ void Scene::update(
         { 0.01f, 0.01f, 0.01f });
 
     characterWorldMatrix1 = glm_aux::TRS(
-        { 0, 0, 0 },
-        time_s * 50.0f,
+        player_pos,
+        time_s * glm::radians(50.0f),
         { 0, 1, 0 },
         { 0.03f, 0.03f, 0.03f });
 
@@ -364,7 +381,8 @@ void Scene::destroy()
 }
 
 // Construct the rotation matrix
-glm::mat4 constructRotationMatrix(float roll, float yaw, float pitch) {
+glm::mat4 constructRotationMatrix(float roll, float yaw, float pitch)
+{
     float sina = sin(roll);
     float cosa = cos(roll);
     float sinb = sin(yaw);
@@ -373,20 +391,21 @@ glm::mat4 constructRotationMatrix(float roll, float yaw, float pitch) {
     float cosg = cos(pitch);
 
     return glm::mat4(
-        glm::vec4(cosa * cosb, sina * cosb, -sinb, 0.0f),               // Column 0
-        glm::vec4(cosa * sinb * sing - sina * cosg,                     // Column 1
-                  sina * sinb * sing + cosa * cosg, 
-                  cosb * sing, 
-                  0.0f),
-        glm::vec4(cosa * sinb * cosg + sina * sing,                     // Column 2
-                  sina * sinb * cosg - cosa * sing, 
-                  cosb * cosg, 
-                  0.0f),
-        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)                              // Column 3
+        glm::vec4(cosa * cosb, sina * cosb, -sinb, 0.0f),
+        glm::vec4(cosa * sinb * sing - sina * cosg,
+            sina * sinb * sing + cosa * cosg,
+            cosb * sing,
+            0.0f),
+        glm::vec4(cosa * sinb * cosg + sina * sing,
+            sina * sinb * cosg - cosa * sing,
+            cosb * cosg,
+            0.0f),
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
     );
 }
 
-glm::vec3 computeRotatedPosition(float yaw, float pitch, float radius) {
+glm::vec3 computeRotatedPosition(float yaw, float pitch, float radius)
+{
     float sinYaw = sin(yaw);
     float cosYaw = cos(yaw);
     float sinPitch = sin(pitch);

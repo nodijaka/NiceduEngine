@@ -68,6 +68,10 @@ private:
     // Scene objects
     std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
 
+    // Velocity placeholder
+    float player_velocity {0.1f};
+    glm::vec3 player_pos = glm_aux::vec3_000;
+
     // Scene object transformations
     glm::mat4 characterWorldMatrix1, characterWorldMatrix2, characterWorldMatrix3;
     glm::mat4 grassWorldMatrix, horseWorldMatrix;

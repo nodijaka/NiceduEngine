@@ -66,7 +66,7 @@ namespace glm_aux {
 
     /**
      * @brief Creates a rotation matrix.
-     * @param angle The rotation angle in degrees.
+     * @param angle The rotation angle in radians.
      * @param axis A 3D vector representing the axis of rotation (must be normalized).
      * @return A 4x4 rotation matrix.
      */
@@ -74,7 +74,7 @@ namespace glm_aux {
         float angle,
         const glm::vec3& axis)
     {
-        return glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
+        return glm::rotate(glm::mat4(1.0f), angle, axis);
     }
 
     /**
@@ -91,7 +91,7 @@ namespace glm_aux {
     /**
      * @brief Creates a combined Translation * Rotation matrix.
      * @param translation A 3D vector representing the translation.
-     * @param angle The rotation angle in degrees.
+     * @param angle The rotation angle in radians.
      * @param axis A 3D vector representing the axis of rotation (must be normalized).
      * @return A 4x4 matrix representing Translation * Rotation.
      */
@@ -118,7 +118,7 @@ namespace glm_aux {
 
     /**
      * @brief Creates a combined Rotation * Scale matrix.
-     * @param angle The rotation angle in degrees.
+     * @param angle The rotation angle in radians.
      * @param axis A 3D vector representing the axis of rotation (must be normalized).
      * @param scale A 3D vector representing the scale along each axis.
      * @return A 4x4 matrix representing Rotation * Scale.
@@ -134,7 +134,7 @@ namespace glm_aux {
     /**
      * @brief Creates a combined Translation * Rotation * Scale matrix.
      * @param translation A 3D vector representing the translation.
-     * @param angle The rotation angle in degrees.
+     * @param angle The rotation angle in radians.
      * @param axis A 3D vector representing the axis of rotation (must be normalized).
      * @param scale A 3D vector representing the scale along each axis.
      * @return A 4x4 matrix representing Translation * Rotation * Scale.
