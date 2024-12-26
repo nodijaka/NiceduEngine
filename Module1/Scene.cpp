@@ -12,6 +12,12 @@ bool Scene::init()
     shapeRenderer = std::make_shared<ShapeRendering::ShapeRenderer>();
     shapeRenderer->init();
 
+    // Position of camera/eye
+    eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
+
+    // Position to look at
+    eyeAt = glm::vec3(0.0f, 0.0f, 0.0f);
+
     // Do some entt stuff
     // entt::registry registry;
     entity_registry = std::make_shared<entt::registry>();
@@ -79,19 +85,30 @@ bool Scene::init()
 }
 
 void Scene::update(
-    float time_s, 
+    float time_s,
     float deltaTime_s,
     InputManagerPtr input)
 {
-    using Key = eeng::InputManager::Key;
-    if (input->IsKeyPressed(Key::A))
-    {
-        std::cout << "A\n";
-    }
+    // using Key = eeng::InputManager::Key;
+    // if (input->IsKeyPressed(Key::A))
+    // {
+    //     std::cout << "A\n";
+    // }
 
     auto mouse = input->GetMouseState();
+    glm::vec2 mouse_xy{ mouse.x, mouse.y }; // INT
+    glm::vec2 mouse_dxdy{ 0.0f, 0.0f };
+    if (mouse_xy_prev.x >= 0.0f) mouse_dxdy = mouse_xy_prev - mouse_xy;
+    mouse_xy_prev = mouse_xy;
+
+    if (mouse.leftButton)
+    {
+        std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
+        updateCameraRotation(mouse_dxdy.x, mouse_dxdy.y);
+    }
+
     // std::cout << "mouse (" << mouse.x << ", " << mouse.y << ")\n";
-    
+
     // std::cout << "Connected controllers: " << input->GetConnectedControllerCount() << std::endl;
     // auto controller = input->GetControllerState(0);
 
@@ -101,11 +118,11 @@ void Scene::update(
         { 0.0f, 1.0f, 0.0f },
         { 1.0f, 1.0f, 1.0f }) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    // Position of camera/eye
-    eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
+    // // Position of camera/eye
+    // eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
 
-    // Position to look at
-    atPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    // // Position to look at
+    // eyeAt = glm::vec3(0.0f, 0.0f, 0.0f);
 
     grassWorldMatrix = glm_aux::TRS(
         { 0.0f, 0.0f, 0.0f },
@@ -194,7 +211,7 @@ void Scene::render(
 
     // View matrix
     //glm::mat4 V = glm::inverse(TRS(eyePos, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
-    const glm::mat4 V = glm::lookAt(eyePos, atPos, upVector);
+    const glm::mat4 V = glm::lookAt(eyePos, eyeAt, eyeUp);
 
     // Compute world ray from window position (e.g. mouse), to use for something perhaps ...
     glm::vec4 viewport = { 0, 0, windowWidth, windowHeight };
@@ -344,4 +361,63 @@ void Scene::render(
 void Scene::destroy()
 {
 
+}
+
+// Construct the rotation matrix
+glm::mat4 constructRotationMatrix(float roll, float yaw, float pitch) {
+    float sina = sin(roll);
+    float cosa = cos(roll);
+    float sinb = sin(yaw);
+    float cosb = cos(yaw);
+    float sing = sin(pitch);
+    float cosg = cos(pitch);
+
+    return glm::mat4(
+        glm::vec4(cosa * cosb, sina * cosb, -sinb, 0.0f),               // Column 0
+        glm::vec4(cosa * sinb * sing - sina * cosg,                     // Column 1
+                  sina * sinb * sing + cosa * cosg, 
+                  cosb * sing, 
+                  0.0f),
+        glm::vec4(cosa * sinb * cosg + sina * sing,                     // Column 2
+                  sina * sinb * cosg - cosa * sing, 
+                  cosb * cosg, 
+                  0.0f),
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)                              // Column 3
+    );
+}
+
+glm::vec3 computeRotatedPosition(float yaw, float pitch, float radius) {
+    float sinYaw = sin(yaw);
+    float cosYaw = cos(yaw);
+    float sinPitch = sin(pitch);
+    float cosPitch = cos(pitch);
+
+    // Direct computation of rotated position
+    float x = radius * cosPitch * sinYaw;
+    float y = radius * sinPitch;
+    float z = radius * cosPitch * cosYaw;
+
+    return glm::vec3(x, y, z);
+}
+
+// Update camera rotation based on mouse input
+void Scene::updateCameraRotation(float deltaX, float deltaY) {
+    // Update yaw and pitch angles based on input
+    yaw += deltaX * 0.005f;   // Sensitivity factor
+    pitch += deltaY * 0.005f;
+
+    // Clamp pitch to prevent flipping
+    const float pitchLimit = glm::radians(89.0f); // Prevent gimbal lock at poles
+    if (pitch > pitchLimit) pitch = pitchLimit;
+    if (pitch < -pitchLimit) pitch = -pitchLimit;
+
+    // Create the rotation matrix
+    glm::mat4 rotationMatrix = constructRotationMatrix(0.0f, yaw, pitch);
+
+    // Rotate the initial position (0, 0, radius) around the target
+    //glm::vec4 rotatedPos = rotationMatrix * glm::vec4(0.0f, 0.0f, radius, 1.0f);
+    glm::vec4 rotatedPos = glm::vec4(computeRotatedPosition(yaw, pitch, radius), 1.0f);
+
+    // Update eyePos based on the rotated position
+    eyePos = eyeAt + glm::vec3(rotatedPos);
 }
