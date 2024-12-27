@@ -54,11 +54,12 @@ private:
     std::shared_ptr<entt::registry> entity_registry;
 
     // Camera properties
-    glm::vec3 eyePos, eyeAt, eyeUp{ 0.0f, 1.0f, 0.0f };
+    glm::vec3 eyePos, eyeAt = glm_aux::vec3_000, eyeUp = glm_aux::vec3_010;
     const float nearPlane = 1.0f, farPlane = 500.0f;
+    //
     float sensitivity = 0.005f;
     float yaw = 0.0f;   // Horizontal angle (radians)
-    float pitch = 0.0f; // Vertical angle (radians)
+    float pitch = -glm::pi<float>()/8; // Vertical angle (radians)
     float radius = 15.0f;
     glm::vec2 mouse_xy_prev{ -1.0f, -1.0f };
 
@@ -80,7 +81,12 @@ private:
     float characterAnimSpeed = 1.0f;
     int drawcallCount = 0;
 
-    void updateCameraRotation(float deltaX, float deltaY);
+    /// @brief Update camera position based on mouse movement
+    /// @param deltaX 
+    /// @param deltaY 
+    void updateCamera(
+        float deltaX, 
+        float deltaY);
 };
 
 #endif

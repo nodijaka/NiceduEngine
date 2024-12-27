@@ -78,6 +78,29 @@ namespace glm_aux {
     }
 
     /**
+     * @brief Creates a rotation matrix from yaw and pitch
+     * @param yaw Rotation angle around y in radians.
+     * @param pitch Rotation angle around x in radians.
+     * @return A 4x4 rotation matrix.
+     */
+    inline glm::mat4 R(
+        float yaw, 
+        float pitch)
+    {
+        const float sin_yaw = sin(yaw);
+        const float cos_yaw = cos(yaw);
+        const float sin_pitch = sin(pitch);
+        const float cos_pitch = cos(pitch);
+
+        return glm::mat4(
+            glm::vec4(cos_yaw, 0.0f, -sin_yaw, 0.0f),
+            glm::vec4(sin_yaw * sin_pitch, cos_pitch, cos_yaw * sin_pitch, 0.0f),
+            glm::vec4(sin_yaw * cos_pitch, -sin_pitch, cos_yaw * cos_pitch, 0.0f),
+            glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+        );
+    }
+
+    /**
      * @brief Creates a scaling matrix.
      * @param scale A 3D vector representing the scale along each axis.
      * @return A 4x4 scaling matrix.

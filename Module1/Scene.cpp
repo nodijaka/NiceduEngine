@@ -62,7 +62,7 @@ bool Scene::init()
     characterMesh->load("assets/ExoRed/idle (2).fbx", true);
     characterMesh->load("assets/ExoRed/walking.fbx", true);
     // Remove root motion
-    characterMesh->remove_translation_keys("mixamorig:Hips");
+    characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
 #if 1
     // Amy 5.0.1 PACK FBX
@@ -78,8 +78,18 @@ bool Scene::init()
     characterMesh->load("assets/Eve/idle.fbx", true);
     characterMesh->load("assets/Eve/walking.fbx", true);
     // Remove root motion
-    characterMesh->remove_translation_keys("mixamorig:Hips");
+    characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
+
+    grassWorldMatrix = glm_aux::TRS(
+        { 0.0f, 0.0f, 0.0f },
+        0.0f, { 0, 1, 0 },
+        { 100.0f, 100.0f, 100.0f });
+
+    horseWorldMatrix = glm_aux::TRS(
+        { 30.0f, 0.0f, -35.0f },
+        35.0f, { 0, 1, 0 },
+        { 0.01f, 0.01f, 0.01f });
 
     return true;
 }
@@ -92,15 +102,17 @@ void Scene::update(
     auto mouse = input->GetMouseState();
     glm::vec2 mouse_xy{ mouse.x, mouse.y }; // INT
     glm::vec2 mouse_dxdy{ 0.0f, 0.0f };
-    if (mouse_xy_prev.x >= 0.0f) mouse_dxdy = mouse_xy - mouse_xy_prev;
+    if (mouse_xy_prev.x >= 0.0f) mouse_dxdy = mouse_xy_prev - mouse_xy;
     mouse_xy_prev = mouse_xy;
 
     // Move camera
     if (mouse.leftButton)
     {
         std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
-        updateCameraRotation(-mouse_dxdy.x, mouse_dxdy.y);
     }
+    else
+        mouse_dxdy = glm::vec2(0.0f, 0.0f);
+    updateCamera(mouse_dxdy.x, mouse_dxdy.y);
 
     using Key = eeng::InputManager::Key;
     // if (input->IsKeyPressed(Key::A))
@@ -141,35 +153,22 @@ void Scene::update(
     // // Position to look at
     // eyeAt = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    grassWorldMatrix = glm_aux::TRS(
-        { 0.0f, 0.0f, 0.0f },
-        0.0f,
-        { 0, 1, 0 },
-        { 100.0f, 100.0f, 100.0f });
 
-    horseWorldMatrix = glm_aux::TRS(
-        { 30.0f, 0.0f, -35.0f },
-        35.0f,
-        { 0, 1, 0 },
-        { 0.01f, 0.01f, 0.01f });
 
     characterWorldMatrix1 = glm_aux::TRS(
         player_pos,
-        time_s * glm::radians(50.0f),
-        { 0, 1, 0 },
+        glm::pi<float>(), { 0, 1, 0 },
         { 0.03f, 0.03f, 0.03f });
 
     characterWorldMatrix2 = glm_aux::TRS(
         { -3, 0, 0 },
-        0.0f,
-        { 0, 1, 0 },
-        { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix1;
+        time_s * glm::radians(50.0f), { 0, 1, 0 },
+        { 0.03f, 0.03f, 0.03f });
 
     characterWorldMatrix3 = glm_aux::TRS(
-        { 6, 0, 0 },
-        0.0f,
-        { 0, 1, 0 },
-        { 1.0f, 1.0f, 1.0f }) * characterWorldMatrix2;
+        { 3, 0, 0 },
+        time_s * glm::radians(50.0f), { 0, 1, 0 },
+        { 0.03f, 0.03f, 0.03f });
 }
 
 void Scene::renderUI()
@@ -380,47 +379,12 @@ void Scene::destroy()
 
 }
 
-// Construct the rotation matrix
-glm::mat4 constructRotationMatrix(float roll, float yaw, float pitch)
-{
-    float sina = sin(roll);
-    float cosa = cos(roll);
-    float sinb = sin(yaw);
-    float cosb = cos(yaw);
-    float sing = sin(pitch);
-    float cosg = cos(pitch);
 
-    return glm::mat4(
-        glm::vec4(cosa * cosb, sina * cosb, -sinb, 0.0f),
-        glm::vec4(cosa * sinb * sing - sina * cosg,
-            sina * sinb * sing + cosa * cosg,
-            cosb * sing,
-            0.0f),
-        glm::vec4(cosa * sinb * cosg + sina * sing,
-            sina * sinb * cosg - cosa * sing,
-            cosb * cosg,
-            0.0f),
-        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-    );
-}
-
-glm::vec3 computeRotatedPosition(float yaw, float pitch, float radius)
-{
-    float sinYaw = sin(yaw);
-    float cosYaw = cos(yaw);
-    float sinPitch = sin(pitch);
-    float cosPitch = cos(pitch);
-
-    // Direct computation of rotated position
-    float x = radius * cosPitch * sinYaw;
-    float y = radius * sinPitch;
-    float z = radius * cosPitch * cosYaw;
-
-    return glm::vec3(x, y, z);
-}
 
 // Update camera rotation based on mouse input
-void Scene::updateCameraRotation(float deltaX, float deltaY) {
+void Scene::updateCamera(
+    float deltaX,
+    float deltaY) {
     // Update yaw and pitch angles based on input
     yaw += deltaX * 0.005f;   // Sensitivity factor
     pitch += deltaY * 0.005f;
@@ -431,11 +395,11 @@ void Scene::updateCameraRotation(float deltaX, float deltaY) {
     if (pitch < -pitchLimit) pitch = -pitchLimit;
 
     // Create the rotation matrix
-    glm::mat4 rotationMatrix = constructRotationMatrix(0.0f, yaw, pitch);
+    // glm::mat4 rotationMatrix = R(yaw, pitch);
 
     // Rotate the initial position (0, 0, radius) around the target
-    //glm::vec4 rotatedPos = rotationMatrix * glm::vec4(0.0f, 0.0f, radius, 1.0f);
-    glm::vec4 rotatedPos = glm::vec4(computeRotatedPosition(yaw, pitch, radius), 1.0f);
+    glm::vec4 rotatedPos = glm_aux::R(yaw, pitch) * glm::vec4(0.0f, 0.0f, radius, 1.0f);
+    //glm::vec4 rotatedPos = glm::vec4(computeRotatedPosition(yaw, pitch, radius), 1.0f);
 
     // Update eyePos based on the rotated position
     eyePos = eyeAt + glm::vec3(rotatedPos);
