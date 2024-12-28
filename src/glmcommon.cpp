@@ -211,77 +211,6 @@ namespace glm_aux {
         return T(translation) * R(angle, axis) * S(scale); // Translation * Rotation * Scale
     }
 
-    Ray world_ray_from_window_coords(
-        const glm::vec2& windowCoordinates,
-        const glm::mat4& viewMatrix,
-        const glm::mat4& projectionMatrix,
-        const glm::vec4& viewport)
-    {
-        // Step 1: Convert window coordinates to normalized device coordinates (NDC)
-        float x = (2.0f * (windowCoordinates.x - viewport.x)) / viewport.z - 1.0f;
-        float y = 1.0f - (2.0f * (windowCoordinates.y - viewport.y)) / viewport.w; // Invert Y-axis for OpenGL
-        float zNear = -1.0f; // Near clip plane in NDC
-        float zFar = 1.0f;   // Far clip plane in NDC
-
-        // Step 2: Compute the inverse of the view-projection matrix
-        glm::mat4 inverseVP = glm::inverse(projectionMatrix * viewMatrix);
-
-        // Step 3: Unproject the NDC points to world space
-        glm::vec4 nearPointNDC(x, y, zNear, 1.0f);
-        glm::vec4 farPointNDC(x, y, zFar, 1.0f);
-
-        // Transform NDC points to world space
-        glm::vec4 nearPointWorld = inverseVP * nearPointNDC;
-        glm::vec4 farPointWorld = inverseVP * farPointNDC;
-
-        // Perform perspective divide
-        nearPointWorld /= nearPointWorld.w;
-        farPointWorld /= farPointWorld.w;
-
-        // Step 4: Define the ray in world space
-        glm::vec3 rayOrigin = glm::vec3(nearPointWorld); // Ray origin
-        glm::vec3 rayDirection = glm::normalize(glm::vec3(farPointWorld - nearPointWorld)); // Ray direction
-
-        return Ray{ rayOrigin, rayDirection };
-    }
-
-    Ray world_ray_from_window_coords(
-        const glm::vec2& windowCoordinates,
-        const glm::mat4& viewMatrix,
-        const glm::mat4& projectionMatrix,
-        const glm::mat4& viewportMatrix)
-    {
-        // Step 1: Invert the viewport matrix to map window coordinates to normalized device coordinates (NDC)
-        glm::mat4 inverseViewportMatrix = glm::inverse(viewportMatrix);
-        glm::vec4 ndcCoords = inverseViewportMatrix * glm::vec4(windowCoordinates, 0.0f, 1.0f);
-
-        float x = ndcCoords.x; // NDC X-coordinate
-        float y = ndcCoords.y; // NDC Y-coordinate
-        float zNear = -1.0f;   // Near clip plane in NDC
-        float zFar = 1.0f;     // Far clip plane in NDC
-
-        // Step 2: Compute the inverse of the view-projection matrix
-        glm::mat4 inverseVP = glm::inverse(projectionMatrix * viewMatrix);
-
-        // Step 3: Unproject the NDC points to world space
-        glm::vec4 nearPointNDC(x, y, zNear, 1.0f);
-        glm::vec4 farPointNDC(x, y, zFar, 1.0f);
-
-        // Transform NDC points to world space
-        glm::vec4 nearPointWorld = inverseVP * nearPointNDC;
-        glm::vec4 farPointWorld = inverseVP * farPointNDC;
-
-        // Perform perspective divide
-        nearPointWorld /= nearPointWorld.w;
-        farPointWorld /= farPointWorld.w;
-
-        // Step 4: Define the ray in world space
-        glm::vec3 rayOrigin = glm::vec3(nearPointWorld); // Ray origin
-        glm::vec3 rayDirection = glm::normalize(glm::vec3(farPointWorld - nearPointWorld)); // Ray direction
-
-        return Ray{ rayOrigin, rayDirection };
-    }
-
     glm::mat4 create_viewport_matrix(
         float x,
         float y,
@@ -303,6 +232,42 @@ namespace glm_aux {
         viewportMatrix[3][2] = near;
 
         return viewportMatrix;
+    }
+
+    Ray world_ray_from_window_coords(
+        const glm::vec2& window_coords,
+        const glm::mat4& V,
+        const glm::mat4& P,
+        const glm::mat4& VP)
+    {
+        // Step 1: Invert the viewport matrix to map window coordinates to normalized device coordinates (NDC)
+        glm::vec4 ndc_coords = glm::inverse(VP) * glm::vec4(window_coords, 0.0f, 1.0f);
+
+        float x = ndc_coords.x; // NDC X-coordinate
+        float y = ndc_coords.y; // NDC Y-coordinate
+        float z_near = -1.0f;   // Near clip plane in NDC
+        float z_far = 1.0f;     // Far clip plane in NDC
+
+        // Step 2: Compute the inverse of the view-projection matrix
+        glm::mat4 inverseVP = glm::inverse(P * V);
+
+        // Step 3: Unproject the NDC points to world space
+        glm::vec4 nearNDC(x, y, z_near, 1.0f);
+        glm::vec4 farNDC(x, y, z_far, 1.0f);
+
+        // Transform NDC points to world space
+        glm::vec4 nearWorld = inverseVP * nearNDC;
+        glm::vec4 farWorld = inverseVP * farNDC;
+
+        // Perform perspective divide
+        nearWorld /= nearWorld.w;
+        farWorld /= farWorld.w;
+
+        // Step 4: Define the ray in world space
+        glm::vec3 ray_origin = glm::vec3(nearWorld); // Ray origin
+        glm::vec3 ray_dir = glm::normalize(glm::vec3(farWorld - nearWorld)); // Ray direction
+
+        return Ray{ ray_origin, ray_dir };
     }
 
     bool window_coords_from_world_pos(

@@ -256,12 +256,10 @@ void Scene::render(
 
     // Compute world ray from window position (e.g. mouse), to use for picking or such
     {
-        glm::vec4 viewport = { 0, 0, windowWidth, windowHeight };
-        glm::vec2 mousePos{ windowWidth / 2, windowHeight / 2 }; // placeholder
-        glm_aux::Ray ray1 = glm_aux::world_ray_from_window_coords(mousePos, V, P, viewport);
-        glm_aux::Ray ray2 = glm_aux::world_ray_from_window_coords(mousePos, V, P, VP);
-        std::cout << "rayOrigin " << glm_aux::to_string(ray1.origin) << ", rayDirection " << glm_aux::to_string(ray1.dir) << ")\n";
-        std::cout << "rayOrigin " << glm_aux::to_string(ray2.origin) << ", rayDirection " << glm_aux::to_string(ray2.dir) << ")\n\n";
+        glm::vec2 mousePos{ windowWidth / 2, windowHeight / 2 }; // middle of the window as placeholder
+        glm_aux::Ray ray = glm_aux::world_ray_from_window_coords(mousePos, V, P, VP);
+        std::cout << "ray origin " << glm_aux::to_string(ray.origin)
+            << ", ray dir " << glm_aux::to_string(ray.dir) << ")\n";
     }
 
     // Begin rendering pass
@@ -341,7 +339,7 @@ void Scene::render(
             .cylinder_radius = 0.075f
         };
         shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
-}
+    }
 #endif
 
     // Draw AABBs
