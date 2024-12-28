@@ -1,6 +1,6 @@
 
 #include <entt/entt.hpp> // -> Scene source
-#include "glmcommon.h"
+#include "glmcommon.hpp"
 #include "imgui.h"
 #include "Scene.hpp"
 
@@ -74,6 +74,9 @@ bool Scene::init()
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
+    // Fix for assimp 5.0.1 (https://github.com/assimp/assimp/issues/4486)
+    // FBXConverter.cpp, line 648: 
+    //      const float zero_epsilon = 1e-6f; => const float zero_epsilon = Math::getEpsilon<float>();
     characterMesh->load("assets/Eve/Eve By J.Gonzales.fbx");
     characterMesh->load("assets/Eve/idle.fbx", true);
     characterMesh->load("assets/Eve/walking.fbx", true);
@@ -108,7 +111,7 @@ void Scene::update(
     // Move camera
     if (mouse.leftButton)
     {
-        std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
+        // std::cout << mouse_dxdy.x << ", " << mouse_dxdy.y << std::endl;
     }
     else
         mouse_dxdy = glm::vec2(0.0f, 0.0f);
@@ -124,12 +127,12 @@ void Scene::update(
     bool S = input->IsKeyPressed(Key::S);
     bool D = input->IsKeyPressed(Key::D);
     auto fwd = glm::vec3(glm_aux::R(yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-    std::cout << glm_aux::to_string(fwd) << std::endl;
+    // std::cout << glm_aux::to_string(fwd) << std::endl;
     auto right = glm::cross(fwd, glm_aux::vec3_010);
     //
     auto movement =
-        fwd * player_velocity * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
-        right * player_velocity * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
+        fwd * player_velocity * deltaTime_s * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
+        right * player_velocity * deltaTime_s * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
 
     // 
     player_pos += movement;
@@ -146,14 +149,6 @@ void Scene::update(
         time_s * 0.0f,
         { 0.0f, 1.0f, 0.0f },
         { 1.0f, 1.0f, 1.0f }) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    // // Position of camera/eye
-    // eyePos = glm::vec3(0.0f, 5.0f, 10.0f);
-
-    // // Position to look at
-    // eyeAt = glm::vec3(0.0f, 0.0f, 0.0f);
-
-
 
     characterWorldMatrix1 = glm_aux::TRS(
         player_pos,
@@ -181,9 +176,9 @@ void Scene::renderUI()
     {
     }
 
-    // Combo (drop-down) for animation clip
     if (characterMesh)
     {
+        // Combo (drop-down) for animation clip
         int curAnimIndex = characterAnimIndex;
         std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
         if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
@@ -208,6 +203,34 @@ void Scene::renderUI()
             ImGui::EndCombo();
             characterAnimIndex = curAnimIndex;
         }
+
+        // In-world position label
+        auto world_pos = glm::vec3(characterWorldMatrix1[3]);
+        glm::vec2 window_coords;
+        if (glm_aux::window_coords_from_world_pos(world_pos, VP * P * V, window_coords))
+        {
+            ImGui::SetNextWindowPos(
+                ImVec2{ window_coords.x, 900 - window_coords.y },
+                ImGuiCond_Always,
+                ImVec2{ 0.0f, 0.0f });
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, 0x80000000);
+            ImGui::PushStyleColor(ImGuiCol_Text, 0xffffffff);
+
+            ImGuiWindowFlags flags =
+                ImGuiWindowFlags_NoDecoration |
+                ImGuiWindowFlags_NoInputs |
+                // ImGuiWindowFlags_NoBackground |
+                ImGuiWindowFlags_AlwaysAutoResize;
+
+            if (ImGui::Begin("window_name", nullptr, flags))
+            {
+                ImGui::Text("In-world GUI element");
+                ImGui::Text("Window pos (%i, %i)", (int)window_coords.x, (int)window_coords.x);
+                ImGui::Text("World pos (%1.1f, %1.1f, %1.1f)", world_pos.x, world_pos.y, world_pos.z);
+                ImGui::End();
+            }
+            ImGui::PopStyleColor(2);
+        }
     }
 
     ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
@@ -223,16 +246,18 @@ void Scene::render(
 
     // Projection matrix
     const float aspectRatio = float(windowWidth) / windowHeight;
-    const glm::mat4 P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
+    P = glm::perspective(glm::radians(60.0f), aspectRatio, nearPlane, farPlane);
 
     // View matrix
     //glm::mat4 V = glm::inverse(TRS(eyePos, 0.0f, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
-    const glm::mat4 V = glm::lookAt(eyePos, eyeAt, eyeUp);
+    V = glm::lookAt(eyePos, eyeAt, eyeUp);
+
+    VP = glm_aux::create_viewport_matrix(0.0f, 0.0f, windowWidth, windowHeight, 0.0f, 1.0f);
 
     // Compute world ray from window position (e.g. mouse), to use for something perhaps ...
     glm::vec4 viewport = { 0, 0, windowWidth, windowHeight };
     glm::vec2 mousePos{ windowWidth / 2, windowHeight / 2 }; // placeholder
-    auto [rayOrigin, rayDirection] = glm_aux::world_ray_from_window_coords(mousePos, V, P, viewport);
+    glm_aux::Ray ray = glm_aux::world_ray_from_window_coords(mousePos, V, P, viewport);
     //std::cout << "rayOrigin " << to_string(rayOrigin) << ")\n";
     //std::cout << "rayDirection " << to_string(rayDirection) << ")\n";
 
@@ -266,15 +291,37 @@ void Scene::render(
     // End rendering pass
     drawcallCount = forwardRenderer->endPass();
 
-    //
-    glm::vec3 p0{ 0.0f, 0.0f, 0.0f }, p1{ 10.0f, 10.0f, 0.0f };
+    // Character view ray (not in render())
+    auto fwd = glm::vec3(glm_aux::R(yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+    glm_aux::Ray character_view_ray{ player_pos + glm::vec3(0.0f, 2.0f, 0.0f), fwd };
+    bool hit = false;
+    hit |= glm_aux::intersect_ray_AABB(character_view_ray, character_aabb2.min, character_aabb2.max);
+    hit |= glm_aux::intersect_ray_AABB(character_view_ray, character_aabb3.min, character_aabb3.max);
+    hit |= glm_aux::intersect_ray_AABB(character_view_ray, horse_aabb.min, horse_aabb.max);
+    if (hit)
+    {
+        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xff00ff00 });
+        shapeRenderer->push_line(character_view_ray.origin, character_view_ray.point_of_contact());
+    }
+    else
+    {
+        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xffffffff });
+        shapeRenderer->push_line(character_view_ray.origin, character_view_ray.origin + character_view_ray.dir * 100.0f);
+    }
+    shapeRenderer->pop_states<ShapeRendering::Color4u>();
+
+    // Just a line
+    glm::vec3 p0{ 0.0f, 0.0f, 0.0f }, p1{ 1.0f, 1.0f, 0.0f };
     shapeRenderer->push_line(p0, p1);
 
-    shapeRenderer->push_basis_basic(characterWorldMatrix1, 1.0f);
-    shapeRenderer->push_basis_basic(characterWorldMatrix2, 1.0f);
-    shapeRenderer->push_basis_basic(characterWorldMatrix3, 1.0f);
-    shapeRenderer->push_basis_basic(grassWorldMatrix, 1.0f);
-    shapeRenderer->push_basis_basic(horseWorldMatrix, 1.0f);
+    // Bases
+    {
+        shapeRenderer->push_basis_basic(characterWorldMatrix1, 1.0f);
+        shapeRenderer->push_basis_basic(characterWorldMatrix2, 1.0f);
+        shapeRenderer->push_basis_basic(characterWorldMatrix3, 1.0f);
+        shapeRenderer->push_basis_basic(grassWorldMatrix, 1.0f);
+        shapeRenderer->push_basis_basic(horseWorldMatrix, 1.0f);
+    }
 
 #if 0
     {
@@ -289,9 +336,9 @@ void Scene::render(
             .cone_fraction = 0.2,
             .cone_radius = 0.15f,
             .cylinder_radius = 0.075f
-        };
+    };
         shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
-    }
+}
 #endif
 
     // Draw AABBs

@@ -13,7 +13,7 @@
 
 #include <glm/glm.hpp>
 
-#include "glmcommon.h"
+#include "glmcommon.hpp"
 #include "hash_combine.h"
 
 

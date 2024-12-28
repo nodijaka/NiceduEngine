@@ -24,31 +24,12 @@ const int WINDOW_HEIGHT = 900;
 float FRAMETIME_MIN_MS = 1000.0f / 60;
 bool WIREFRAME = false;
 bool SOUND_PLAY = false;
-SDL_GameController* controller1;
-
-namespace
-{
-    // Helpers
-
-    SDL_GameController* findController()
-    {
-        for (int i = 0; i < SDL_NumJoysticks(); i++)
-        {
-            if (SDL_IsGameController(i))
-            {
-                return SDL_GameControllerOpen(i);
-            }
-        }
-
-        return nullptr;
-    }
-}
 
 int main(int argc, char* argv[])
 {
 
     // Hello standard output
-    std::cout << "Hello SDL2 + Assimp + Dear ImGui" << std::endl;
+    std::cout << "Hello eduEngine (SDL2, glm, stb, Assimp, Dear ImGui, enTT)" << std::endl;
 
     // Initialize SDL
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
@@ -57,9 +38,6 @@ int main(int argc, char* argv[])
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
         return 1;
     }
-
-    // Controllers
-    controller1 = findController();
 
     // OpenGL context attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
@@ -72,7 +50,7 @@ int main(int argc, char* argv[])
 #endif
 
     // Create a window
-    SDL_Window* window = SDL_CreateWindow("SDL2 + Assimp + Dear ImGui",
+    SDL_Window* window = SDL_CreateWindow("eduEngine",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         WINDOW_WIDTH,
@@ -254,28 +232,7 @@ int main(int argc, char* argv[])
             case SDL_QUIT:
                 quit = true;
                 break;
-                // case SDL_CONTROLLERDEVICEADDED:
-                //     if (!controller1)
-                //     {
-                //         controller1 = SDL_GameControllerOpen(event.cdevice.which);
-                //     }
-                //     break;
-                // case SDL_CONTROLLERDEVICEREMOVED:
-                //     if (controller1 && event.cdevice.which == SDL_JoystickInstanceID(
-                //         SDL_GameControllerGetJoystick(controller1)))
-                //     {
-                //         SDL_GameControllerClose(controller1);
-                //         controller1 = findController();
-                //     }
-                //     break;
-                // case SDL_CONTROLLERBUTTONDOWN:
-                //     break;
             }
-        }
-
-        if (SDL_GameControllerGetButton(controller1, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X))
-        {
-            // printf("X was pressed!\n");
         }
 
         // Start the ImGui frame
@@ -291,14 +248,21 @@ int main(int argc, char* argv[])
 
         if (ImGui::CollapsingHeader("Backend", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            // Mouse state
+            auto mouse = input->GetMouseState();
+            ImGui::Text("Mouse pos (%i, %i) %s%s", 
+                mouse.x, 
+                mouse.y, 
+                mouse.leftButton? "L":"",
+                mouse.rightButton? "R":"");
 
-            // ImGui::Text("Drawcall count %i", DRAWCALL_COUNT);
+            // Framerate
+            ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
             // Combo (drop-down) for fps settings
             static const char* items[] = { "10", "30", "60", "120", "Uncapped" };
             static int currentItem = 2;
-            if (ImGui::BeginCombo("Target framerate##targetfps", items[currentItem]))
+            if (ImGui::BeginCombo("FPS cap##targetfps", items[currentItem]))
             {
                 for (int i = 0; i < IM_ARRAYSIZE(items); i++)
                 {

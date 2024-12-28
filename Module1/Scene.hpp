@@ -44,6 +44,11 @@ public:
 
 private:
 
+    // WHERE
+    glm::mat4 V;
+    glm::mat4 P;
+    glm::mat4 VP;
+
     // Renderer for rendering imported animated or non-animated models
     eeng::ForwardRendererPtr forwardRenderer;
 
@@ -68,9 +73,10 @@ private:
 
     // Scene objects
     std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
+    // glm_aux::Ray character_view_ray;
 
     // Velocity placeholder
-    float player_velocity {0.1f};
+    float player_velocity {6.0f};
     glm::vec3 player_pos = glm_aux::vec3_000;
 
     // Scene object transformations
