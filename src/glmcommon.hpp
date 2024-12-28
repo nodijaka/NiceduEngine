@@ -148,6 +148,24 @@ namespace glm_aux {
         const glm::vec4& viewport);
 
     /**
+     * @brief Computes a world-space ray from 2D window coordinates, given view, projection, and viewport matrices.
+     *
+     * This function converts the provided window coordinates to normalized device coordinates (NDC) using the inverse
+     * of the viewport matrix, and then unprojects these NDC points into world space using the inverse view-projection matrix.
+     *
+     * @param windowCoordinates The 2D coordinates in window space (e.g., mouse position).
+     * @param viewMatrix The view matrix, representing the camera transformation.
+     * @param projectionMatrix The projection matrix, representing the perspective or orthographic projection.
+     * @param viewportMatrix The matrix that maps NDC coordinates to window coordinates (requires inversion here).
+     * @return Ray The resulting ray in world space, containing an origin and a normalized direction.
+     */
+    Ray world_ray_from_window_coords(
+        const glm::vec2& windowCoordinates,
+        const glm::mat4& viewMatrix,
+        const glm::mat4& projectionMatrix,
+        const glm::mat4& viewportMatrix);
+
+    /**
      * @brief Creates a viewport transformation matrix for mapping normalized device coordinates (NDC)
      *        to the specified viewport rectangle.
      *
