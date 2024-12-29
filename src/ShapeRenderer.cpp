@@ -17,7 +17,7 @@
 
 namespace ShapeRendering {
 
-    #define BUFOFS(offset) ( (GLvoid*)(offset) )
+#define BUFOFS(offset) ( (GLvoid*)(offset) )
 
     const Color4u Color4u::Black = Color4u(0xff000000u);
     const Color4u Color4u::White = Color4u(0xffffffffu);
@@ -53,18 +53,18 @@ namespace ShapeRendering {
             return glm::vec3(mat * glm::vec4(pos, 1.0f));
         }
 
-        inline glm::vec3 transform_normal(const glm::mat4& mat, const glm::vec3& normal) 
+        inline glm::vec3 transform_normal(const glm::mat4& mat, const glm::vec3& normal)
         {
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(mat)));
             return normalMatrix * normal;
         }
 
-        inline glm::mat3 normal_transform(const glm::mat4& mat) 
+        inline glm::mat3 normal_transform(const glm::mat4& mat)
         {
             return glm::transpose(glm::inverse(glm::mat3(mat)));
         }
 
-        glm::mat3 create_basis_from_vector(const glm::vec3& direction) 
+        glm::mat3 create_basis_from_vector(const glm::vec3& direction)
         {
             // Ensure the direction is normalized
             glm::vec3 forward = glm::normalize(direction);
@@ -336,7 +336,7 @@ namespace ShapeRendering {
                 indices.push_back(j + rres);
                 indices.push_back(i + rres);
             }
-        }
+    }
 
     //
     // SPHERE
@@ -931,7 +931,7 @@ namespace ShapeRendering {
             add_line2(it->p, it->p + it->normal * 0.2f, { 0,1,0 });
         }
 #endif
-        }
+    }
 
     void ShapeRenderer::push_cylinder(float h,
         float r)
@@ -1008,7 +1008,7 @@ namespace ShapeRendering {
 
         // Cylinder
         float cyll = arrowl - conel;
-        
+
         push_states(M);
         push_cylinder(cyll, arrow_desc.cylinder_radius);
         pop_states<glm::mat4>();
@@ -1207,7 +1207,7 @@ namespace ShapeRendering {
             push_line(f_points_world[i].xyz(), f_points_world[(i + 1) % 4].xyz());
             push_line(f_points_world[4 + i].xyz(), f_points_world[4 + (i + 1) % 4].xyz());
             push_line(f_points_world[i].xyz(), f_points_world[i + 4].xyz());
-    }
+        }
     }
 #endif
 
@@ -1334,7 +1334,7 @@ namespace ShapeRendering {
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE); //glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
-    }
+        }
 #endif
         //        glPolygonOffset(-1, -1);
 
@@ -1454,7 +1454,7 @@ namespace ShapeRendering {
                 void* destptr = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
                 memcpy((char*)destptr + ofs, data, size);
                 glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-        }
+            }
 #endif
 
             // Uniforms
@@ -1521,7 +1521,7 @@ namespace ShapeRendering {
             glBindVertexArray(0);
             glUseProgram(0);
             CheckAndThrowGLErrors();
-}
+        }
 #endif
 
 
@@ -1637,7 +1637,7 @@ namespace ShapeRendering {
 #ifdef GL_POLYGON_MODE
         //    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
 #endif
-}
+    }
 
     void ShapeRenderer::post_render()
     {
@@ -1662,4 +1662,89 @@ namespace ShapeRendering {
         // point_array.clear(); // Clear keys as well?
     }
 
-    } // namespace gl_batch_renderer
+    void DemoDraw(ShapeRendererPtr renderer)
+    {
+        // + AABB
+
+        float xpos = 0.0f;
+
+        // Push quads
+        {
+            glm::vec3 points[4]{ {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f} };
+            renderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
+
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 0.5f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
+            renderer->push_quad(points, glm_aux::vec3_001);
+            renderer->pop_states<glm::mat4>();
+
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2.0f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
+            renderer->push_quad_wireframe();
+            renderer->pop_states<glm::mat4>();
+
+            renderer->pop_states<ShapeRendering::Color4u>();
+        }
+
+        // Push cube
+        {
+            renderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
+
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2.0f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
+            renderer->push_cube();
+            renderer->pop_states<glm::mat4>();
+
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2.0f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
+            renderer->push_cube_wireframe();
+            renderer->pop_states<glm::mat4>();
+
+            renderer->pop_states<ShapeRendering::Color4u>();
+        }
+
+        // Push grid
+        {
+            renderer->push_states(ShapeRendering::Color4u{ 0xff808080 });
+            renderer->push_grid(glm::vec3(0.0f, 1.0e-6f, 0.0f), 20.0f, 21);
+            renderer->pop_states<ShapeRendering::Color4u>();
+        }
+
+        // Cones, Cylinders
+        {
+            const auto arrowdesc = ShapeRendering::ArrowDescriptor
+            {
+                .cone_fraction = 0.2,
+                .cone_radius = 0.15f,
+                .cylinder_radius = 0.075f
+            };
+            renderer->push_states(glm_aux::T(glm::vec3(xpos += 2.0f, 0.0f, 0.0f)));
+            renderer->push_basis(arrowdesc, glm::vec3(1.0f, 2.0f, 3.0f));
+            renderer->pop_states<glm::mat4>();
+        }
+
+        // Points
+        {
+            renderer->push_states(ShapeRendering::Color4u::Red);
+            renderer->push_point(glm::vec3(xpos += 2.0f, 1.0f, 0.0f), 1);
+            renderer->pop_states<ShapeRendering::Color4u>();
+
+            renderer->push_states(ShapeRendering::Color4u::Green);
+            renderer->push_point(glm::vec3(xpos, 2.0f, 0.0f), 2);
+            renderer->pop_states<ShapeRendering::Color4u>();
+
+            renderer->push_states(ShapeRendering::Color4u::Blue);
+            renderer->push_point(glm::vec3(xpos, 3.0f, 0.0f), 4);
+            renderer->pop_states<ShapeRendering::Color4u>();
+
+            renderer->push_states(ShapeRendering::Color4u::White);
+            renderer->push_point(glm::vec3(xpos, 4.0f, 0.0f), 8);
+            renderer->pop_states<ShapeRendering::Color4u>();
+        }
+
+        // Circle ring
+        {
+            renderer->push_states(ShapeRendering::Color4u::Cyan);
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
+            renderer->push_circle_ring<8>();
+            renderer->pop_states<ShapeRendering::Color4u, glm::mat4>();
+        }
+    }
+
+} // namespace ShapeRendering

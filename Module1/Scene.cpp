@@ -307,72 +307,9 @@ void Scene::render(
     shapeRenderer->push_AABB(grass_aabb.min, grass_aabb.max);
     shapeRenderer->pop_states<ShapeRendering::Color4u>();
 
-    // Push quads
-    {
-        glm::vec3 points[4]{ {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f} };
-        shapeRenderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
-
-        shapeRenderer->push_states(glm_aux::TS(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
-        shapeRenderer->push_quad(points, glm_aux::vec3_001);
-        shapeRenderer->pop_states<glm::mat4>();
-
-        shapeRenderer->push_states(glm_aux::TS(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
-        shapeRenderer->push_quad_wireframe();
-        shapeRenderer->pop_states<glm::mat4>();
-
-        shapeRenderer->pop_states<ShapeRendering::Color4u>();
-    }
-
-    // Push cube
-    {
-        shapeRenderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
-        shapeRenderer->push_states(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f)));
-
-        shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 4.0f, 0.0f)));
-        shapeRenderer->push_cube();
-
-        shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 1.5f, 0.0f)));
-        shapeRenderer->push_cube_wireframe();
-
-        shapeRenderer->pop_states<ShapeRendering::Color4u, glm::mat4, glm::mat4, glm::mat4>();
-    }
-
-    // Push grid
-    {
-        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xff808080 });
-        shapeRenderer->push_grid(glm::vec3(0.0f, 1.0e-6f, 0.0f), 20.0f, 21);
-        shapeRenderer->pop_states<ShapeRendering::Color4u>();
-    }
-
-    // Cones, Cylinders
-    {
-        const auto arrowdesc = ShapeRendering::ArrowDescriptor
-        {
-            .cone_fraction = 0.2,
-            .cone_radius = 0.15f,
-            .cylinder_radius = 0.075f
-        };
-        shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, 2.0f)));
-        shapeRenderer->push_basis(arrowdesc, glm::vec3(5.0f, 1.0f, 3.0f));
-        shapeRenderer->pop_states<glm::mat4>();
-    }
-
-    // Points
-    {
-        shapeRenderer->push_states(ShapeRendering::Color4u::Red);
-        shapeRenderer->push_point(glm::vec3(2.0f, 1.0f, 0.0f), 4);
-        shapeRenderer->push_point(glm::vec3(2.0f, 2.0f, 0.0f), 4);
-        shapeRenderer->push_point(glm::vec3(2.0f, 3.0f, 0.0f), 4);
-        shapeRenderer->pop_states<ShapeRendering::Color4u>();
-    }
-
-    // Circle ring
-    {
-        shapeRenderer->push_states(ShapeRendering::Color4u::Blue);
-        shapeRenderer->push_states(glm_aux::TS(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
-        shapeRenderer->push_circle_ring<8>();
-        shapeRenderer->pop_states<ShapeRendering::Color4u, glm::mat4>();
-    }
+    shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, -5.0f)));
+    ShapeRendering::DemoDraw(shapeRenderer);
+    shapeRenderer->pop_states<glm::mat4>();
 
     shapeRenderer->render(matrices.P * matrices.V);
     shapeRenderer->post_render();

@@ -480,8 +480,13 @@ namespace ShapeRendering {
         void post_render();
     };
 
+
 }
 
 using ShapeRendererPtr = std::shared_ptr<ShapeRendering::ShapeRenderer>;
 
-#endif /* debug_renderer_h */
+namespace ShapeRendering {
+    void DemoDraw(ShapeRendererPtr renderer);
+}
+
+#endif
