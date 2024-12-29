@@ -180,7 +180,7 @@ namespace glm_aux {
      * @return Ray The resulting ray in world space, containing an origin and a normalized direction.
      */
     Ray world_ray_from_window_coords(
-        const glm::vec2& window_coords,
+        const glm::ivec2& window_coords,
         const glm::mat4& V,
         const glm::mat4& P,
         const glm::mat4& VP);
@@ -193,7 +193,7 @@ namespace glm_aux {
     bool window_coords_from_world_pos(
         const glm::vec3& world_pos,
         const glm::mat4& VP_PROJ_V,
-        glm::vec2& window_coord);
+        glm::ivec2& window_coords);
 
 }
 

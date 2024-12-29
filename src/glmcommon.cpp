@@ -235,7 +235,7 @@ namespace glm_aux {
     }
 
     Ray world_ray_from_window_coords(
-        const glm::vec2& window_coords,
+        const glm::ivec2& window_coords,
         const glm::mat4& V,
         const glm::mat4& P,
         const glm::mat4& VP)
@@ -273,7 +273,7 @@ namespace glm_aux {
     bool window_coords_from_world_pos(
         const glm::vec3& world_pos,
         const glm::mat4& VP_PROJ_V,
-        glm::vec2& window_coord)
+        glm::ivec2& window_coords)
     {
         // Transform World -> View -> Clip -> NDC (unprojected) -> Screen-space (unprojected)
         auto pos_ss = VP_PROJ_V * glm::vec4(world_pos, 1.0f);
@@ -282,7 +282,10 @@ namespace glm_aux {
         if (pos_ss.w < 0) return false;
 
         // Divide by the w-component to project to Screen-space
-        window_coord = glm::vec2(pos_ss) * (1.0f / pos_ss.w);
+        int window_x = static_cast<int>(std::round(pos_ss.x / pos_ss.w));
+        int window_y = static_cast<int>(std::round(pos_ss.y / pos_ss.w));
+        //window_coords = glm::ivec2(pos_ss.x / pos_ss.w, pos_ss.y / pos_ss.w);
+        window_coords = glm::ivec2(window_x, window_y);
 
         return true;
     }

@@ -2,52 +2,45 @@
 #define Scene_hpp
 #pragma once
 
-// #include <entt/entt.hpp> // -> Scene source
 #include <entt/fwd.hpp>
 #include "SceneBase.h"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 #include "ShapeRenderer.hpp"
 
-/// @brief TODO
+/// @brief A Scene may hold, update and render 3D geometry and GUI elements
 class Scene : public eeng::SceneBase
 {
 public:
-
-    /// @brief TODO
+    /// @brief For scene resource initialization
     /// @return 
     bool init() override;
 
-    /// @brief TODO
-    /// @param time_s 
-    /// @param deltaTime_s 
+    /// @brief General update method that is called each frame
+    /// @param time Total time elapsed in seconds
+    /// @param deltaTime Time elapsed since the last frame
+    /// @param input Input from mouse, keyboard and controllers
     void update(
-        float time_s,
-        float deltaTime_s,
+        float time,
+        float deltaTime,
         InputManagerPtr input) override;
 
-    /// @brief 
+    /// @brief For rendering of GUI elements
     void renderUI() override;
 
-    /// @brief TODO
-    /// @param time_s 
-    /// @param screenWidth 
-    /// @param screenHeight 
-    /// @param renderer 
+    /// @brief For rendering of scene contents
+    /// @param time Total time elapsed in seconds
+    /// @param screenWidth Current width of the window in pixels
+    /// @param screenHeight Current height of the window in pixels
     void render(
-        float time_s,
-        int screenWidth,
-        int screenHeight) override;
+        float time,
+        int windowWidth,
+        int windowHeight) override;
 
-    /// @brief TODO
+    /// @brief For destruction of scene resources
     void destroy() override;
 
 private:
-
-    // WHERE
-    glm::mat4 V;
-    glm::mat4 P;
-    glm::mat4 VP;
 
     // Renderer for rendering imported animated or non-animated models
     eeng::ForwardRendererPtr forwardRenderer;
@@ -58,26 +51,45 @@ private:
     // Entity registry - to use in labs
     std::shared_ptr<entt::registry> entity_registry;
 
-    // Camera properties
-    glm::vec3 eyePos, eyeAt = glm_aux::vec3_000, eyeUp = glm_aux::vec3_010;
-    const float nearPlane = 1.0f, farPlane = 500.0f;
-    //
-    float sensitivity = 0.005f;
-    float yaw = 0.0f;   // Horizontal angle (radians)
-    float pitch = -glm::pi<float>()/8; // Vertical angle (radians)
-    float radius = 15.0f;
-    glm::vec2 mouse_xy_prev{ -1.0f, -1.0f };
+    // Matrices for view, projection and viewport
+    struct Matrices
+    {
+        glm::mat4 V;
+        glm::mat4 P;
+        glm::mat4 VP;
+        glm::ivec2 windowSize;
+    } matrices;
+
+    // Basic third-person camera
+    struct Camera
+    {
+        glm::vec3 pos, lookAt = glm_aux::vec3_000, up = glm_aux::vec3_010;
+        const float nearPlane = 1.0f, farPlane = 500.0f;
+
+        float yaw = 0.0f;   // Horizontal angle (radians)
+        float pitch = -glm::pi<float>() / 8; // Vertical angle (radians)
+        float distance = 15.0f;
+
+        float sensitivity = 0.005f;
+        glm::ivec2 mouse_xy_prev{ -1, -1 };
+    } camera;
 
     // Light properties
-    glm::vec3 lightPos, lightColor{ 1.0f, 1.0f, 0.8f };
+    struct PointLight
+    {
+        glm::vec3 pos;
+        glm::vec3 color{ 1.0f, 1.0f, 0.8f };
+    } pointlight;
+
+    // (Placeholder) Player data
+    struct Player
+    {
+        glm::vec3 pos = glm_aux::vec3_000;
+        float velocity{ 6.0f };
+    } player;
 
     // Scene objects
     std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
-    // glm_aux::Ray character_view_ray;
-
-    // Velocity placeholder
-    float player_velocity {6.0f};
-    glm::vec3 player_pos = glm_aux::vec3_000;
 
     // Scene object transformations
     glm::mat4 characterWorldMatrix1, characterWorldMatrix2, characterWorldMatrix3;
@@ -87,12 +99,16 @@ private:
     float characterAnimSpeed = 1.0f;
     int drawcallCount = 0;
 
-    /// @brief Update camera position based on mouse movement
-    /// @param deltaX 
-    /// @param deltaY 
+    /// @brief Placeholder system for updating the camera position based on inputs
+    /// @param input Input from mouse, keyboard and controllers
     void updateCamera(
-        float deltaX, 
-        float deltaY);
+        InputManagerPtr input);
+
+    /// @brief Placeholder system for updating the 'player' based on inputs
+    /// @param deltaTime 
+    void updatePlayer(
+        float deltaTime,
+        InputManagerPtr input);
 };
 
 #endif
