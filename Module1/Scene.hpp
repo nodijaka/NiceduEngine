@@ -63,14 +63,19 @@ private:
     // Basic third-person camera
     struct Camera
     {
-        glm::vec3 pos, lookAt = glm_aux::vec3_000, up = glm_aux::vec3_010;
-        const float nearPlane = 1.0f, farPlane = 500.0f;
+        glm::vec3 lookAt = glm_aux::vec3_000;   // Point of interest
+        glm::vec3 up = glm_aux::vec3_010;       // Local up-vector
+        float distance = 15.0f;                 // Distance to point-of-interest
+        float sensitivity = 0.005f;             // Mouse sensitivity
+        const float nearPlane = 1.0f;           // Rendering near plane
+        const float farPlane = 500.0f;          // Rendering far plane
 
-        float yaw = 0.0f;   // Horizontal angle (radians)
-        float pitch = -glm::pi<float>() / 8; // Vertical angle (radians)
-        float distance = 15.0f;
+        // Position and view angles (computed when camera is updated)
+        float yaw = 0.0f;                       // Horizontal angle (radians)
+        float pitch = -glm::pi<float>() / 8;    // Vertical angle (radians)
+        glm::vec3 pos;                          // Camera position
 
-        float sensitivity = 0.005f;
+        // Previous mouse position
         glm::ivec2 mouse_xy_prev{ -1, -1 };
     } camera;
 
@@ -86,14 +91,21 @@ private:
     {
         glm::vec3 pos = glm_aux::vec3_000;
         float velocity{ 6.0f };
+
+        // Local vectors & view ray (computed when camera/player is updated)
+        glm::vec3 fwd, right;
+        glm_aux::Ray viewRay;
     } player;
 
-    // Scene objects
+    // Scene meshes
     std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
 
-    // Scene object transformations
+    // Scene entity transformations
     glm::mat4 characterWorldMatrix1, characterWorldMatrix2, characterWorldMatrix3;
     glm::mat4 grassWorldMatrix, horseWorldMatrix;
+
+    // Scene entity AABBs
+    eeng::AABB character_aabb1, character_aabb2, character_aabb3, horse_aabb, grass_aabb;
 
     int characterAnimIndex = -1;
     float characterAnimSpeed = 1.0f;

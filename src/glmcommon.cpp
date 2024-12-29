@@ -284,7 +284,6 @@ namespace glm_aux {
         // Divide by the w-component to project to Screen-space
         int window_x = static_cast<int>(std::round(pos_ss.x / pos_ss.w));
         int window_y = static_cast<int>(std::round(pos_ss.y / pos_ss.w));
-        //window_coords = glm::ivec2(pos_ss.x / pos_ss.w, pos_ss.y / pos_ss.w);
         window_coords = glm::ivec2(window_x, window_y);
 
         return true;

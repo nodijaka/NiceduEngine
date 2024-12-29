@@ -2,6 +2,7 @@
 #include <entt/entt.hpp> // -> Scene source
 #include "glmcommon.hpp"
 #include "imgui.h"
+#include "Log.hpp"
 #include "Scene.hpp"
 
 bool Scene::init()
@@ -118,13 +119,22 @@ void Scene::update(
         time * glm::radians(50.0f), { 0, 1, 0 },
         { 0.03f, 0.03f, 0.03f });
 
+    // Intersect player view ray with AABBs of other objects 
+    glm_aux::intersect_ray_AABB(player.viewRay, character_aabb2.min, character_aabb2.max);
+    glm_aux::intersect_ray_AABB(player.viewRay, character_aabb3.min, character_aabb3.max);
+    glm_aux::intersect_ray_AABB(player.viewRay, horse_aabb.min, horse_aabb.max);
 
-    // Compute world ray from window position (e.g. mouse), to use for picking or such
+    // We can also compute a ray from the current mouse position,
+    // to use for object picking and such ...
+    if (input->GetMouseState().rightButton)
     {
-        glm::ivec2 mousePos = matrices.windowSize / 2; // middle of the window as placeholder
-        auto ray = glm_aux::world_ray_from_window_coords(mousePos, matrices.V, matrices.P, matrices.VP);
-        // std::cout << "ray origin " << glm_aux::to_string(ray.origin)
-        //     << ", ray dir " << glm_aux::to_string(ray.dir) << ")\n";
+        glm::ivec2 windowPos(camera.mouse_xy_prev.x, matrices.windowSize.y - camera.mouse_xy_prev.y);
+        auto ray = glm_aux::world_ray_from_window_coords(windowPos, matrices.V, matrices.P, matrices.VP);
+        // Intersect with e.g. AABBs ...
+
+        eeng::Log::log("Picking ray origin = %s, dir = %s",
+            glm_aux::to_string(ray.origin).c_str(),
+            glm_aux::to_string(ray.dir).c_str());
     }
 }
 
@@ -168,7 +178,7 @@ void Scene::renderUI()
 
         // In-world position label
         const auto VP_P_V = matrices.VP * matrices.P * matrices.V;
-        auto world_pos = glm::vec3(characterWorldMatrix1[3]);
+        auto world_pos = glm::vec3(horseWorldMatrix[3]);
         glm::ivec2 window_coords;
         if (glm_aux::window_coords_from_world_pos(world_pos, VP_P_V, window_coords))
         {
@@ -205,9 +215,6 @@ void Scene::render(
     int windowHeight)
 {
     matrices.windowSize = glm::ivec2(windowWidth, windowHeight);
-
-    // If we want to draw AABBs
-    eeng::AABB character_aabb1, character_aabb2, character_aabb3, horse_aabb, grass_aabb;
 
     // Projection matrix
     const float aspectRatio = float(windowWidth) / windowHeight;
@@ -248,30 +255,20 @@ void Scene::render(
     // End rendering pass
     drawcallCount = forwardRenderer->endPass();
 
-    // Character view ray (not in render())
-    auto fwd = glm::vec3(glm_aux::R(camera.yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-    glm_aux::Ray character_view_ray{ player.pos + glm::vec3(0.0f, 2.0f, 0.0f), fwd };
-    bool hit = false;
-    hit |= glm_aux::intersect_ray_AABB(character_view_ray, character_aabb2.min, character_aabb2.max);
-    hit |= glm_aux::intersect_ray_AABB(character_view_ray, character_aabb3.min, character_aabb3.max);
-    hit |= glm_aux::intersect_ray_AABB(character_view_ray, horse_aabb.min, horse_aabb.max);
-    if (hit)
+    // Draw player view ray
+    if (player.viewRay)
     {
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0xff00ff00 });
-        shapeRenderer->push_line(character_view_ray.origin, character_view_ray.point_of_contact());
+        shapeRenderer->push_line(player.viewRay.origin, player.viewRay.point_of_contact());
     }
     else
     {
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0xffffffff });
-        shapeRenderer->push_line(character_view_ray.origin, character_view_ray.origin + character_view_ray.dir * 100.0f);
+        shapeRenderer->push_line(player.viewRay.origin, player.viewRay.origin + player.viewRay.dir * 100.0f);
     }
     shapeRenderer->pop_states<ShapeRendering::Color4u>();
 
-    // Just a line
-    glm::vec3 p0{ 0.0f, 0.0f, 0.0f }, p1{ 1.0f, 1.0f, 0.0f };
-    shapeRenderer->push_line(p0, p1);
-
-    // Bases
+    // Draw object bases
     {
         shapeRenderer->push_basis_basic(characterWorldMatrix1, 1.0f);
         shapeRenderer->push_basis_basic(characterWorldMatrix2, 1.0f);
@@ -280,37 +277,27 @@ void Scene::render(
         shapeRenderer->push_basis_basic(horseWorldMatrix, 1.0f);
     }
 
-#if 0
+    // Draw AABBs
     {
-        // const ShapeRendering::ArrowDescriptor arrowdesc
-        // {
-        //     .cone_fraction = 0.2,
-        //     .cone_radius = 0.05f,
-        //     .cylinder_radius = 0.025f
-        // };
-        const auto arrowdesc = ShapeRendering::ArrowDescriptor
-        {
-            .cone_fraction = 0.2,
-            .cone_radius = 0.15f,
-            .cylinder_radius = 0.075f
-        };
-        shapeRenderer.push_basis(grassWorldMatrix, 1.0f, arrowdesc);
+        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
+        shapeRenderer->push_AABB(character_aabb1.min, character_aabb1.max);
+        shapeRenderer->push_AABB(character_aabb2.min, character_aabb2.max);
+        shapeRenderer->push_AABB(character_aabb3.min, character_aabb3.max);
+        shapeRenderer->push_AABB(horse_aabb.min, horse_aabb.max);
+        shapeRenderer->push_AABB(grass_aabb.min, grass_aabb.max);
+        shapeRenderer->pop_states<ShapeRendering::Color4u>();
+    }
+
+#if 1
+    // Demo draw other shapes
+    {
+        shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, -5.0f)));
+        ShapeRendering::DemoDraw(shapeRenderer);
+        shapeRenderer->pop_states<glm::mat4>();
     }
 #endif
 
-    // Draw AABBs
-    shapeRenderer->push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
-    shapeRenderer->push_AABB(character_aabb1.min, character_aabb1.max);
-    shapeRenderer->push_AABB(character_aabb2.min, character_aabb2.max);
-    shapeRenderer->push_AABB(character_aabb3.min, character_aabb3.max);
-    shapeRenderer->push_AABB(horse_aabb.min, horse_aabb.max);
-    shapeRenderer->push_AABB(grass_aabb.min, grass_aabb.max);
-    shapeRenderer->pop_states<ShapeRendering::Color4u>();
-
-    shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, -5.0f)));
-    ShapeRendering::DemoDraw(shapeRenderer);
-    shapeRenderer->pop_states<glm::mat4>();
-
+    // Draw shape batches
     shapeRenderer->render(matrices.P * matrices.V);
     shapeRenderer->post_render();
 }
@@ -353,18 +340,20 @@ void Scene::updatePlayer(
     bool D = input->IsKeyPressed(Key::D);
 
     // Compute vectors in the local space of the player
-    auto fwd = glm::vec3(glm_aux::R(camera.yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-    auto right = glm::cross(fwd, glm_aux::vec3_010);
+    player.fwd = glm::vec3(glm_aux::R(camera.yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+    player.right = glm::cross(player.fwd, glm_aux::vec3_010);
 
     // Compute the total movement as a 3D vector
     auto movement =
-        fwd * player.velocity * deltaTime * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
-        right * player.velocity * deltaTime * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
+        player.fwd * player.velocity * deltaTime * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
+        player.right * player.velocity * deltaTime * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
 
-    // Update player position
+    // Update player position and forward view ray
     player.pos += movement;
+    player.viewRay = glm_aux::Ray{ player.pos + glm::vec3(0.0f, 2.0f, 0.0f), player.fwd };
 
-    // Update the camera to track the player
+    // Update camera to track the player
     camera.lookAt += movement;
     camera.pos += movement;
+
 }

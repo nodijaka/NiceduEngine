@@ -5,6 +5,7 @@
 //
 
 #ifndef ShapeRenderer_h
+
 #define ShapeRenderer_h
 
 #include <vector>
@@ -308,20 +309,20 @@ namespace ShapeRendering {
         GLuint point_vao = 0;
 
         StateStack<DepthTest, BackfaceCull, glm::mat4, Color4u> state_stack;
-        
+
         bool initialized = false;
 
     public:
         void init();
 
         template<typename... Args>
-        void push_states(Args&&... args) 
+        void push_states(Args&&... args)
         {
             state_stack.push(std::forward<Args>(args)...);
         }
 
         template<typename... Args>
-        void pop_states() 
+        void pop_states()
         {
             state_stack.pop<Args...>();
         }
@@ -465,11 +466,13 @@ namespace ShapeRendering {
             const ArrowDescriptor& arrow_desc,
             const glm::vec3 arrow_lengths = glm_aux::vec3_111);
 
-        void push_point(
+        void push_point(const glm::vec3& p, unsigned size);
+
+        void push_point_direct(
             const glm::vec3& p,
             unsigned size);
 
-        void push_points(
+        void push_points_direct(
             const PointVertex* p,
             unsigned nbr_points,
             unsigned size);
@@ -479,8 +482,6 @@ namespace ShapeRendering {
 
         void post_render();
     };
-
-
 }
 
 using ShapeRendererPtr = std::shared_ptr<ShapeRendering::ShapeRenderer>;

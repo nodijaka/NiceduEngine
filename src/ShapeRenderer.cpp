@@ -492,7 +492,6 @@ namespace ShapeRendering {
 
         const GLchar* poly_fshader =
             "#version 410 core\n"
-            //    "uniform vec3 color;"
             "uniform float ambient_ratio;"
             ""
             "in vec3 pos, normal;"
@@ -503,7 +502,6 @@ namespace ShapeRendering {
             "   vec3 l = vec3(1000,1000,1000);"
             "   float lambert = ambient_ratio + (1.0-ambient_ratio) * dot(normal, normalize(l-pos));"
             "   fragcolor = vec4(color.xyz*lambert, color.w);"
-            //"   fragcolor = vec4(normal*0.5+0.5,1);"
             "}";
 
         const GLchar* line_vshader =
@@ -521,13 +519,11 @@ namespace ShapeRendering {
 
         const GLchar* line_fshader =
             "#version 410 core\n"
-            //    "uniform vec3 color;"
             "in vec4 color;"
             "out vec4 fragcolor;"
             "void main()"
             "{"
             "   fragcolor = color;"
-            //    "   fragcolor = vec4(color,1);"
             "}";
 
         const GLchar* point_vshader =
@@ -571,7 +567,6 @@ namespace ShapeRendering {
         // Init polygon buffers
         //
 
-        //glUseProgram(lambert_shader); // because we use
         glGenVertexArrays(1, &polygon_vao);
         glGenBuffers(1, &polygon_vbo);
         glGenBuffers(1, &polygon_ibo);
@@ -679,7 +674,6 @@ namespace ShapeRendering {
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
         for (int i = 0; i < 4; i++)
-            //polygon_vertices.push_back(PolyVertex{ points[i], n, color });
             polygon_vertices.emplace_back(transform_pos(M, points[i]), transform_vec(Mn, n), color);
 
         polygon_indices.insert(
@@ -835,13 +829,8 @@ namespace ShapeRendering {
         const LineBatch ldc{ GL_LINES, depth_test };
         unsigned vertex_ofs = (unsigned)line_vertices.size();
 
-        //    if (M)
-        //    {
         for (int i = 0; i < nbr_vertices; i++)
-            // line_vertices.push_back({ xyz(transform * xyz1(vertices[i])), color });
-            //line_vertices.push_back(LineVertex { glm::vec3(transform * glm::vec4(vertices[i], 1.0f)), color });
             line_vertices.emplace_back(glm::vec3(transform * glm::vec4(vertices[i], 1.0f)), color);
-
 
         for (int i = 0; i < nbr_vertices - 1; i++)
         {
@@ -878,8 +867,6 @@ namespace ShapeRendering {
         const float conel = glm::length(conev);
 
         // Main transform
-        // const mat4f R = mat4f(mat3f::base(conev));
-        // const mat4f M = mat4f::translation(from) * R;
         const glm::mat4 R = glm::mat4(create_basis_from_vector(conev));
         const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
         const glm::mat4 M = T * R;
@@ -897,8 +884,6 @@ namespace ShapeRendering {
         const auto vertex_ofs = polygon_vertices.size();
         GLsizei index_ofs = (GLsizei)polygon_indices.size();
 
-        //const mat4f N = M * mat4f::scaling(r, r, h);
-        //mat4f Nit = N.inverse(); Nit.transpose();
         glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(r, r, h));
         glm::mat4 N = M * S;
         glm::mat4 Nit = glm::transpose(glm::inverse(N));
@@ -939,10 +924,6 @@ namespace ShapeRendering {
         const auto [color, depth_test, cull_face, M] = get_states<Color4u, DepthTest, BackfaceCull, glm::mat4>();
         const auto vertex_ofs = polygon_vertices.size();
         const auto index_ofs = polygon_indices.size();
-
-        // mat4f N = M * mat4f::scaling(r, r, h);
-        // mat4f Nit = N; // Scaling is uniform in the plane of all normals (xy), so inverse-transform not needed.
-        // //        mat4f Nit = N.inverse(); Nit.transpose();
 
         glm::mat4 N = M * glm::scale(glm::mat4(1.0f), glm::vec3(r, r, h));
         glm::mat4 Nit = N;
@@ -988,8 +969,6 @@ namespace ShapeRendering {
         float arrowl = glm::length(arrowv);
 
         // Main arrow transform
-        // mat4f R = mat4f(mat3f::base(arrowv));
-        // mat4f M = mat4f::translation(from) * R;
         const glm::mat4 R = glm::mat4(create_basis_from_vector(arrowv));
         const glm::mat4 T = glm::translate(glm::mat4(1.0f), from);
         const glm::mat4 M = T * R;
@@ -999,7 +978,6 @@ namespace ShapeRendering {
         // Skip cone part if arrow is very short
         if (conel > 0.0f)
         {
-            // mat4f Mcone = M * mat4f::translation({ 0,0,arrowl - conel });
             const glm::mat4 Mcone = M * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, arrowl - conel));
             push_states(Mcone);
             push_cone(conel, arrow_desc.cone_radius);
@@ -1213,63 +1191,33 @@ namespace ShapeRendering {
 
     void ShapeRenderer::push_basis_basic(const glm::mat4& basis, float arrlen)
     {
-        // const vec3f wpos = basis.column(3).xyz();
         const glm::vec3 wpos = glm::vec3(basis[3]);
 
         push_states(Color4u::Red);
-        // push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
         push_line(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        // push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
         push_line(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Blue);
-        // push_line(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen);
         push_line(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen);
         pop_states<Color4u>();
     }
 
     void ShapeRenderer::push_basis_basic2d(const glm::mat4& basis, float arrlen)
     {
-        // const vec3f wpos = basis.column(3).xyz();
         const glm::vec3 wpos = glm::vec3(basis[3]);
 
         push_states(Color4u::Red);
-        // push_line(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen);
         push_line(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen);
         pop_states<Color4u>();
 
         push_states(Color4u::Lime);
-        // push_line(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen);
         push_line(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen);
         pop_states<Color4u>();
     }
-
-    // void ShapeRenderer::push_basis(const glm::mat4& basis,
-    //     float arrlen,
-    //     const ArrowDescriptor& arrdesc)
-    // {
-    //     // const vec3f wpos = basis.column(3).xyz();
-    //     const glm::vec3 wpos = glm::vec3(basis[3]);
-
-    //     push_states(Color4u::Red);
-    //     // push_arrow(wpos, wpos + normalize(basis.col[0].xyz()) * arrlen, arrdesc, ray);
-    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[0])) * arrlen, arrdesc);
-    //     pop_states<Color4u>();
-
-    //     push_states(Color4u::Lime);
-    //     // push_arrow(wpos, wpos + normalize(basis.col[1].xyz()) * arrlen, arrdesc, ray);
-    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[1])) * arrlen, arrdesc);
-    //     pop_states<Color4u>();
-
-    //     push_states(Color4u::Blue);
-    //     // push_arrow(wpos, wpos + normalize(basis.col[2].xyz()) * arrlen, arrdesc, ray);
-    //     push_arrow(wpos, wpos + glm::normalize(glm::vec3(basis[2])) * arrlen, arrdesc);
-    //     pop_states<Color4u>();
-    // }
 
     void ShapeRenderer::push_basis(
         const ArrowDescriptor& arrow_desc,
@@ -1290,12 +1238,19 @@ namespace ShapeRendering {
 
     void ShapeRenderer::push_point(const glm::vec3& p, unsigned size)
     {
+        const auto [color, depth_test, M] = get_states<Color4u, DepthTest, glm::mat4>();
+        const PointBatch dc{ size, depth_test };
+        point_hash[dc].push_back(PointVertex{ transform_pos(M, p), color });
+    }
+
+    void ShapeRenderer::push_point_direct(const glm::vec3& p, unsigned size)
+    {
         const auto [color, depth_test] = get_states<Color4u, DepthTest>();
         const PointBatch dc{ size, depth_test };
         point_hash[dc].push_back(PointVertex{ p, color });
     }
 
-    void ShapeRenderer::push_points(const PointVertex* points,
+    void ShapeRenderer::push_points_direct(const PointVertex* points,
         unsigned nbr_points,
         unsigned size)
     {
@@ -1308,17 +1263,8 @@ namespace ShapeRendering {
             points + nbr_points);
     }
 
-    void ShapeRenderer::render(const glm::mat4& PROJ_VIEW /* Proj * WorldToView */)
+    void ShapeRenderer::render(const glm::mat4& PROJ_VIEW)
     {
-        //push_arrow({1,2,0}, {1,0,0}, YELLOW);
-        //push_sphere(1, 1, linalg::mat4f_identity, BLUE);
-        //add_cylinder(5, 0.5, mat4f::translation(-2, 2, 0), BLUE);
-        //add_cone2(5, 0.5, mat4f::translation(0, 2, 0), BLUE);
-        //push_helix(3, 0.5, 0.1, 6, mat4f::translation(0, 1, 3));
-        //push_helix({1,1,0}, {4,4,1}, 0.5, 0.1, 3);
-        //push_cone({1,1,0}, {4,4,1}, 0.5, LIME);
-        //push_cube_wireframe(mat4f::translation(0,2,0)*mat4f::scaling(2), {1,1,1});
-
         assert(initialized);
         framenbr++;
 
@@ -1339,9 +1285,7 @@ namespace ShapeRendering {
         //        glPolygonOffset(-1, -1);
 
 #if 1
-    //
-    // STORE STATE
-    //
+    // Store state
 #ifdef GL_POLYGON_MODE
 //    GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
 #endif
@@ -1357,9 +1301,6 @@ namespace ShapeRendering {
         GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
         //    GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
 
-            //
-            // IMGUI STATE
-            //
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1374,9 +1315,8 @@ namespace ShapeRendering {
 
 
 #if 1
-    //
-    // Render polygons
-    //
+    // Render polygon batches
+
         if (polygon_hash.size())
         {
             glUseProgram(lambert_shader);
@@ -1524,18 +1464,9 @@ namespace ShapeRendering {
         }
 #endif
 
-
-        // test triangle
-        /*
-         index_range_t irange = { 0, 3 };
-         //glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, BUFOFS(0 * sizeof(GLuint)));
-         glDrawElements(GL_TRIANGLES, irange.size, GL_UNSIGNED_INT, BUFOFS(irange.start * sizeof(GLuint)));
-         */
-
 #if 1
-         //
-         // Render lines
-         //
+        // Render lines batches
+
         if (line_hash.size())
         {
             glUseProgram(line_shader);
@@ -1580,16 +1511,10 @@ namespace ShapeRendering {
 #endif
 
 #if 1
-        //
-        // Render points
-        //
-
-        // If point array is empty, glDrawElements for depth rendering crashes. Why!?
-        //push_point({0,0,0}, {1,0,0}, 1);
+        // Render point batches
 
         if (point_hash.size())
         {
-            //        glDisable(GL_DEPTH_TEST);
             glUseProgram(point_shader);
             glBindVertexArray(point_vao);
 
@@ -1620,12 +1545,9 @@ namespace ShapeRendering {
         }
 #endif
         glUseProgram(0);
-        //    glEnable(GL_DEPTH_TEST);
 
 
-            //
-            // RESTORE STATE
-            //
+        // Restore state
         glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
         glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
         if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
@@ -1641,39 +1563,44 @@ namespace ShapeRendering {
 
     void ShapeRenderer::post_render()
     {
-        // Todo - move clear stuff
-
         polygon_vertices.clear();
         polygon_indices.clear();
         polygon_hash.clear();
 
         line_vertices.clear();
-        for (auto& it : line_hash) // Clear key vectors
+        for (auto& it : line_hash)
             it.second.clear();
-        // lines.clear(); // Clear keys as well? Keys are likely to be reused so why really.
 
         for (auto& it : point_hash)
-        {
-            //            printf("%d ", it.second.size());
             it.second.clear();
-        }
-        //        printf("\n");
-        //        printf("%d\n", point_hash.size());
-        // point_array.clear(); // Clear keys as well?
     }
 
     void DemoDraw(ShapeRendererPtr renderer)
     {
-        // + AABB
-
         float xpos = 0.0f;
+
+        // AABB
+        {
+            renderer->push_states(ShapeRendering::Color4u::Cyan, glm_aux::T(glm::vec3(xpos, 1.0f, 0.0f)));
+            renderer->push_AABB(glm::vec3(xpos, 0.0f, 0.0f), glm::vec3(xpos + 1.0f, 1.0f, 1.0f));
+            renderer->pop_states<ShapeRendering::Color4u, glm::mat4>();
+        }
+
+        // Lines
+        {
+            xpos += 1.25f;
+            renderer->push_states(ShapeRendering::Color4u::Cyan, glm_aux::T(glm::vec3(xpos, 1.0f, 0.0f)));
+            renderer->push_line(glm::vec3(xpos, 0.25f, 0.0f), glm::vec3(xpos + 0.25f, 0.75f, 0.0f));
+            renderer->push_line(glm::vec3(xpos, 0.75f, 0.0f), glm::vec3(xpos + 0.25f, 0.25f, 0.0f));
+            renderer->pop_states<ShapeRendering::Color4u, glm::mat4>();
+        }
 
         // Push quads
         {
             glm::vec3 points[4]{ {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f} };
             renderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
 
-            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 0.5f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
+            renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2.5f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
             renderer->push_quad(points, glm_aux::vec3_001);
             renderer->pop_states<glm::mat4>();
 
@@ -1686,7 +1613,7 @@ namespace ShapeRendering {
 
         // Push cube
         {
-            renderer->push_states(ShapeRendering::Color4u{ 0x8000ffff });
+            renderer->push_states(ShapeRendering::Color4u{ 0x800000ff });
 
             renderer->push_states(glm_aux::TS(glm::vec3(xpos += 2.0f, 1.0f, 0.0f), glm::vec3(1.0f, 2.0f, 1.0f)));
             renderer->push_cube();
