@@ -132,7 +132,7 @@ void Scene::update(
         auto ray = glm_aux::world_ray_from_window_coords(windowPos, matrices.V, matrices.P, matrices.VP);
         // Intersect with e.g. AABBs ...
 
-        eeng::Log::log("Picking ray origin = %s, dir = %s",
+        eeng::Log("Picking ray origin = %s, dir = %s",
             glm_aux::to_string(ray.origin).c_str(),
             glm_aux::to_string(ray.dir).c_str());
     }
@@ -288,7 +288,7 @@ void Scene::render(
         shapeRenderer->pop_states<ShapeRendering::Color4u>();
     }
 
-#if 1
+#if 0
     // Demo draw other shapes
     {
         shapeRenderer->push_states(glm_aux::T(glm::vec3(0.0f, 0.0f, -5.0f)));

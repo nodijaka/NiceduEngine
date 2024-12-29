@@ -39,7 +39,7 @@ namespace eeng
     void ForwardRenderer::init(const std::string &vertShaderPath,
                                const std::string &fragShaderPath)
     {
-        Log::log("Compiling shaders %s, %s",
+        Log("Compiling shaders %s, %s",
                  vertShaderPath.c_str(),
                  fragShaderPath.c_str());
         auto vertSource = file_to_string(vertShaderPath);

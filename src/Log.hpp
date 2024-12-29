@@ -1,38 +1,65 @@
 
-#ifndef UILog_hpp
-#define UILog_hpp
+#ifndef Log_hpp
+#define Log_hpp
 
 #include <memory>
 #include "imgui.h"
 
 namespace eeng {
 
-/// @brief ImGui log widget
-///  Adapted from imgui_demo.cpp
-struct LogWidget;
+    /// @brief 
+    /// @param fmt 
+    /// @param  
+    void Log(const char* fmt, ...);
 
-class Log
-{
-public:
-    static std::unique_ptr<LogWidget> log_widget;
-
-    // static void log(const char *str);
-
-    /// @brief Add a log item
-    /// @param fmt Format string
-    static void log(const char *fmt, ...);
-
-    /// @brief Draw the log
+    /// @brief 
+    /// @param label 
     /// @param p_open 
-    static void draw(bool *p_open = nullptr);
+    void LogDraw(const char* label, bool* p_open = nullptr);
 
-    /// @brief Clear log
-    static void clear();
+    /// @brief 
+    void LogClear();
 
-private:
-    static std::string formatString(const char* fmt, va_list args);
-};
+    namespace internal {
+
+        /// @brief ImGui log widget
+        ///  Adapted from imgui_demo.cpp
+        struct ImGuiLogWidget
+        {
+            ImGuiTextBuffer Buf;
+            ImGuiTextFilter Filter;
+            ImVector<int> LineOffsets;
+            bool AutoScroll;
+            bool ScrollToBottom;
+
+            ImGuiLogWidget();
+
+            void Clear();
+
+            void AddLog(const char* fmt, ...) IM_FMTARGS(2);
+
+            void Draw(const char* title, bool* p_open = NULL);
+        };
+
+        class LogSingleton
+        {
+        public:
+            static ImGuiLogWidget& instance()
+            {
+                static ImGuiLogWidget widget{};
+                return widget;
+            }
+
+        private:
+            LogSingleton() = default;
+            ~LogSingleton() = default;
+
+            LogSingleton(const LogSingleton&) = delete;
+            LogSingleton& operator=(const LogSingleton&) = delete;
+        };
+
+    } // namespace internal
 
 } // namespace eeng
 
-#endif /* UILog_hpp */
+#endif /* Log_hpp */

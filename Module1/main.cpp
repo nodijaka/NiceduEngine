@@ -176,18 +176,18 @@ int main(int argc, char* argv[])
 #endif
 
     // Log some state
-    LOG_DEFINES<eeng::Log>();
+    LOG_DEFINES(eeng::Log);
     {
         int glMinor, glMajor;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glMinor);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glMajor);
-        eeng::Log::log("GL version %i.%i (requested), %i.%i (actual)", EENG_GLVERSION_MAJOR, EENG_GLVERSION_MINOR, glMajor, glMinor);
+        eeng::Log("GL version %i.%i (requested), %i.%i (actual)", EENG_GLVERSION_MAJOR, EENG_GLVERSION_MINOR, glMajor, glMinor);
     }
 #ifdef EENG_MSAA
     {
         int actualMSAA;
         SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &actualMSAA);
-        eeng::Log::log("MSAA %i (requested), %i (actual)", EENG_MSAA_SAMPLES, actualMSAA);
+        eeng::Log("MSAA %i (requested), %i (actual)", EENG_MSAA_SAMPLES, actualMSAA);
     }
 #endif
 #ifdef EENG_ANISO
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 #elif defined(EENG_GLVERSION_41)
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
 #endif
-        eeng::Log::log("Anisotropic samples %i (requested), %i (max))", EENG_ANISO_SAMPLES, (int)maxAniso);
+        eeng::Log("Anisotropic samples %i (requested), %i (max))", EENG_ANISO_SAMPLES, (int)maxAniso);
     }
 #endif
 
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     float time_s = 0.0f, time_ms, deltaTime_s = 0.016f;
     bool quit = false;
     SDL_Event event;
-    eeng::Log::log("Entering main loop...");
+    eeng::Log("Entering main loop...");
 
     while (!quit)
     {
@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
 
         ImGui::End(); // end info window
 
-        eeng::Log::draw();
+        eeng::LogDraw("Log");
 
         // Face culling - takes place before rasterization
         glEnable(GL_CULL_FACE); // Perform face culling
@@ -416,7 +416,7 @@ int main(int argc, char* argv[])
         //        }
     }
 
-    eeng::Log::log("Exiting...");
+    eeng::Log("Exiting...");
 
     // Cleanup
     scene->destroy();
