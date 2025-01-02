@@ -1,9 +1,10 @@
 # eduEngine
 Course framework for **DA376B Game Engine Architecture**, Malmö University 2025  
+_Assets must be downloaded separately_  
 _Work in progress_
 
 ## Requirements
-- A compiler that supports C++17
+- A compiler that supports C++20
 - Source control: [git](https://git-scm.com/)
 - Build system: [CMake](https://cmake.org/)
 - Editor or IDE of choice, e.g. Visual Studio, Visual Studio Code (build and launch scripts included), Xcode etc.
@@ -35,7 +36,7 @@ A clean build will take some time to complete since all code is compiled from so
 ### Windows
 Note: if you are using Visual Studio as a generator and step 4 does not build correctly, try opening the solution (which was generated in step 3) and build from within Visual Studio instead.
 ```sh
-# 1. Clone the repository
+# 1. Open PowerShell and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
 
 # 2. Navigate to the project directory
@@ -56,7 +57,7 @@ cmake --build Release
 
 ### macOS
 ```sh
-# Clone the repository
+# Open a terminal and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
 
 # Navigate to the project directory
@@ -93,4 +94,4 @@ Test scene with elements from [Mixamo](https://www.mixamo.com/) and [Quaternius]
 - GLDebugMessageCallback by [Plasmoxy](https://gist.github.com/Plasmoxy/aec637b85e306f671339dcfd509efc82) and [liam-middlebrook](https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f)
 - [entt-meets-sol2](https://github.com/skaarj1989/entt-meets-sol2)
 
-_Updated 240913_  
+_Updated 250102_  
