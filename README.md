@@ -83,6 +83,11 @@ where `name-of-generator` is replaced by the name of a supported generator. Use 
 cmake --help
 ```
 
+## Documentation
+
+[Doxygen](https://cjgribel.github.io/eduEngine/) _Work in progress_
+
+
 ## Samples (assets not part of repo)
 Test scene with elements from [Mixamo](https://www.mixamo.com/) and [Quaternius](https://quaternius.com/).  
 ![example1](example1.png)  
