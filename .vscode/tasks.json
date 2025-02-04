@@ -43,11 +43,11 @@
                 "kind": "build",
                 "isDefault": true
             },
-            //"problemMatcher": ["$gcc"],
             "presentation": {
-                "reveal": "always", // always, silent, never
-                "panel": "shared"      // shared, dedicated, new
-            }
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         },
         {
             "label": "make: Release Build",
@@ -61,7 +61,6 @@
                 "kind": "build",
                 "isDefault": true
             },
-            //"problemMatcher": ["$gcc"],
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"

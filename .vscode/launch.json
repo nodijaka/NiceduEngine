@@ -1,27 +1,98 @@
 {
     "version": "0.2.0",
     "configurations": [
+        // ----- DEBUG CONFIGURATIONS -----
         {
-            "name": "(lldb) Debug Launch",
+            "name": "Debug Launch (Windows)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Debug/Module1/Module1.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "cppvsdbg",
+            "preLaunchTask": "make: Debug Build"
+        },
+        {
+            "name": "Debug Launch (Linux)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}", //"${fileDirname}",
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "make: Debug Build",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Debug Launch (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Debug/Module1/Module1",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
             "preLaunchTask": "make: Debug Build"
         },
+
+        // ----- RELEASE CONFIGURATIONS -----
         {
-            "name": "(lldb) Release Launch",
+            "name": "Release Launch (Windows)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Release//Module1/Module1",
+            "program": "${workspaceFolder}/Release/Module1/Module1.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}", //"${fileDirname}",
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "cppvsdbg",
+            "preLaunchTask": "make: Release Build"
+        },
+        {
+            "name": "Release Launch (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Release/Module1/Module1",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "make: Release Build",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Release Launch (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Release/Module1/Module1",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
