@@ -1,6 +1,6 @@
 # eduEngine
 Course framework for **DA376B Game Engine Architecture**, Malmö University 2025  
-_Assets must be downloaded separately_  
+Assets must be downloaded separately  
 _Work in progress_
 
 ## Requirements
@@ -29,12 +29,10 @@ _Work in progress_
 - LUA binding: [sol2](https://github.com/ThePhD/sol2)
 
 ## Build Instructions
-An executable target is created for each course module.  
-After a successful build, you can find the executables in the respective directories (`Debug` or `Release`).  
-A clean build will take some time to complete since all code is compiled from source.  
+> **Note:** A clean build will take some time to complete since all code is compiled from source.
 
 ### Windows
-Note: if you are using Visual Studio as a generator and step 4 does not build correctly, try opening the solution (which was generated in step 3) and build from within Visual Studio instead.
+> **Note:** (Visual Studio) If step 4 does not build correctly, try opening the solution (which was generated in step 3) and build from within Visual Studio instead.
 ```sh
 # 1. Open PowerShell and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
@@ -72,7 +70,7 @@ cmake -B Release -DCMAKE_BUILD_TYPE=Release
 cmake --build Release
 ```
 
-### Generator
+### Selecting a Generator
 To select a specific generator (Visual Studio, Unix Makefile etc) use `cmake` e.g. like this,
 ```sh
 cmake -B Debug -G "name-of-generator" -DCMAKE_BUILD_TYPE=Debug
@@ -83,6 +81,21 @@ where `name-of-generator` is replaced by the name of a supported generator. Use 
 cmake --help
 ```
 
+### 🖥️ Visual Studio Code (Cross-Platform)
+
+1. **Install Extensions:**
+   - C/C++ (by Microsoft)
+   - CMake Tools (optional but recommended)
+
+2. **Run & Debug the Project:**
+   - Open the project folder in VS Code.
+   - Press `Ctrl+Shift+D` (Run tab) or `F5` to start debugging.
+   - Choose from:
+     - **Debug Launch (Windows/Linux/macOS)**
+     - **Release Launch (Windows/Linux/macOS)**
+
+> **Note:** No need to run build tasks manually. The debugger will automatically build the project before launching.
+
 ## Documentation
 
 [Doxygen](https://cjgribel.github.io/eduEngine/) _Work in progress_
@@ -92,11 +105,13 @@ cmake --help
 Test scene with elements from [Mixamo](https://www.mixamo.com/) and [Quaternius](https://quaternius.com/).  
 ![example1](example1.png)  
 
+<!--
 [Tarisland by Doctor A.](https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f)  
 ![example2](example2.png)  
+-->
 
 ## Other credits
 - GLDebugMessageCallback by [Plasmoxy](https://gist.github.com/Plasmoxy/aec637b85e306f671339dcfd509efc82) and [liam-middlebrook](https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f)
 - [entt-meets-sol2](https://github.com/skaarj1989/entt-meets-sol2)
 
-_Updated 250102_  
+_Updated 250204_  
