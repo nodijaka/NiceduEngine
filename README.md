@@ -40,6 +40,9 @@ git clone https://github.com/cjgribel/eduEngine.git
 # 2. Navigate to the project directory
 cd eduEngine
 
+# (Optional: Verify that CMake is found)
+cmake --version
+
 # (Debug Build)
 # 3. Generate project
 cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
@@ -60,6 +63,9 @@ git clone https://github.com/cjgribel/eduEngine.git
 
 # Navigate to the project directory
 cd eduEngine
+
+# (Optional: Verify that CMake is found)
+cmake --version
 
 # Debug Build
 cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
@@ -85,7 +91,7 @@ cmake --help
 
 1. **Install Extensions:**
    - C/C++ (by Microsoft)
-   - CMake Tools (optional but recommended)
+   <!-- - CMake Tools (optional) -->
 
 2. **Run & Debug the Project:**
    - Open the project folder in VS Code.
