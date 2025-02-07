@@ -1,3 +1,6 @@
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
+
 #ifndef SceneBase_h
 #define SceneBase_h
 #pragma once

@@ -1,11 +1,7 @@
-//
-//  ShapeRenderer.hpp
-//
-//  CJ Gribel 2024
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef ShapeRenderer_h
-
 #define ShapeRenderer_h
 
 #include <vector>

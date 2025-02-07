@@ -1,10 +1,5 @@
-//
-//  assimp_mesh.hpp
-//  glfwassimp
-//
-//  Created by Carl Johan Gribel on 2018-02-21.
-//  Copyright © 2018 Carl Johan Gribel. All rights reserved.
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef RenderableMesh_hpp
 #define RenderableMesh_hpp

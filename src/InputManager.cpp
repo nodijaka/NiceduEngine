@@ -1,3 +1,6 @@
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
+
 #include "InputManager.hpp"
 #include <SDL2/SDL.h>
 #include <iostream>

@@ -1,5 +1,5 @@
 
-#include <entt/entt.hpp> // -> Scene source
+#include <entt/entt.hpp>
 #include "glmcommon.hpp"
 #include "imgui.h"
 #include "Log.hpp"

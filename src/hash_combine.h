@@ -1,8 +1,5 @@
-//
-//  hash_combine.h
-//
-//  Created by Carl Johan Gribel on 2021-08-24.
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef hash_combine_h
 #define hash_combine_h

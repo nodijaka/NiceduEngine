@@ -1,19 +1,12 @@
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef ForwardRenderer_hpp
 #define ForwardRenderer_hpp
-// std
-// #include <iostream>
-// #include <stdio.h>
-// #include <vector>
-// #include <map>
-// #include <unordered_map>
-// #include <fstream>
-// #include <string>
-// GL
-#include "glcommon.h"
-#include "RenderableMesh.hpp"
 
 #include <glm/glm.hpp>
+#include "glcommon.h"
+#include "RenderableMesh.hpp"
 
 namespace eeng
 {

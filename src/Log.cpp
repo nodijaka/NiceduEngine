@@ -1,3 +1,5 @@
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #include <iostream>
 #include <cstdarg>

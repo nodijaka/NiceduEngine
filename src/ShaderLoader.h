@@ -1,10 +1,5 @@
-//
-//  loadshader.h
-//  SM
-//
-//  Created by Carl Johan Gribel on 2012-06-29.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef ShaderLoader_H
 #define ShaderLoader_H

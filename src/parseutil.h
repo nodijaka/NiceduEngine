@@ -1,10 +1,5 @@
-//
-//  parseutil.h
-//  tau3d
-//
-//  Created by Carl Johan Gribel on 2016-03-09.
-//
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef parseutil_h
 #define parseutil_h

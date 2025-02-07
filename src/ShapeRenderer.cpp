@@ -1,8 +1,5 @@
-//
-//  ShapeRenderer.cpp
-//
-//  CJ Gribel 2024
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #include <stdio.h>
 #include <cstddef>

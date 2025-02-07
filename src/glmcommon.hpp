@@ -1,3 +1,6 @@
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
+
 #ifndef glmcommob_h
 #define glmcommob_h
 #pragma once

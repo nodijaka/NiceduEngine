@@ -1,10 +1,5 @@
-//
-//  vectordag.h
-//  tau3d
-//
-//  Created by Carl Johan Gribel on 2016-02-15.
-//
-//
+// Created by Carl Johan Gribel.
+// Licensed under the MIT License. See LICENSE file for details.
 
 #ifndef VECTORTREE_H
 #define VECTORTREE_H
