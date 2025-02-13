@@ -7,7 +7,10 @@ _Work in progress_
 - A compiler that supports C++20
 - Source control: [git](https://git-scm.com/)
 - Build system: [CMake](https://cmake.org/)
-- Editor or IDE of choice, e.g. Visual Studio, Visual Studio Code (build and launch scripts included), Xcode etc.
+- Editor or IDE of choice, for example -
+  - Visual Studio 2022 with the _Desktop development with C++_ workload (this workload includes CMake).
+  - Visual Studio Code (Cross Platform). Build and launch scripts included.
+  - Xcode and others (not tested - please report if you have success with other IDE's)
 
 ### Under consideration
 - Scripting: [LUA](https://www.lua.org/)
