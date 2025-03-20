@@ -111,12 +111,15 @@ cmake --help
 
 
 ## Samples (assets not part of repo)
-Test scene with elements from [Mixamo](https://www.mixamo.com/) and [Quaternius](https://quaternius.com/).  
-![example1](example1.png)  
+Elements from [Mixamo](https://www.mixamo.com/) and [Quaternius](https://quaternius.com/).  
+![example1](sample1.png)  
+
+Sponza (Dabrovic, Meinl, McGuire, Hansen) with elements from [Mixamo](https://www.mixamo.com/).  
+![example1](sample4.png)  
 
 <!--
 [Tarisland by Doctor A.](https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f)  
-![example2](example2.png)  
+![example2](sample2.png)  
 -->
 
 ## Other credits
