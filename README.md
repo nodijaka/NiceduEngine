@@ -125,5 +125,3 @@ Sponza (Dabrovic, Meinl, McGuire, Hansen) with elements from [Mixamo](https://ww
 ## Other credits
 - GLDebugMessageCallback by [Plasmoxy](https://gist.github.com/Plasmoxy/aec637b85e306f671339dcfd509efc82) and [liam-middlebrook](https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f)
 - [entt-meets-sol2](https://github.com/skaarj1989/entt-meets-sol2)
-
-_Updated 250204_  
