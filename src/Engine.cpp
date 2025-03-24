@@ -73,15 +73,11 @@ namespace eeng {
         game->init();
 
         bool running = true;
-        //Uint32 last_ticks = SDL_GetTicks();
         float time_s = 0.0f, time_ms, deltaTime_s = 0.016f;
 
         eeng::Log("Entering main loop...");
         while (running)
         {
-            // const Uint32 current_ticks = SDL_GetTicks();
-            // float delta_time = (current_ticks - last_ticks) / 1000.0f;
-            // last_ticks = current_ticks;
             const auto now_ms = SDL_GetTicks();
             const auto now_s = now_ms * 0.001f;
             deltaTime_s = now_s - time_s;
@@ -92,15 +88,13 @@ namespace eeng {
             begin_frame();
 
             game->update(time_s, deltaTime_s, input);
-            // TODO
-            // auto WINDOW_WIDTH = , WINDOW_HEIGHT
-            game->render(time_s, 1600, 900);
+            game->render(time_s, window_width, window_height);
 
             end_frame();
 
             SDL_GL_SwapWindow(window_);
 
-            // Add a delay if frame time was faster than the target frame time
+            // Add a delay if frame time was shorter than the target frame time
             const Uint32 elapsed_ms = SDL_GetTicks() - time_ms;
             if (elapsed_ms < min_frametime_ms)
                 SDL_Delay(min_frametime_ms - elapsed_ms);
@@ -131,10 +125,7 @@ namespace eeng {
             return false;
         }
 
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, EENG_GLVERSION_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, EENG_GLVERSION_MINOR);
@@ -226,10 +217,13 @@ namespace eeng {
 
         eeng::LogDraw("Log");
 
+        // Set up OpenGL state:
+
         // Face culling - takes place before rasterization
         glEnable(GL_CULL_FACE); // Perform face culling
         glFrontFace(GL_CCW);    // Define winding for a front-facing face
         glCullFace(GL_BACK);    // Cull back-facing faces
+        
         // Rasterization stuff
         glEnable(GL_DEPTH_TEST); // Perform depth test when rasterizing
         glDepthFunc(GL_LESS);    // Depth test pass if z < existing z (closer than existing z)
@@ -238,15 +232,16 @@ namespace eeng {
 
         // Define viewport transform = Clip -> Screen space (applied before rasterization)
         glViewport(0, 0, window_width, window_height);
-        // glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
         // Bind the default framebuffer (only needed when using multiple render targets)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
         // Clear depth and color attachments of frame buffer
         glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
         glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Wireframe rendering
         if (wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -267,6 +262,7 @@ namespace eeng {
 
     void Engine::render_info_UI()
     {
+        // Start a ImGui window
         ImGui::Begin("Engine Info");
 
         if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
@@ -358,7 +354,8 @@ namespace eeng {
             }
         }
 
-        ImGui::End(); // end info window
+        // End ImGui window
+        ImGui::End();
     }
 
 } // namespace eeng

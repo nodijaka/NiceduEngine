@@ -1,6 +1,5 @@
 
 #include "Engine.hpp"
-#include "Log.hpp"
 #include "Scene.hpp"
 #include <memory>
 
