@@ -138,82 +138,13 @@ void Scene::update(
     }
 }
 
-void Scene::renderUI()
-{
-    ImGui::Text("Drawcall count %i", drawcallCount);
-
-    if (ImGui::ColorEdit3("Light color",
-        glm::value_ptr(pointlight.color),
-        ImGuiColorEditFlags_NoInputs))
-    {
-    }
-
-    if (characterMesh)
-    {
-        // Combo (drop-down) for animation clip
-        int curAnimIndex = characterAnimIndex;
-        std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
-        if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
-        {
-            // Bind pose item
-            const bool isSelected = (curAnimIndex == -1);
-            if (ImGui::Selectable("Bind pose", isSelected))
-                curAnimIndex = -1;
-            if (isSelected)
-                ImGui::SetItemDefaultFocus();
-
-            // Clip items
-            for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
-            {
-                const bool isSelected = (curAnimIndex == i);
-                const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
-                if (ImGui::Selectable(label.c_str(), isSelected))
-                    curAnimIndex = i;
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-            characterAnimIndex = curAnimIndex;
-        }
-
-        // In-world position label
-        const auto VP_P_V = matrices.VP * matrices.P * matrices.V;
-        auto world_pos = glm::vec3(horseWorldMatrix[3]);
-        glm::ivec2 window_coords;
-        if (glm_aux::window_coords_from_world_pos(world_pos, VP_P_V, window_coords))
-        {
-            ImGui::SetNextWindowPos(
-                ImVec2{ float(window_coords.x), float(matrices.windowSize.y - window_coords.y) },
-                ImGuiCond_Always,
-                ImVec2{ 0.0f, 0.0f });
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, 0x80000000);
-            ImGui::PushStyleColor(ImGuiCol_Text, 0xffffffff);
-
-            ImGuiWindowFlags flags =
-                ImGuiWindowFlags_NoDecoration |
-                ImGuiWindowFlags_NoInputs |
-                // ImGuiWindowFlags_NoBackground |
-                ImGuiWindowFlags_AlwaysAutoResize;
-
-            if (ImGui::Begin("window_name", nullptr, flags))
-            {
-                ImGui::Text("In-world GUI element");
-                ImGui::Text("Window pos (%i, %i)", window_coords.x, window_coords.x);
-                ImGui::Text("World pos (%1.1f, %1.1f, %1.1f)", world_pos.x, world_pos.y, world_pos.z);
-                ImGui::End();
-            }
-            ImGui::PopStyleColor(2);
-        }
-    }
-
-    ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
-}
-
 void Scene::render(
     float time,
     int windowWidth,
     int windowHeight)
 {
+    renderUI();
+
     matrices.windowSize = glm::ivec2(windowWidth, windowHeight);
 
     // Projection matrix
@@ -300,6 +231,81 @@ void Scene::render(
     // Draw shape batches
     shapeRenderer->render(matrices.P * matrices.V);
     shapeRenderer->post_render();
+}
+
+void Scene::renderUI()
+{
+    ImGui::Begin("Game Info");
+
+    ImGui::Text("Drawcall count %i", drawcallCount);
+
+    if (ImGui::ColorEdit3("Light color",
+        glm::value_ptr(pointlight.color),
+        ImGuiColorEditFlags_NoInputs))
+    {
+    }
+
+    if (characterMesh)
+    {
+        // Combo (drop-down) for animation clip
+        int curAnimIndex = characterAnimIndex;
+        std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
+        if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
+        {
+            // Bind pose item
+            const bool isSelected = (curAnimIndex == -1);
+            if (ImGui::Selectable("Bind pose", isSelected))
+                curAnimIndex = -1;
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+
+            // Clip items
+            for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
+            {
+                const bool isSelected = (curAnimIndex == i);
+                const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
+                if (ImGui::Selectable(label.c_str(), isSelected))
+                    curAnimIndex = i;
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+            characterAnimIndex = curAnimIndex;
+        }
+
+        // In-world position label
+        const auto VP_P_V = matrices.VP * matrices.P * matrices.V;
+        auto world_pos = glm::vec3(horseWorldMatrix[3]);
+        glm::ivec2 window_coords;
+        if (glm_aux::window_coords_from_world_pos(world_pos, VP_P_V, window_coords))
+        {
+            ImGui::SetNextWindowPos(
+                ImVec2{ float(window_coords.x), float(matrices.windowSize.y - window_coords.y) },
+                ImGuiCond_Always,
+                ImVec2{ 0.0f, 0.0f });
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, 0x80000000);
+            ImGui::PushStyleColor(ImGuiCol_Text, 0xffffffff);
+
+            ImGuiWindowFlags flags =
+                ImGuiWindowFlags_NoDecoration |
+                ImGuiWindowFlags_NoInputs |
+                // ImGuiWindowFlags_NoBackground |
+                ImGuiWindowFlags_AlwaysAutoResize;
+
+            if (ImGui::Begin("window_name", nullptr, flags))
+            {
+                ImGui::Text("In-world GUI element");
+                ImGui::Text("Window pos (%i, %i)", window_coords.x, window_coords.x);
+                ImGui::Text("World pos (%1.1f, %1.1f, %1.1f)", world_pos.x, world_pos.y, world_pos.z);
+                ImGui::End();
+            }
+            ImGui::PopStyleColor(2);
+        }
+    }
+
+    ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
+
+    ImGui::End(); // end info window
 }
 
 void Scene::destroy()

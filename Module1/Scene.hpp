@@ -25,9 +25,6 @@ public:
         float deltaTime,
         InputManagerPtr input) override;
 
-    /// @brief For rendering of GUI elements
-    void renderUI() override;
-
     /// @brief For rendering of scene contents
     /// @param time Total time elapsed in seconds
     /// @param screenWidth Current width of the window in pixels
@@ -41,6 +38,8 @@ public:
     void destroy() override;
 
 private:
+    /// @brief For rendering of GUI elements
+    void renderUI();
 
     // Renderer for rendering imported animated or non-animated models
     eeng::ForwardRendererPtr forwardRenderer;

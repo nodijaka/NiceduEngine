@@ -190,6 +190,7 @@ add_executable(Module1
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GLDebugMessageCallback.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glmcommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/InputManager.cpp

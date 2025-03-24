@@ -20,7 +20,7 @@ namespace eeng {
             float deltaTime_s,
             InputManagerPtr input) = 0;
 
-        virtual void renderUI() = 0;
+        // virtual void renderUI() = 0;
 
         virtual void render(
             float time_s,
@@ -28,6 +28,8 @@ namespace eeng {
             int screenHeight) = 0;
 
         virtual void destroy() = 0;
+
+        virtual ~SceneBase() noexcept = default;
     };
 }
 
