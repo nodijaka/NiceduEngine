@@ -32,10 +32,9 @@ _Work in progress_
 - LUA binding: [sol2](https://github.com/ThePhD/sol2)
 
 ## Build Instructions
-> **Note:** A clean build will take some time to complete since all code is compiled from source.
+> **Note:** A clean build will take some time to complete since all dependencies are compiled from source.
 
-### Windows
-> **Note:** (Visual Studio) If step 4 does not build correctly, try opening the solution (which was generated in step 3) and build from within Visual Studio instead.
+### Windows with Visual Studio
 ```sh
 # 1. Open PowerShell and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
@@ -46,20 +45,12 @@ cd eduEngine
 # (Optional: Verify that CMake is found)
 cmake --version
 
-# (Debug Build)
 # 3. Generate project
-cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
-# 4. Build project
-cmake --build Debug
-
-# (Release Build)
-# 3. Generate project
-cmake -B Release -DCMAKE_BUILD_TYPE=Release
-# 4. Build project
-cmake --build Release
+cmake -B Build
 ```
+Now open the Visual Studio solution file, located in `eduEngine/Build`. Build and Run by pressing F5.
 
-### macOS
+### macOS with VS Code
 ```sh
 # Open a terminal and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
@@ -70,14 +61,14 @@ cd eduEngine
 # (Optional: Verify that CMake is found)
 cmake --version
 
-# Debug Build
+# Generate projects for Debug & Release builds
 cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build Debug
-
-# Release Build
 cmake -B Release -DCMAKE_BUILD_TYPE=Release
-cmake --build Release
+
+# Open VS Code
+code .
 ```
+In VS Code, open the Run tab with `Shift+Cmd+D`, then select either `Debug Launch (macOS)` or `Release Launch (macOS)`. Press `F5` to Build and Run.
 
 ### Selecting a Generator
 To select a specific generator (Visual Studio, Unix Makefile etc) use `cmake` e.g. like this,
@@ -91,6 +82,8 @@ cmake --help
 ```
 
 ### 🖥️ Visual Studio Code (Cross-Platform)
+
+_Work in progress_
 
 1. **Install Extensions:**
    - C/C++ (by Microsoft)
