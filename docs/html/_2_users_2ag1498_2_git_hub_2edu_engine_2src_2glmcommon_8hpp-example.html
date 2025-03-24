@@ -92,7 +92,10 @@ $(function() {
 <dl class="section note"><dt>Note</dt><dd>The depth range maps [0, 1] in normalized device coordinates to [near, far] in viewport space.</dd></dl>
 <p>// Create a viewport matrix for a window-sized viewport (800x600). glm::mat4 viewportMatrix = create_viewport_matrix(0, 0, 800, 600, 0, 1);</p>
 <p>// Transform an NDC coordinate (-1, -1, 0.5) to viewport space. glm::vec4 ndc = glm::vec4(-1.0f, -1.0f, 0.5f, 1.0f); glm::vec4 viewportCoords = viewportMatrix * ndc;</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#ifndef glmcommob_h</span></div>
+<div class="fragment"><div class="line"><span class="comment">// Created by Carl Johan Gribel.</span></div>
+<div class="line"><span class="comment">// Licensed under the MIT License. See LICENSE file for details.</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#ifndef glmcommob_h</span></div>
 <div class="line"><span class="preprocessor">#define glmcommob_h</span></div>
 <div class="line"><span class="preprocessor">#pragma once</span></div>
 <div class="line"> </div>
