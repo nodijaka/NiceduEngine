@@ -3,8 +3,9 @@
     "configurations": [
         // ----- DEBUG CONFIGURATIONS -----
         {
-            "name": "Debug Launch (Windows)",
-            "type": "cppdbg", // -> cppvsdbg" 
+            "name": "Launch (Debug) (Windows)",
+            //"type": "cppdbg",
+            "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1.exe",
             "args": [],
@@ -17,7 +18,7 @@
             "preLaunchTask": "CMake Build (Debug)"
         },
         {
-            "name": "Debug Launch (Linux)",
+            "name": "Launch (Debug) (Linux)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1",
@@ -38,7 +39,7 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "Debug Launch (macOS)",
+            "name": "Launch (Debug) (macOS)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1",
@@ -54,8 +55,9 @@
 
         // ----- RELEASE CONFIGURATIONS -----
         {
-            "name": "Release Launch (Windows)",
-            "type": "cppdbg",
+            "name": "Launch (Release) (Windows)",
+            //"type": "cppdbg",
+            "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Release/Module1/Module1.exe",
             "args": [],
@@ -63,12 +65,12 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "cppvsdbg",
+            //"MIMode": "cppvsdbg",
             //"preLaunchTask": "make: Release Build"
             "preLaunchTask": "CMake Build (Release)"
         },
         {
-            "name": "Release Launch (Linux)",
+            "name": "Launch (Release) (Linux)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Release/Module1/Module1",
@@ -89,7 +91,7 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "Release Launch (macOS)",
+            "name": "Launch (Release) (macOS)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Release/Module1/Module1",
