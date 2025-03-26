@@ -1,10 +1,11 @@
 {
     "version": "0.2.0",
     "configurations": [
-        // ----- DEBUG CONFIGURATIONS -----
+        
+        // === DEBUG LAUNCH ===
+        
         {
             "name": "Launch (Debug) (Windows)",
-            //"type": "cppdbg",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1.exe",
@@ -14,9 +15,9 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "cppvsdbg",
-            //"preLaunchTask": "make: Debug Build"
             "preLaunchTask": "CMake Build (Debug)"
         },
+
         {
             "name": "Launch (Debug) (Linux)",
             "type": "cppdbg",
@@ -28,7 +29,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "make: Debug Build", // -> "CMake Build (Debug)"
+            "preLaunchTask": "CMake Build (Debug)",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -38,6 +39,7 @@
             ],
             "miDebuggerPath": "/usr/bin/gdb"
         },
+
         {
             "name": "Launch (Debug) (macOS)",
             "type": "cppdbg",
@@ -49,14 +51,13 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            //"preLaunchTask": "make: Debug Build"
             "preLaunchTask": "CMake Build (Debug)"
         },
 
-        // ----- RELEASE CONFIGURATIONS -----
+        // === RELEASE LAUNCH ===
+
         {
             "name": "Launch (Release) (Windows)",
-            //"type": "cppdbg",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Release/Module1/Module1.exe",
@@ -65,10 +66,10 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            //"MIMode": "cppvsdbg",
-            //"preLaunchTask": "make: Release Build"
+            "MIMode": "cppvsdbg",
             "preLaunchTask": "CMake Build (Release)"
         },
+
         {
             "name": "Launch (Release) (Linux)",
             "type": "cppdbg",
@@ -80,7 +81,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "make: Release Build", // -> "CMake Build (Release)"
+            "preLaunchTask": "CMake Build (Release)",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -90,6 +91,7 @@
             ],
             "miDebuggerPath": "/usr/bin/gdb"
         },
+
         {
             "name": "Launch (Release) (macOS)",
             "type": "cppdbg",
@@ -101,7 +103,6 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            //"preLaunchTask": "make: Release Build"
             "preLaunchTask": "CMake Build (Release)"
         }
     ]
