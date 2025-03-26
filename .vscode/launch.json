@@ -4,7 +4,7 @@
         // ----- DEBUG CONFIGURATIONS -----
         {
             "name": "Debug Launch (Windows)",
-            "type": "cppdbg",
+            "type": "cppdbg", // -> cppvsdbg" 
             "request": "launch",
             "program": "${workspaceFolder}/Debug/Module1/Module1.exe",
             "args": [],
@@ -13,7 +13,8 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "cppvsdbg",
-            "preLaunchTask": "make: Debug Build"
+            //"preLaunchTask": "make: Debug Build"
+            "preLaunchTask": "CMake Build (Debug)"
         },
         {
             "name": "Debug Launch (Linux)",
@@ -26,7 +27,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "make: Debug Build",
+            "preLaunchTask": "make: Debug Build", // -> "CMake Build (Debug)"
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -47,7 +48,8 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "make: Debug Build"
+            //"preLaunchTask": "make: Debug Build"
+            "preLaunchTask": "CMake Build (Debug)"
         },
 
         // ----- RELEASE CONFIGURATIONS -----
@@ -62,7 +64,8 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "cppvsdbg",
-            "preLaunchTask": "make: Release Build"
+            //"preLaunchTask": "make: Release Build"
+            "preLaunchTask": "CMake Build (Release)"
         },
         {
             "name": "Release Launch (Linux)",
@@ -75,7 +78,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "make: Release Build",
+            "preLaunchTask": "make: Release Build", // -> "CMake Build (Release)"
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -96,7 +99,8 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "make: Release Build"
+            //"preLaunchTask": "make: Release Build"
+            "preLaunchTask": "CMake Build (Release)"
         }
     ]
 }

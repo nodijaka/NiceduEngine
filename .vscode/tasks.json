@@ -1,9 +1,61 @@
 {
     "version": "2.0.0",
     "tasks": [
+
+        // --- Configuration ---
+
+        // CMake configure tasks (default generator)
         {
             "type": "shell",
-            "label": "CMake: Debug",
+            "label": "CMake: Configure (Debug) (Default Generator)",
+            "command": "cmake",
+            "args": [
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/Debug",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "CMake: Configure (Release) (Default Generator)",
+            "command": "cmake",
+            "args": [
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/Release",
+                "-DCMAKE_BUILD_TYPE=Release"
+            ]
+        },
+
+        // CMake configure tasks (Ninja)
+        {
+            "type": "shell",
+            "label": "CMake: Configure (Debug) (Ninja)",
+            "command": "cmake",
+            "args": [
+                "-G", "Ninja",
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/Debug",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "CMake: Configure (Release) (Ninja)",
+            "command": "cmake",
+            "args": [
+                "-G", "Ninja",
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/Release",
+                "-DCMAKE_BUILD_TYPE=Release"
+            ]
+        },        
+        
+        
+
+
+        {
+            "type": "shell",
+            "label": "CMake: Debug", // CMake Debug Configure
             "command": "cmake",
             "args": [
                 "-B",
@@ -16,6 +68,7 @@
                 "isDefault": true
             }
         },
+
         {
             "type": "shell",
             "label": "CMake: Release",
@@ -31,6 +84,52 @@
                 "isDefault": true
             }
         },
+
+        // --- Building ---
+
+        // Build using CMake
+        {
+            "label": "CMake Build (Debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/Debug",
+                "--config",
+                "Debug"  // Only needed for multi-config generators
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake Build (Release)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/Release",
+                "--config",
+                "Release"  // Only needed for multi-config generators
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+
+
+
         {
             "label": "make: Debug Build",
             "type": "shell",
@@ -49,6 +148,7 @@
             },
             "problemMatcher": []
         },
+
         {
             "label": "make: Release Build",
             "type": "shell",
