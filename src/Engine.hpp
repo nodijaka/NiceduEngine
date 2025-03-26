@@ -16,7 +16,7 @@
 #include <SDL_opengl.h>
 #include <memory>
 
-#include "SceneBase.h"
+#include "GameBase.h"
 #include "InputManager.hpp"
 
 namespace eeng
@@ -45,9 +45,9 @@ public:
 
     /**
      * @brief Start the main loop.
-     * @param game Unique pointer to the initial game scene
+     * @param game Unique pointer to the initial game game
      */
-    void run(std::unique_ptr<SceneBase> game);
+    void run(std::unique_ptr<GameBase> game);
 
     /** @brief Clean up and close the engine. */
     void shutdown();

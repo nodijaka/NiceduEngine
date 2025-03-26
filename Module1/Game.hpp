@@ -1,18 +1,18 @@
-#ifndef Scene_hpp
-#define Scene_hpp
+#ifndef Game_hpp
+#define Game_hpp
 #pragma once
 
 #include <entt/fwd.hpp>
-#include "SceneBase.h"
+#include "GameBase.h"
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 #include "ShapeRenderer.hpp"
 
-/// @brief A Scene may hold, update and render 3D geometry and GUI elements
-class Scene : public eeng::SceneBase
+/// @brief A Game may hold, update and render 3D geometry and GUI elements
+class Game : public eeng::GameBase
 {
 public:
-    /// @brief For scene resource initialization
+    /// @brief For game resource initialization
     /// @return 
     bool init() override;
 
@@ -25,7 +25,7 @@ public:
         float deltaTime,
         InputManagerPtr input) override;
 
-    /// @brief For rendering of scene contents
+    /// @brief For rendering of game contents
     /// @param time Total time elapsed in seconds
     /// @param screenWidth Current width of the window in pixels
     /// @param screenHeight Current height of the window in pixels
@@ -34,7 +34,7 @@ public:
         int windowWidth,
         int windowHeight) override;
 
-    /// @brief For destruction of scene resources
+    /// @brief For destruction of game resources
     void destroy() override;
 
 private:
@@ -96,18 +96,21 @@ private:
         glm_aux::Ray viewRay;
     } player;
 
-    // Scene meshes
+    // Game meshes
     std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
 
-    // Scene entity transformations
+    // Game entity transformations
     glm::mat4 characterWorldMatrix1, characterWorldMatrix2, characterWorldMatrix3;
     glm::mat4 grassWorldMatrix, horseWorldMatrix;
 
-    // Scene entity AABBs
+    // Game entity AABBs (for collision detection or visualization)
     eeng::AABB character_aabb1, character_aabb2, character_aabb3, horse_aabb, grass_aabb;
 
+    // Placeholder animation state
     int characterAnimIndex = -1;
     float characterAnimSpeed = 1.0f;
+
+    // Stats
     int drawcallCount = 0;
 
     /// @brief Placeholder system for updating the camera position based on inputs

@@ -68,7 +68,7 @@ namespace eeng {
         return true;
     }
 
-    void Engine::run(std::unique_ptr<SceneBase> game)
+    void Engine::run(std::unique_ptr<GameBase> game)
     {
         game->init();
 

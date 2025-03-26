@@ -3,9 +3,9 @@
 #include "glmcommon.hpp"
 #include "imgui.h"
 #include "Log.hpp"
-#include "Scene.hpp"
+#include "Game.hpp"
 
-bool Scene::init()
+bool Game::init()
 {
     forwardRenderer = std::make_shared<eeng::ForwardRenderer>();
     forwardRenderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
@@ -91,7 +91,7 @@ bool Scene::init()
     return true;
 }
 
-void Scene::update(
+void Game::update(
     float time,
     float deltaTime,
     InputManagerPtr input)
@@ -138,7 +138,7 @@ void Scene::update(
     }
 }
 
-void Scene::render(
+void Game::render(
     float time,
     int windowWidth,
     int windowHeight)
@@ -233,7 +233,7 @@ void Scene::render(
     shapeRenderer->post_render();
 }
 
-void Scene::renderUI()
+void Game::renderUI()
 {
     ImGui::Begin("Game Info");
 
@@ -308,12 +308,12 @@ void Scene::renderUI()
     ImGui::End(); // end info window
 }
 
-void Scene::destroy()
+void Game::destroy()
 {
 
 }
 
-void Scene::updateCamera(
+void Game::updateCamera(
     InputManagerPtr input)
 {
     // Fetch mouse and compute movement since last frame
@@ -334,7 +334,7 @@ void Scene::updateCamera(
     camera.pos = camera.lookAt + glm::vec3(rotatedPos);
 }
 
-void Scene::updatePlayer(
+void Game::updatePlayer(
     float deltaTime,
     InputManagerPtr input)
 {

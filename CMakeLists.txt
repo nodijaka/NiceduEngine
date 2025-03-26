@@ -182,7 +182,7 @@ message(STATUS "Dear ImGui fetched and included")
 message(STATUS "Creating executable target for Module1")
 add_executable(Module1 
     Module1/main.cpp
-    Module1/Scene.cpp 
+    Module1/Game.cpp 
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp

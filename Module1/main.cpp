@@ -1,6 +1,6 @@
 
 #include "Engine.hpp"
-#include "Scene.hpp"
+#include "Game.hpp"
 #include <memory>
 
 int main(int argc, char* argv[])
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto game = std::make_unique<Scene>();
+    auto game = std::make_unique<Game>();
     engine.run(std::move(game));
 
     std::cout << "Exiting eduEngine." << std::endl;
