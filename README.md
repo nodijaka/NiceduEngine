@@ -1,7 +1,6 @@
 # eduEngine
-Course framework for **DA376B Game Engine Architecture**, Malmö University 2025  
-Assets must be downloaded separately  
-_Work in progress_
+Course framework for **DA376B Game Engine Architecture**, Malmö University 2025.  
+Assets must be downloaded separately.  
 
 ## Requirements
 - A compiler that supports C++20
@@ -32,9 +31,9 @@ _Work in progress_
 - LUA binding: [sol2](https://github.com/ThePhD/sol2)
 
 ## Build Instructions
-> **Note:** A clean build will take some time to complete since all dependencies are compiled from source.
+> **Note:** A clean build will take some time to complete since dependencies are compiled from source.
 
-### Windows with Visual Studio
+### 🖥️ Windows with Visual Studio
 ```sh
 # 1. Open PowerShell and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
@@ -42,61 +41,77 @@ git clone https://github.com/cjgribel/eduEngine.git
 # 2. Navigate to the project directory
 cd eduEngine
 
-# (Optional: Verify that CMake is found)
-cmake --version
-
 # 3. Generate project
-cmake -B Build
+cmake -S . -B Build -G "Visual Studio 17 2022"
 ```
-Now open the Visual Studio solution file, located in `eduEngine/Build`. Build and Run by pressing F5.
+Now open the Visual Studio solution file, located in `eduEngine/Build`. 
+Switch between Debug, Release, or any other configuration as needed. 
+Press F5 to Build and Run.
 
-### macOS with VS Code
-```sh
-# Open a terminal and clone the repository
-git clone https://github.com/cjgribel/eduEngine.git
+### 🖥️ Cross-Platform with VS Code and Ninja
 
-# Navigate to the project directory
-cd eduEngine
-
-# (Optional: Verify that CMake is found)
-cmake --version
-
-# Generate projects for Debug & Release builds
-cmake -B Debug -DCMAKE_BUILD_TYPE=Debug
-cmake -B Release -DCMAKE_BUILD_TYPE=Release
-
-# Open VS Code
-code .
-```
-In VS Code, open the Run tab with `Shift+Cmd+D`, then select either `Debug Launch (macOS)` or `Release Launch (macOS)`. Press `F5` to Build and Run.
-
-### Selecting a Generator
-To select a specific generator (Visual Studio, Unix Makefile etc) use `cmake` e.g. like this,
-```sh
-cmake -B Debug -G "name-of-generator" -DCMAKE_BUILD_TYPE=Debug
-```
-
-where `name-of-generator` is replaced by the name of a supported generator. Use this command to list generators that are available on your system
-```sh
-cmake --help
-```
-
-### 🖥️ Visual Studio Code (Cross-Platform)
-
-_Work in progress_
-
-1. **Install Extensions:**
+1. **Install VS Code Extensions:**
    - C/C++ (by Microsoft)
-   <!-- - CMake Tools (optional) -->
 
-2. **Run & Debug the Project:**
-   - Open the project folder in VS Code.
-   - Press `Ctrl+Shift+D` (Run tab) or `F5` to start debugging.
-   - Choose from:
-     - **Debug Launch (Windows/Linux/macOS)**
-     - **Release Launch (Windows/Linux/macOS)**
+2. Install Ninja. Ninja is a fast, cross-platform build system.  
+   Windows (using [Chocolatery](https://chocolatey.org/install)):
+   ```sh
+   choco install ninja
+   ```
+   MacOS (using [Homebrew](https://brew.sh/)):
+   ```sh
+   brew install ninja
+   ```
+3. Set up project
+   ```sh
+   # 1. Open a terminal and and clone the repository
+   git clone https://github.com/cjgribel/eduEngine.git
 
-> **Note:** No need to run build tasks manually. The debugger will automatically build the project before launching.
+   # 2. Navigate to the project directory and open VS Code
+   cd eduEngine
+   code .
+   ```
+   Use the provided VS Code scripts to Configure, Build and Debug the program.  
+
+> 💡 To run a Task, open the Command Palette with `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows), select "Tasks: Run Task", and choose the desired Task.
+
+> 💡 Launch actions are triggered from the Run and Debug panel (`Shift+Cmd+D`). Select the launch configuration, then press the green arrow or `F5` to launch.
+
+   **Debug mode**:
+   - Configure and Build
+     - `CMake Configure (Debug) (Ninja)`
+     - `CMake Build (Debug)`
+   - Launch Debugger
+     - `Launch (Debug) (Windows/Linux/macOS)` (choose platform)
+
+   **Release mode**:
+   - Configure and Build
+     - `CMake Configure (Release) (Ninja)`
+     - `CMake Build (Release)`
+   - Launch
+     - `Launch (Release) (Windows/Linux/macOS)` (choose platform)
+
+### 🖥️ macOS with VS Code and Unix Makefile
+
+> 💡 Unix Makefile projects typically builds much slower than Ninja-based projects.
+
+To use Unix Makefiles for building, follow the same process as for Cross-Platform and use scripts versions with `(Default Generator)` instead of `(Ninja)` in their names.
+
+### Other Platforms and IDEs
+
+- **Multi-configuration Generators** (Xcode on macOS, CLion on Linux, etc)
+  
+  The overall workflow should be similar to the one provided for Visual Studio, just set the desired generator when running CMake.
+  
+  Example (Xcode):
+  ```sh
+  cmake -S . -B Build -G Xcode
+  ```
+- **Single-configuration Generators** (Unix Makefiles or Ninja on Linux, etc)
+  
+  Use `-DCMAKE_BUILD_TYPE` for CMake when configuring.
+
+> 💡 Use `cmake --help` to list available generators on your system.
 
 ## Documentation
 
