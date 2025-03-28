@@ -1,20 +1,23 @@
 # eduEngine
+
 Course framework for **DA376B Game Engine Architecture**, Malmö University 2025.  
-Assets must be downloaded separately.  
+Assets can be downloaded from the course page (not included in the repository).  
 
 ## Requirements
+
 - A compiler that supports C++20
 - Source control: [git](https://git-scm.com/)
-- Build system: [CMake](https://cmake.org/)
+- Build tool: [CMake](https://cmake.org/)
 - Editor or IDE of choice, for example -
   - Visual Studio 2022 with the _Desktop development with C++_ workload (this workload includes CMake).
   - Visual Studio Code (Cross Platform). Build and launch scripts included.
-  - Xcode and others (not tested - please report if you have success with other IDE's)
 
 ### Under consideration
+
 - Scripting: [LUA](https://www.lua.org/)
 
 ## Fetched dependencies
+
 - Backend for window, sound, input etc: [SDL3](https://github.com/libsdl-org/SDL)
 - OpenGL extension loader: [glew-cmake](https://github.com/Perlmint/glew-cmake)
 - Model loader: [assimp](https://github.com/assimp/assimp) (v5.0.1 200112 - newer versions have [issues](https://github.com/assimp/assimp/issues/4620) with Mixamo models).
@@ -24,6 +27,7 @@ Assets must be downloaded separately.
 - Entity-Component-System: [EnTT](https://github.com/skypjack/entt)
 
 ### Under consideration
+
 - Multi-channel audio mixer: [SDL_mixer](https://github.com/libsdl-org/SDL_mixer) (missing proper cmake support?)
 - Advanced animation: [ozz-animation](https://guillaumeblanc.github.io/ozz-animation/)
 - JSON reader & writer: [nlohmann-json](https://github.com/nlohmann/json)
@@ -34,6 +38,7 @@ Assets must be downloaded separately.
 > **Note:** A clean build will take some time to complete since dependencies are compiled from source.
 
 ### 🖥️ Windows with Visual Studio
+
 ```sh
 # 1. Open PowerShell and clone the repository
 git clone https://github.com/cjgribel/eduEngine.git
@@ -53,7 +58,8 @@ Press F5 to Build and Run.
 1. **Install VS Code Extensions:**
    - C/C++ (by Microsoft)
 
-2. Install Ninja. Ninja is a fast, cross-platform build system.  
+2. Install Ninja. Ninja is a fast, cross-platform build system.
+   
    Windows (using [Chocolatery](https://chocolatey.org/install)):
    ```sh
    choco install ninja
@@ -62,7 +68,7 @@ Press F5 to Build and Run.
    ```sh
    brew install ninja
    ```
-3. Set up project
+4. Set up project
    ```sh
    # 1. Open a terminal and and clone the repository
    git clone https://github.com/cjgribel/eduEngine.git
@@ -71,11 +77,11 @@ Press F5 to Build and Run.
    cd eduEngine
    code .
    ```
-   Use the provided VS Code scripts to Configure, Build and Debug the program.  
+5. In VS Code, use the provided scripts to Configure, Build and Debug the program.  
 
-> 💡 To run a Task, open the Command Palette with `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows), select "Tasks: Run Task", and choose the desired Task.
+   > 💡 To run a Task, open the Command Palette with `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows), select "Tasks: Run Task", and choose the desired Task.
 
-> 💡 Launch actions are triggered from the Run and Debug panel (`Shift+Cmd+D`). Select the launch configuration, then press the green arrow or `F5` to launch.
+   > 💡 Launch actions are triggered from the Run and Debug panel (`Shift+Cmd+D`). Select the launch configuration, then press the green arrow or `F5` to launch.
 
    **Debug mode**:
    - Configure and Build
@@ -95,21 +101,21 @@ Press F5 to Build and Run.
 
 > 💡 Unix Makefile projects typically builds much slower than Ninja-based projects.
 
-To use Unix Makefiles for building, follow the same process as for Cross-Platform and use scripts versions with `(Default Generator)` instead of `(Ninja)` in their names.
+To use Unix Makefiles for building, follow the same process as for Cross-Platform and use script versions with `(Default Generator)` instead of `(Ninja)` in their names.
 
 ### Other Platforms and IDEs
 
-- **Multi-configuration Generators** (Xcode on macOS, CLion on Linux, etc)
+- **Multi-configuration Generators** (Xcode, CLion etc)
   
-  The overall workflow should be similar to the one provided for Visual Studio, just set the desired generator when running CMake.
+  The overall workflow should be similar to the one provided for Visual Studio, just set the desired generator (`-G <generator>`) when running CMake.
   
   Example (Xcode):
   ```sh
   cmake -S . -B Build -G Xcode
   ```
-- **Single-configuration Generators** (Unix Makefiles or Ninja on Linux, etc)
+- **Single-configuration Generators**
   
-  Use `-DCMAKE_BUILD_TYPE` for CMake when configuring.
+  When configuring using CMake, set the desired generator (`-G <generator>`) and use `-DCMAKE_BUILD_TYPE=Debug` or `-DCMAKE_BUILD_TYPE=Release`.
 
 > 💡 Use `cmake --help` to list available generators on your system.
 
