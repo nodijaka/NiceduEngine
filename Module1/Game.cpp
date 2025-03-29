@@ -33,22 +33,12 @@ bool Game::init()
     // Character
     characterMesh = std::make_shared<eeng::RenderableMesh>();
 #if 0
-    // Sponza
-    characterMesh->load("/Users/ag1498/Dropbox/MAU/DA307A-CGM/Rendering/eduRend_2022/assets/crytek-sponza/sponza.obj", false);
-#endif
-#if 0
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
 #endif
 #if 0
     // Enemy
     characterMesh->load("assets/Ultimate Platformer Pack/Enemies/Bee.fbx", false);
-#endif
-#if 0
-    // Dragon
-    // Requires MaxBones = 151;
-    // https://sketchfab.com/3d-models/tarisland-dragon-high-poly-ecf63885166c40e2bbbcdf11cd14e65f
-    // characterMesh->load("assets/tarisland-dragon-high-poly/M_B_44_Qishilong_skin_Skeleton.FBX");
 #endif
 #if 0
     // ExoRed 5.0.1 PACK FBX, 60fps, No keyframe reduction
