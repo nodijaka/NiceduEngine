@@ -1,4 +1,16 @@
+// Licensed under the MIT License. See LICENSE file for details.
+
 #include "Engine.hpp"
+#include "glcommon.h"
+#ifdef EENG_GLVERSION_43
+#include "GLDebugMessageCallback.h"
+#endif
+
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <memory>
+
 #include "InputManager.hpp"
 #include "Log.hpp"
 

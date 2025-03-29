@@ -5,22 +5,16 @@
 #define ENGINE_HPP
 
 #include <iostream>
-#include "config.h"
-#include "glcommon.h"
-#ifdef EENG_GLVERSION_43
-#include "GLDebugMessageCallback.h"
-#endif
-
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <SDL_opengl.h>
 #include <memory>
-
+#include "config.h"
 #include "GameBase.h"
-#include "InputManager.hpp"
+
+struct SDL_Window;              // Forward declaration
+typedef void* SDL_GLContext;    // Forward declaration
 
 namespace eeng
 {
+    class InputManager; // Forward declaration
 
 /**
  * @brief Main engine class handling SDL, OpenGL, ImGui initialization and the main loop.
