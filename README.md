@@ -70,7 +70,7 @@ Press F5 to Build and Run.
    ```
 4. Set up project
    ```sh
-   # 1. Open a terminal and and clone the repository
+   # 1. Open a terminal (on Windows, use Developer Command Prompt) and clone the repository
    git clone https://github.com/cjgribel/eduEngine.git
 
    # 2. Navigate to the project directory and open VS Code
