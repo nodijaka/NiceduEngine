@@ -1,6 +1,6 @@
 # eduEngine
 
-Course framework for **DA376B Game Engine Architecture**, Malmö University 2025.  
+Course framework for **DA376B Game Engine Architecture**, Malmö University.  
 Assets can be downloaded from the course page (not included in the repository).  
 
 ## Requirements
@@ -121,8 +121,9 @@ To use Unix Makefiles for building, follow the same process as for Cross-Platfor
 
 ## Documentation
 
-[Doxygen](https://cjgribel.github.io/eduEngine/) _Work in progress_
+[Doxygen](https://cjgribel.github.io/eduEngine/) _Work in progress_  
 
+Some of the documentation is AI generated.
 
 ## Samples (assets not part of repo)
 Elements from [Mixamo](https://www.mixamo.com/) and [Quaternius](https://quaternius.com/).  
@@ -137,5 +138,7 @@ Sponza (Dabrovic, Meinl, McGuire, Hansen) with elements from [Mixamo](https://ww
 -->
 
 ## Other credits
+
+- Thanks to all students who provided feedback on instructions, code etc.
 - GLDebugMessageCallback by [Plasmoxy](https://gist.github.com/Plasmoxy/aec637b85e306f671339dcfd509efc82) and [liam-middlebrook](https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f)
 - [entt-meets-sol2](https://github.com/skaarj1989/entt-meets-sol2)
