@@ -139,7 +139,7 @@ namespace eeng
             aiProcess_OptimizeGraph;
 
         load(file, xiflags, aiflags);
-}
+    }
 
     void RenderableMesh::load(const std::string& file,
         unsigned xiflags,
@@ -516,6 +516,33 @@ namespace eeng
 
         // Link node->bone (0 or 1) and node->meshes (0+)
         // Link bones<->nodes (1<->1)
+#if 1
+        m_nodetree.traverse_depthfirst([&](SkeletonNode& node, size_t i, size_t level)
+            {
+                // Link node<->meshes (re-retrieve the original assimp node by name)
+                // Note: the node transform is ignored during rendering if the mesh
+                // is skinned, since it is part of the inverse-transpose matrix.
+                aiNode* ainode = ainode_root->FindNode(node.name.c_str());
+                for (int j = 0; j < ainode->mNumMeshes; j++)
+                {
+                    m_meshes[ainode->mMeshes[j]].node_index = i;
+                }
+                node.nbr_meshes = ainode->mNumMeshes;
+
+                // Node<->bone
+                auto boneit = m_bonehash.find(node.name);
+                if (boneit != m_bonehash.end())
+                {
+                    m_bones[boneit->second].node_index = i;
+                    node.bone_index = boneit->second;
+                }
+            });
+
+            m_nodetree.traverse_depthfirst([&](SkeletonNode& node, size_t i, size_t level)
+            {
+                m_nodehash[node.name] = i;
+            });
+#else
         for (int i = 0; i < m_nodetree.nodes.size(); i++)
         {
             // Link node<->meshes (re-retrieve the original assimp node by name)
@@ -541,6 +568,8 @@ namespace eeng
         // Note: Not currently used, though seems sensical to have.
         for (int i = 0; i < m_nodetree.nodes.size(); i++)
             m_nodehash[m_nodetree.nodes[i].m_payload.name] = i;
+#endif
+
     }
 
     void RenderableMesh::loadNode(aiNode* ainode)
@@ -850,7 +879,7 @@ namespace eeng
             anim.name = std::string(aianim->mName.C_Str());
             anim.duration_ticks = aianim->mDuration;
             anim.tps = aianim->mTicksPerSecond;
-            anim.node_animations.resize(m_nodetree.nodes.size());
+            anim.node_animations.resize(m_nodetree.size());
 
             log << priority(PRTSTRICT)
                 << "Loading animation '" << anim.name
@@ -905,7 +934,7 @@ namespace eeng
         const AnimationClip* anim,
         float ntime) const
     {
-        const auto& node = m_nodetree.nodes[node_index].m_payload;
+        const auto& node = m_nodetree.get_payload_at(node_index);
         if (!anim) return node.local_tfm;
         if (!anim->node_animations[node_index].is_used) return node.local_tfm;
 
@@ -951,7 +980,7 @@ namespace eeng
         float frac) const
     {
         assert(frac >= 0.0f && frac <= 1.0f);
-        const auto& node = m_nodetree.nodes[node_index].m_payload;
+        const auto& node = m_nodetree.get_payload_at(node_index);
 
         assert(anim0 && anim1);
         if (!anim0->node_animations[node_index].is_used) return node.local_tfm;
@@ -1028,10 +1057,7 @@ namespace eeng
             ntime = animtime_ticks / dur_ticks;
         }
 
-        // -> visitor
-        for (auto& node : m_nodetree.nodes)
-            node.m_payload.global_tfm = glm::mat4{ 1.0f };
-
+        // Traverse the node tree and animate all nodes
         m_nodetree.traverse_progressive(
             [&](SkeletonNode* node, SkeletonNode* parent_node, size_t node_index, size_t parent_index)
             {
@@ -1044,7 +1070,7 @@ namespace eeng
         m_model_aabb.reset();
         for (int i = 0; i < m_bones.size(); i++)
         {
-            const auto& node_tfm = m_nodetree.nodes[m_bones[i].node_index].m_payload.global_tfm;
+            const auto& node_tfm = m_nodetree.get_payload_at(m_bones[i].node_index).global_tfm;
             const auto& boneIB_tfm = m_bones[i].inversebind_tfm;
             glm::mat4 M = node_tfm * boneIB_tfm;
 
@@ -1069,7 +1095,7 @@ namespace eeng
 
             if (m_meshes[i].node_index > EENG_NULL_INDEX)
             {
-                glm::mat4 M = m_nodetree.nodes[m_meshes[i].node_index].m_payload.global_tfm;
+                glm::mat4 M = m_nodetree.get_payload_at(m_meshes[i].node_index).global_tfm;
                 m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
             }
             else
@@ -1119,11 +1145,7 @@ namespace eeng
             ntime1 = animtime_ticks / dur_ticks;
         }
 
-        for (auto& node : m_nodetree.nodes)
-            node.m_payload.global_tfm = glm::mat4{ 1.0f };
-
-#if 1
-        // traverseNodes(
+        // Traverse the node tree and animate all nodes
         m_nodetree.traverse_progressive(
             [&](SkeletonNode* node, SkeletonNode* parent_node, size_t node_index, size_t parent_index)
             {
@@ -1132,12 +1154,11 @@ namespace eeng
                 if (parent_node)
                     node->global_tfm = parent_node->global_tfm * node->global_tfm;
             });
-#endif
 
         m_model_aabb.reset();
         for (int i = 0; i < m_bones.size(); i++)
         {
-            const auto& node_tfm = m_nodetree.nodes[m_bones[i].node_index].m_payload.global_tfm;
+            const auto& node_tfm = m_nodetree.get_payload_at(m_bones[i].node_index).global_tfm;
             const auto& boneIB_tfm = m_bones[i].inversebind_tfm;
             glm::mat4 M = node_tfm * boneIB_tfm;
 
@@ -1162,7 +1183,7 @@ namespace eeng
 
             if (m_meshes[i].node_index > EENG_NULL_INDEX)
             {
-                glm::mat4 M = m_nodetree.nodes[m_meshes[i].node_index].m_payload.global_tfm;
+                glm::mat4 M = m_nodetree.get_payload_at(m_meshes[i].node_index).global_tfm;
                 m_mesh_aabbs_pose[i] = m_mesh_aabbs_bind[i].post_transform(glm::vec3(M[3]), glm::mat3(M));
             }
             else

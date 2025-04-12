@@ -31,10 +31,10 @@ template <class PayloadType>
     requires requires(PayloadType a, PayloadType b) { { a == b } -> std::convertible_to<bool>; }
 class VecTree
 {
-public:
-using TreeNodeType = TreeNode<PayloadType>;
-std::vector<TreeNodeType> nodes;
+    using TreeNodeType = TreeNode<PayloadType>;
+    std::vector<TreeNodeType> nodes;
 
+public:
     VecTree() = default;
 
     /// @brief Find index of a node O(N)
@@ -59,6 +59,18 @@ std::vector<TreeNodeType> nodes;
     bool contains(const PayloadType& payload) const
     {
         return find_node_index(payload) != VecTree_NullIndex;
+    }
+
+    const PayloadType& get_payload_at(size_t index) const
+    {
+        assert(index != VecTree_NullIndex);
+        return nodes[index].m_payload;
+    }
+
+    PayloadType& get_payload_at(size_t index)
+    {
+        assert(index != VecTree_NullIndex);
+        return nodes[index].m_payload;
     }
 
     // Used for debug pritning...
