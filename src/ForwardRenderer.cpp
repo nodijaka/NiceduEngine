@@ -155,10 +155,10 @@ namespace eeng
             const auto &submesh = mesh->m_meshes[i];
             const auto &mtl = mesh->m_materials[submesh.mtl_index];
 
-            // Append hierarchical transform non-skinned meshes that are linked to nodes
+            // Append hierarchical transform to non-skinned meshes that are linked to nodes
             if (submesh.node_index != EENG_NULL_INDEX && !submesh.is_skinned)
             {
-                const auto WorldMeshMatrix = WorldMatrix * mesh->m_nodetree.nodes[submesh.node_index].global_tfm;
+                const auto WorldMeshMatrix = WorldMatrix * mesh->m_nodetree.nodes[submesh.node_index].m_payload.global_tfm;
                 glUniformMatrix4fv(glGetUniformLocation(phongShader, "WorldMatrix"), 1, 0, glm::value_ptr(WorldMeshMatrix));
             }
             else
