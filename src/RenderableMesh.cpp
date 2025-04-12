@@ -66,51 +66,28 @@ namespace eeng
 
             return transformMatrix;
         }
-    }
 
-#if 0
-    // Half-ugly way to dump node tree without coupling tree with node type
-    namespace
-    {
-        /// Dump tree node to stream
-        void dump_tree_to_stream(const VectorTree<SkeletonNode>& tree,
-            unsigned i,
-            const std::string& indent,
-            logstreamer_t& outstream)
-        {
-            const auto& node = tree.nodes[i];
-            outstream << indent;
-            outstream << " [node " << i << "]";
-            if (node.bone_index != EENG_NULL_INDEX)
-                outstream << "[bone " << node.bone_index << "]";
-            if (node.nbr_meshes)
-                outstream << "[" << node.nbr_meshes << " meshes]";
-            outstream << " " << node.name
-                << " (children " << node.m_nbr_children
-                << ", stride " << node.m_branch_stride
-                << ", parent ofs " << node.m_parent_ofs << ")";
-            outstream << std::endl;
-            int ci = i + 1;
-            for (int j = 0; j < node.m_nbr_children; j++)
-            {
-                dump_tree_to_stream(tree, ci, indent + "\t", outstream);
-                ci += tree.nodes[ci].m_branch_stride;
-            }
-        }
-
-        /// Dump node tree to stream
-        void dump_tree_to_stream(const VectorTree<SkeletonNode>& tree,
+        void dump_tree_to_stream(
+            const VecTree<SkeletonNode>& tree,
             logstreamer_t&& outstream)
         {
-            int i = 0;
-            while (i < tree.nodes.size())
-            {
-                dump_tree_to_stream(tree, i, "", outstream);
-                i += tree.nodes[i].m_branch_stride;
-            }
+            tree.traverse_depthfirst([&](const SkeletonNode& node, size_t index, size_t level)
+                {
+                    auto [nbr_children, branch_stride, parent_ofs] = tree.get_node_info(node);
+
+                    for (int i = 0; i < level; i++) outstream << "  ";
+                    outstream << " [node " << index << "]";
+                    if (node.bone_index != EENG_NULL_INDEX)
+                        outstream << "[bone " << node.bone_index << "]";
+                    if (node.nbr_meshes)
+                        outstream << "[" << node.nbr_meshes << " meshes]";
+                    outstream << " " << node.name
+                        << " (children " << nbr_children
+                        << ", stride " << branch_stride
+                        << ", parent ofs " << parent_ofs << ")\n";
+                });
         }
     }
-#endif
 
     void RenderableMesh::SkinData::addWeight(unsigned bone_index, float bone_weight)
     {
@@ -162,7 +139,7 @@ namespace eeng
             aiProcess_OptimizeGraph;
 
         load(file, xiflags, aiflags);
-    }
+}
 
     void RenderableMesh::load(const std::string& file,
         unsigned xiflags,
@@ -231,8 +208,8 @@ namespace eeng
 
         loadNodes(aiscene->mRootNode);
 
-        m_nodetree.print_to_stream(logstreamer_t{ filepath + filename + "_nodetree.txt", PRTVERBOSE });
-        // dump_tree_to_stream(m_nodetree, logstreamer_t{ filepath + filename + "_nodetree.txt", PRTVERBOSE });
+        //m_nodetree.print_to_stream(logstreamer_t{ filepath + filename + "_nodetree.txt", PRTVERBOSE });
+        dump_tree_to_stream(m_nodetree, logstreamer_t{ filepath + filename + "_nodetree.txt", PRTVERBOSE });
         // m_nodetree.debug_print({filepath + filename + "_nodetree.txt", PRTVERBOSE});
 
         loadAnimations(aiscene);

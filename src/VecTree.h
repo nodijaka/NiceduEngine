@@ -610,45 +610,6 @@ public:
     {
         ascend(find_node_index(start_payload), func);
     }
-
-    // ---------------------------------------------------------
-
-    /// Dump all roots to a stream using recursive traversal (to be removed)
-    template<class T>
-    void print_to_stream(T&& outstream)
-    {
-        int i = 0;
-        while (i < nodes.size())
-        {
-            print_to_stream(i, "", outstream);
-            i += nodes[i].m_branch_stride;
-        }
-    }
-
-private:
-
-    template<class T>
-    void print_to_stream(unsigned i, const std::string& indent, T&& outstream)
-    {
-        auto& node = nodes[i];
-        outstream << indent;
-        outstream << " [node " << i << "]";
-        if (node.m_payload.bone_index > -1)
-            outstream << "[bone " << node.m_payload.bone_index << "]";
-        if (node.m_payload.nbr_meshes)
-            outstream << "[" << node.m_payload.nbr_meshes << " meshes]";
-        outstream << " " << node.m_payload.name
-            << " (children " << node.m_nbr_children
-            << ", stride " << node.m_branch_stride
-            << ", parent ofs " << node.m_parent_ofs << ")";
-        outstream << std::endl;
-        int ci = i + 1;
-        for (int j = 0; j < node.m_nbr_children; j++)
-        {
-            print_to_stream(ci, indent + "\t", outstream);
-            ci += nodes[ci].m_branch_stride;
-        }
-    }
 };
 
 #endif /* seqtree_h */
