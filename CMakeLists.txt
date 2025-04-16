@@ -236,3 +236,7 @@ endif()
 # For 'make install'
 #install(TARGETS Module1 Module2)
 # message(STATUS "Install targets
+
+enable_testing()
+add_subdirectory(tests)
+#
