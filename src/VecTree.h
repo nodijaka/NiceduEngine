@@ -169,7 +169,8 @@ public:
         );
 
         // Remove branch from its current parent
-        erase_branch(payload);
+        erase_branch_at_index(node_index);
+        // erase_branch(payload);
 
         // Reinsert branch under new parent
         insert(branch.front().m_payload, parent_payload);
@@ -196,7 +197,8 @@ public:
         );
 
         // Remove branch from its current parent
-        erase_branch(payload);
+        erase_branch_at_index(node_index);
+        // erase_branch(payload);
 
         // Reinsert branch under new parent
         insert_as_root(branch.front().m_payload);
@@ -275,55 +277,57 @@ public:
         return true;
     }
 
-    /// @brief Erase a node and its branch
-    /// @param payload Payload of the node to erase
-    /// @return True if erasure was successfull, false otherwise
-    bool erase_branch(const PayloadType& payload)
-    {
-        auto node_index = find_node_index(payload);
-        if (node_index == VecTree_NullIndex) return false;
+    // Add these inside VecTree<PayloadType>:
 
-        auto& node = nodes[node_index];
-        //auto nbr_children = node.m_nbr_children;
-        auto branch_stride = node.m_branch_stride;
+private:
+// Core branch-erasure by index (no payload search)
+bool erase_branch_at_index(size_t node_index)
+{
+    assert(node_index < nodes.size());
+    // Cannot erase a root
+    assert(nodes[node_index].m_parent_ofs != 0);
 
-        // Parent node
-        auto pit = nodes.begin() + (node_index - node.m_parent_ofs);
+    auto const branch_stride = nodes[node_index].m_branch_stride;
+    auto parent_it = nodes.begin() + (node_index - nodes[node_index].m_parent_ofs);
 
-        // From parent and up the tree, 
-        // update branch strides that range over the node
-        //
-        auto prit = pit;
-        while (prit >= nodes.begin())
-        {
-            // Check if branch stride is within range
-            if (prit->m_branch_stride > (unsigned)std::distance(prit, pit))
-                prit->m_branch_stride -= branch_stride;
-            // Break at root
-            if (!prit->m_parent_ofs)
-                break;
-            prit--;
-        }
-
-        // From after the node's branch, 
-        // update parent offsets that range backward past the enode
-        //
-        auto pfit = nodes.begin() + node_index + branch_stride;
-        //auto pfit = pit + branch_stride; // pit + 1;
-        while (pfit < nodes.end())
-        {
-            if (!pfit->m_parent_ofs) // discontinue at succeeding root
-                break;
-            if (pfit->m_parent_ofs >= (unsigned)std::distance(pit, pfit))
-                pfit->m_parent_ofs -= branch_stride;
-            pfit++;
-        }
-
-        pit->m_nbr_children--;
-        nodes.erase(nodes.begin() + node_index,
-            nodes.begin() + node_index + branch_stride);
-        return true;
+    // 1) Adjust branch_stride up the ancestor chain
+    for (auto it = parent_it; ; --it) {
+        auto dist = static_cast<unsigned>(std::distance(it, parent_it));
+        if (it->m_branch_stride > dist)
+            it->m_branch_stride -= branch_stride;
+        if (it->m_parent_ofs == 0)
+            break;
     }
+
+    // 2) Adjust parent_ofs of trailing nodes whose parent lies in erased branch
+    auto trail_it = nodes.begin() + node_index + branch_stride;
+    while (trail_it < nodes.end()) {
+        if (trail_it->m_parent_ofs == 0)
+            break;
+        auto dist = static_cast<unsigned>(std::distance(parent_it, trail_it));
+        if (trail_it->m_parent_ofs >= /*<=*/ dist)
+            trail_it->m_parent_ofs -= branch_stride;
+        ++trail_it;
+    }
+
+    // 3) Decrement parent children count and erase range
+    // const_cast<TreeNodeType&>(*parent_it).m_nbr_children--;
+    parent_it->m_nbr_children--;
+    nodes.erase(nodes.begin() + node_index,
+                nodes.begin() + node_index + branch_stride);
+    return true;
+}
+
+public:
+/// @brief Erase a node and its entire branch by payload lookup
+bool erase_branch(const PayloadType& payload)
+{
+    auto node_index = find_node_index(payload);
+    if (node_index == VecTree_NullIndex)
+        return false;
+    return erase_branch_at_index(node_index);
+}
+
 
     /// @brief Traverse depth-first in a per-level manner
     /// @param node_name Name of node to descend from
