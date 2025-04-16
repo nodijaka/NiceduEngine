@@ -347,7 +347,7 @@ namespace eeng
                 // bones
                 for (int j = mesh.base_vertex; j < mesh.base_vertex + mesh.nbr_vertices; j++)
                 {
-                    for (int k = 0; k < NUM_BONES_PER_VERTEX; k++)
+                    for (int k = 0; k < BonesPerVertex; k++)
                     {
                         if (scene_skinweights[j].bone_weights[k] > 0)
                             m_bone_aabbs_bind[scene_skinweights[j].bone_indices[k]].grow(scene_positions[j]);
@@ -652,7 +652,7 @@ namespace eeng
         unsigned nbr_textures = material->GetTextureCount(textureType);
 
         if (!nbr_textures)
-            return NO_TEXTURE;
+            return NoTexture;
         if (nbr_textures > 1)
             throw std::runtime_error("Multiple textures of type " + std::to_string(textureType) + ", aborting. Nbr = " + std::to_string(nbr_textures));
 
@@ -671,7 +671,7 @@ namespace eeng
             &ai_blend,
             &ai_texop,
             &ai_texmapmode) != AI_SUCCESS)
-            return NO_TEXTURE;
+            return NoTexture;
 
         // Relative texture path, e.g. "/textures/texture.png"
         std::string textureRelPath{ ai_texpath.C_Str() };
@@ -850,7 +850,7 @@ namespace eeng
             mtl.textureIndices[TextureType::Opacity] = loadTexture(pMaterial, aiTextureType_OPACITY, local_filepath);
 
             // Fallback: assimp seems to label OBJ normal maps as HEIGHT type textures.
-            if (mtl.textureIndices[TextureType::Normal] == NO_TEXTURE)
+            if (mtl.textureIndices[TextureType::Normal] == NoTexture)
                 mtl.textureIndices[TextureType::Normal] = loadTexture(pMaterial, aiTextureType_HEIGHT, local_filepath);
 
             log << "Done loading textures" << std::endl;

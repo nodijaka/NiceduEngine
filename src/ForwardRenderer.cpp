@@ -184,7 +184,7 @@ namespace eeng
             {
                 // if (texture.textureTypeIndex == TextureTypeIndex::Cubemap) continue;
                 const int textureIndex = mtl.textureIndices[textureDesc.textureTypeIndex];
-                const bool hasTexture = (textureIndex != NO_TEXTURE);
+                const bool hasTexture = (textureIndex != NoTexture);
                 if (hasTexture)
                 {
                     glActiveTexture(GL_TEXTURE0 + textureDesc.textureUnit);

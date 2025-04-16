@@ -24,9 +24,9 @@ namespace eeng
     using namespace logstreamer;
     using uint = uint32_t;
 
-    const int NUM_BONES_PER_VERTEX = 4;
-    const int NO_MATERIAL = -1;
-    const int NO_TEXTURE = -1;
+    const int BonesPerVertex = 4;
+    const int NoMaterial = -1;
+    const int NoTexture = -1;
 
     template <std::size_t N, class T>
     constexpr std::size_t numelem(T(&)[N]) { return N; }
@@ -72,7 +72,7 @@ namespace eeng
             Cubemap,
             Count
         };
-        int textureIndices[TextureTypeIndex::Count]{ NO_TEXTURE };
+        int textureIndices[TextureTypeIndex::Count]{ NoTexture };
     };
 
     enum xiContentFlags
@@ -127,15 +127,15 @@ namespace eeng
         /// Per-bone data
         struct Bone
         {
-            glm::mat4 inversebind_tfm{ 1.0f }; //!< Inverse of the associated node in bind pose
-            int node_index = -1;             //!< Node associated with this bone
+            glm::mat4 inversebind_tfm{ 1.0f };  //!< Inverse of the global node transform in bind pose
+            int node_index = -1;                //!< Node associated with this bone
         };
 
         /// Bone indices and weights for a vertex
         struct SkinData
         {
-            unsigned bone_indices[NUM_BONES_PER_VERTEX]{ 0 };
-            float bone_weights[NUM_BONES_PER_VERTEX]{ 0 };
+            unsigned bone_indices[BonesPerVertex]{ 0 };
+            float bone_weights[BonesPerVertex]{ 0 };
 
             int nbr_added = 0; // For checking
             void addWeight(unsigned bone_index, float bone_weight);
