@@ -285,7 +285,7 @@ bool erase_branch_at_index(size_t node_index)
 {
     assert(node_index < nodes.size());
     // Cannot erase a root
-    assert(nodes[node_index].m_parent_ofs != 0);
+    //assert(nodes[node_index].m_parent_ofs != 0);
 
     auto const branch_stride = nodes[node_index].m_branch_stride;
     auto parent_it = nodes.begin() + (node_index - nodes[node_index].m_parent_ofs);

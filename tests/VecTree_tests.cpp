@@ -4,16 +4,34 @@
 #include <vector>
 #include <utility>
 
-using namespace std;
+namespace
+{
+    template<class T, class S>
+    void dump_tree_to_stream(
+        const VecTree<T>& tree,
+        S& outstream)
+    {
+        tree.traverse_depthfirst([&](const T& node, size_t index, size_t level)
+            {
+                auto [nbr_children, branch_stride, parent_ofs] = tree.get_node_info(node);
+
+                for (int i = 0; i < level; i++) outstream << "  ";
+                outstream << node
+                    << " (children " << nbr_children
+                    << ", stride " << branch_stride
+                    << ", parent ofs " << parent_ofs << ")\n";
+            });
+    }
+}
 
 TEST(VecTreeBasicTest, EmptyTree) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     EXPECT_EQ(tree.size(), 0u);
     EXPECT_FALSE(tree.contains("A"));
 }
 
 TEST(VecTreeBasicTest, InsertAndContains) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     EXPECT_EQ(tree.size(), 1u);
     EXPECT_TRUE(tree.contains("A"));
@@ -22,7 +40,7 @@ TEST(VecTreeBasicTest, InsertAndContains) {
 }
 
 TEST(VecTreeInsertTest, InsertChildren) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     EXPECT_TRUE(tree.insert("B", "A"));
     EXPECT_TRUE(tree.insert("C", "A"));
@@ -41,7 +59,7 @@ TEST(VecTreeInsertTest, InsertChildren) {
 }
 
 TEST(VecTreeNestedTest, NestedInsertionAndRelationships) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
@@ -59,7 +77,7 @@ TEST(VecTreeNestedTest, NestedInsertionAndRelationships) {
 }
 
 TEST(VecTreeEraseTest, EraseBranch) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
@@ -73,8 +91,27 @@ TEST(VecTreeEraseTest, EraseBranch) {
     EXPECT_EQ(tree.get_branch_size("A"), 2u);
 }
 
+TEST(VecTreeEraseTest, EraseRootBranch) {
+    VecTree<std::string> tree;
+    tree.insert_as_root("A");
+    tree.insert("B", "A");
+    tree.insert("C", "A");
+    tree.insert("D", "B");
+
+    EXPECT_EQ(tree.size(), 4u);
+    EXPECT_EQ(tree.get_nbr_children("A"), 2u);
+    EXPECT_EQ(tree.get_branch_size("A"), 4u);
+    
+    EXPECT_TRUE(tree.erase_branch("A"));
+
+    EXPECT_EQ(tree.size(), 0u);
+    EXPECT_FALSE(tree.contains("A"));
+    EXPECT_FALSE(tree.contains("B"));
+    EXPECT_FALSE(tree.contains("C"));
+}
+
 TEST(VecTreeReparentTest, ReparentNode) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
@@ -89,7 +126,7 @@ TEST(VecTreeReparentTest, ReparentNode) {
 }
 
 TEST(VecTreeUnparentTest, UnparentNode) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "B");
@@ -102,84 +139,84 @@ TEST(VecTreeUnparentTest, UnparentNode) {
 
 #if 0
 TEST(VecTreeTraversalTest, DepthFirstTraversal) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
     tree.insert("D", "B");
 
-    vector<string> order;
-    tree.traverse_depthfirst([&](string& payload, size_t idx) {
+    vector<std::string> order;
+    tree.traverse_depthfirst([&](std::string& payload, size_t idx) {
         order.push_back(payload);
-    });
+        });
 
-    vector<string> expected = {"A", "B", "D", "C"};
+    vector<std::string> expected = { "A", "B", "D", "C" };
     EXPECT_EQ(order, expected);
 }
 
 TEST(VecTreeTraversalTest, BreadthFirstTraversal) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
     tree.insert("D", "B");
 
-    vector<string> order;
-    tree.traverse_breadthfirst("A", [&](string& payload, size_t idx) {
+    vector<std::string> order;
+    tree.traverse_breadthfirst("A", [&](std::string& payload, size_t idx) {
         order.push_back(payload);
-    });
+        });
 
-    vector<string> expected = {"A", "B", "C", "D"};
+    vector<std::string> expected = { "A", "B", "C", "D" };
     EXPECT_EQ(order, expected);
 }
 
 TEST(VecTreeTraversalTest, AscendTraversal) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "B");
 
-    vector<string> order;
-    tree.ascend("C", [&](string& payload, size_t idx) {
+    vector<std::string> order;
+    tree.ascend("C", [&](std::string& payload, size_t idx) {
         order.push_back(payload);
-    });
+        });
 
-    vector<string> expected = {"C", "B", "A"};
+    vector<std::string> expected = { "C", "B", "A" };
     EXPECT_EQ(order, expected);
 }
 
 TEST(VecTreeTraversalTest, DepthFirstWithLevel) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
     tree.insert("D", "B");
 
-    vector<pair<string, size_t>> results;
-    tree.traverse_depthfirst([&](string& payload, size_t idx, size_t level) {
+    vector<pair<std::string, size_t>> results;
+    tree.traverse_depthfirst([&](std::string& payload, size_t idx, size_t level) {
         results.emplace_back(payload, level);
-    });
+        });
 
-    vector<pair<string, size_t>> expected = {{"A", 0}, {"B", 1}, {"D", 2}, {"C", 1}};
+    vector<pair<std::string, size_t>> expected = { {"A", 0}, {"B", 1}, {"D", 2}, {"C", 1} };
     EXPECT_EQ(results, expected);
 }
 
 TEST(VecTreeTraversalTest, ProgressiveTraversal) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
     tree.insert("D", "B");
 
-    vector<pair<string, string>> calls;
-    tree.traverse_progressive([&](string* node, string* parent, size_t idx, size_t pidx) {
+    vector<pair<std::string, std::string>> calls;
+    tree.traverse_progressive([&](std::string* node, std::string* parent, size_t idx, size_t pidx) {
         calls.emplace_back(
-            node ? *node : string(""),
-            parent ? *parent : string("(null)")
+            node ? *node : std::string(""),
+            parent ? *parent : std::string("(null)")
         );
-    });
+        });
 
-    vector<pair<string, string>> expected = {
+    vector<pair<std::string, std::string>> expected = {
         {"A", "(null)"},
         {"B", "A"},
         {"C", "A"},
@@ -191,7 +228,7 @@ TEST(VecTreeTraversalTest, ProgressiveTraversal) {
 
 // Test erasing a leaf and adjusting sibling offsets
 TEST(VecTreeEraseSiblingTest, EraseSiblingAndAdjustOffsets) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "A");
@@ -208,7 +245,7 @@ TEST(VecTreeEraseSiblingTest, EraseSiblingAndAdjustOffsets) {
 
 // Test deep-tree reparenting
 TEST(VecTreeReparentDeepTest, ReparentMidSubtree) {
-    VecTree<string> tree;
+    VecTree<std::string> tree;
     tree.insert_as_root("A");
     tree.insert("B", "A");
     tree.insert("C", "B");
