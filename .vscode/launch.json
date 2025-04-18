@@ -96,8 +96,9 @@
             "externalConsole": false,
             "MIMode": "lldb",
             "preLaunchTask": "CMake Build (Release)"
-        },
+        }
         // === DEBUG LAUNCH TESTS ===
+        /*
         {
             "name": "Launch Tests (Debug) (Windows)",
             "type": "cppvsdbg",
@@ -145,5 +146,6 @@
             "MIMode": "lldb",
             "preLaunchTask": "CMake Build (Debug)"
         }
+            */
     ]
 }
