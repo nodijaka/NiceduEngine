@@ -1114,16 +1114,11 @@ namespace eeng
         AnmationTimeFormat animTimeFormat0,
         AnmationTimeFormat animTimeFormat1)
     {
-        AnimationClip* anim0 = nullptr;
-        AnimationClip* anim1 = nullptr;
-        if (anim_index0 >= 0 && anim_index0 < getNbrAnimations())
-        {
-            anim0 = &m_animations[anim_index0];
-        }
-        if (anim_index1 >= 0 && anim_index1 < getNbrAnimations())
-        {
-            anim1 = &m_animations[anim_index1];
-        }
+        EENG_ASSERT(anim_index0 >= 0 && anim_index0 < getNbrAnimations(), "{0} is not a valid clip index", anim_index0);
+        EENG_ASSERT(anim_index1 >= 0 && anim_index1 < getNbrAnimations(), "{0} is not a valid clip index", anim_index1);
+
+        AnimationClip* anim0 = &m_animations[anim_index0];
+        AnimationClip* anim1 = &m_animations[anim_index1];
 
         // Convert to normalized time
         float ntime0 = time0;

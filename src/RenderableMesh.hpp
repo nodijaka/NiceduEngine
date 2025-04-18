@@ -222,9 +222,9 @@ namespace eeng
         void removeTranslationKeys(int node_index);
 
         /// @brief Animate this mesh using an animation clip
-        /// @param anim_index 
-        /// @param time 
-        /// @param animTimeFormat 
+        /// @param anim_index Clip index. Use -1 for bind pose.
+        /// @param time Animation time, in seconds or normalized time (see animTimeFormat).
+        /// @param animTimeFormat Interpretation of time when mapping to keyframes.
         void animate(
             int anim_index,
             float time,
@@ -232,12 +232,12 @@ namespace eeng
 
 
         /// @brief Animate this mesh using a blend of two animation clips
-        /// @param anim_index0 
-        /// @param anim_index1 
-        /// @param time0 
-        /// @param time1 
-        /// @param animTimeFormat0 
-        /// @param animTimeFormat1 
+        /// @param anim_index0 Clip index 0. Must be a valid clip.
+        /// @param anim_index1 Clip index 1. Must be a valid clip.
+        /// @param time0 Animation time for clip 0, in seconds or normalized time (see animTimeFormat).
+        /// @param time1 Animation time for clip 1, in seconds or normalized time (see animTimeFormat).
+        /// @param animTimeFormat0 Interpretation of time for clip 0 when mapping to keyframes.
+        /// @param animTimeFormat1 Interpretation of time for clip 1 when mapping to keyframes.
         void animateBlend(
             int anim_index0,
             int anim_index1,
