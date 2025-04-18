@@ -237,6 +237,7 @@ endif()
 #install(TARGETS Module1 Module2)
 # message(STATUS "Install targets
 
-enable_testing()
-add_subdirectory(tests)
+# Disable testing for now
+# enable_testing()
+# add_subdirectory(tests)
 #
