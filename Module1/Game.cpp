@@ -7,6 +7,10 @@
 
 bool Game::init()
 {
+    win_open = true;
+    p_win_open = &win_open;
+    boneGizmo = new BoneGizmo();
+
     forwardRenderer = std::make_shared<eeng::ForwardRenderer>();
     forwardRenderer->init("shaders/phong_vert.glsl", "shaders/phong_frag.glsl");
 
@@ -53,6 +57,7 @@ bool Game::init()
     characterMesh->load("assets/Amy/Ch46_nonPBR.fbx");
     characterMesh->load("assets/Amy/idle.fbx", true);
     characterMesh->load("assets/Amy/walking.fbx", true);
+    characterMesh->load("assets/Amy/jump.fbx", true);
     // Remove root motion
     characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
@@ -77,7 +82,8 @@ bool Game::init()
         { 30.0f, 0.0f, -35.0f },
         35.0f, { 0, 1, 0 },
         { 0.01f, 0.01f, 0.01f });
-
+    CreateEntities();
+    InitPlayer();
     return true;
 }
 
@@ -86,9 +92,13 @@ void Game::update(
     float deltaTime,
     InputManagerPtr input)
 {
+    Time(time);
     updateCamera(input);
 
-    updatePlayer(deltaTime, input);
+    //updatePlayer(deltaTime, input);
+    PlayerControllerSystem(input);
+    NPCControllerSystem();
+    MovementSystem(deltaTime);
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
@@ -125,6 +135,8 @@ void Game::update(
         eeng::Log("Picking ray origin = %s, dir = %s",
             glm_aux::to_string(ray.origin).c_str(),
             glm_aux::to_string(ray.dir).c_str());
+
+
     }
 }
 
@@ -133,6 +145,7 @@ void Game::render(
     int windowWidth,
     int windowHeight)
 {
+    renderMyWindow(p_win_open);
     renderUI();
 
     matrices.windowSize = glm::ivec2(windowWidth, windowHeight);
@@ -149,6 +162,8 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
+    RenderSystem(time);
+    BoneTest(time);
     // Grass
     forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
     grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
@@ -223,12 +238,22 @@ void Game::render(
     shapeRenderer->post_render();
 }
 
+void Game::renderMyWindow(bool* p_open) 
+{
+    ImGui::Begin("MyWindow", p_open);
+    if (ImGui::Button("BoneGizmo")) {
+        boneGizmo->toggle_bone_gizmo();
+    }  
+    ImGui::End();
+}
+
 void Game::renderUI()
 {
     ImGui::Begin("Game Info");
 
     ImGui::Text("Drawcall count %i", drawcallCount);
 
+    ImGui::Text("Total Time %i:%i", time_minutes, time_seconds);
     if (ImGui::ColorEdit3("Light color",
         glm::value_ptr(pointlight.color),
         ImGuiColorEditFlags_NoInputs))
@@ -294,6 +319,7 @@ void Game::renderUI()
     }
 
     ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
+    ImGui::SliderFloat("character speed", character_speed, 0.1f, 50.0f);
 
     ImGui::End(); // end info window
 }
@@ -334,7 +360,7 @@ void Game::updatePlayer(
     bool A = input->IsKeyPressed(Key::A);
     bool S = input->IsKeyPressed(Key::S);
     bool D = input->IsKeyPressed(Key::D);
-
+    
     // Compute vectors in the local space of the player
     player.fwd = glm::vec3(glm_aux::R(camera.yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
     player.right = glm::cross(player.fwd, glm_aux::vec3_010);
@@ -349,7 +375,226 @@ void Game::updatePlayer(
     player.viewRay = glm_aux::Ray{ player.pos + glm::vec3(0.0f, 2.0f, 0.0f), player.fwd };
 
     // Update camera to track the player
-    camera.lookAt += movement;
-    camera.pos += movement;
+    /*camera.lookAt += movement;
+    camera.pos += movement;*/
 
+}
+
+void Game::MovementSystem(float deltaTime) {
+    auto view = entity_registry->view<TransformComponent, LinearVelocityComponent>();
+
+    for (auto entity : view) {
+
+        auto [transform, velocity] = view.get<TransformComponent, LinearVelocityComponent>(entity);
+        transform.translation += velocity.velocity * velocity.speed * deltaTime;
+        //transform.translation.z += velocity.velocity.z * velocity.speed * deltaTime;
+    }
+
+
+    //oh dear maybe do this in you know... player?
+    auto view_player = entity_registry->view<LinearVelocityComponent, PlayerControllerComponent>();
+
+    for (auto entity : view_player) {
+        auto [velocity, c_player] = 
+            view_player.get< 
+            LinearVelocityComponent, 
+            PlayerControllerComponent>(entity);
+
+        camera.lookAt += velocity.velocity * velocity.speed * deltaTime;
+        camera.pos += velocity.velocity * velocity.speed * deltaTime;
+    }
+}
+
+void Game::PlayerControllerSystem(InputManagerPtr input) {
+    auto view = entity_registry->view<TransformComponent, LinearVelocityComponent, PlayerControllerComponent>();
+
+    bool W, A, S, D, spacebar = false;
+    
+    for (auto entity : view) {
+
+        auto [transform, velocity, c_player] = view.get<TransformComponent, LinearVelocityComponent, PlayerControllerComponent>(entity);
+        W = input->IsKeyPressed(c_player.W);
+        A = input->IsKeyPressed(c_player.A);
+        S = input->IsKeyPressed(c_player.S);
+        D = input->IsKeyPressed(c_player.D);
+        spacebar = input->IsKeyPressed(c_player.spacebar);
+        
+        glm::vec3 fwd = glm::vec3(glm_aux::R(camera.yaw, glm_aux::vec3_010) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+        glm::vec3 right = glm::cross(fwd, glm_aux::vec3_010);
+
+        velocity.velocity =
+            fwd * ((W ? 1.0f : 0.0f) + (S ? -1.0f : 0.0f)) +
+            right * ((A ? -1.0f : 0.0f) + (D ? 1.0f : 0.0f));
+
+        /*camera.lookAt = transform.translation;
+        camera.pos = transform.translation;*/
+    }
+}
+
+void Game::NPCControllerSystem() {
+    auto view = entity_registry->view<NPCControllerComponent, TransformComponent, LinearVelocityComponent>();
+    int point_index;
+    int point_max;
+    float distance_check;
+
+    for (auto entity : view) {
+        
+        auto [npc_controller, transform, linear_velocity] = view.get<NPCControllerComponent, TransformComponent, LinearVelocityComponent>(entity);
+        point_index = npc_controller.pp_index;
+        distance_check = npc_controller.proximity_value;
+        point_max = npc_controller.pp_max;
+
+        if (glm::distance(transform.translation, npc_controller.path_points[point_index]) <= distance_check) {
+            point_index++;
+            point_index %= point_max;
+            npc_controller.pp_index = point_index;            
+        }
+        
+        linear_velocity.velocity = glm::normalize(npc_controller.path_points[point_index] - transform.translation);
+    }
+}
+
+void Game::RenderSystem(float time) {
+    auto view = entity_registry->view<TransformComponent, MeshComponent, AABBComponent>();
+
+    for (auto entity : view) {
+
+        auto [transform, mesh_ptr, aabb] = view.get<TransformComponent, MeshComponent, AABBComponent>(entity);
+
+        glm::mat4 T = glm_aux::T(transform.translation);
+        glm::mat4 R = glm_aux::R(transform.yaw, transform.pitch);
+        glm::mat4 S = glm_aux::S(transform.scale);
+        glm::mat4 TRS = T * R * S;
+
+        mesh_ptr.renderable_mesh->animate(9, time * 3);
+        forwardRenderer->renderMesh(mesh_ptr.renderable_mesh, TRS);
+        aabb.mesh_aabb = mesh_ptr.renderable_mesh->m_model_aabb.post_transform(TRS);
+
+        shapeRenderer->push_basis_basic(TRS, 1.0f);
+
+        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
+        shapeRenderer->push_AABB(aabb.mesh_aabb.min, aabb.mesh_aabb.max);
+        shapeRenderer->pop_states<ShapeRendering::Color4u>();
+        
+    }
+}
+
+void Game::CreateEntities()
+{
+    entt::entity entity; 
+    
+    for (int i = 0; i < 5; ++i) {
+        entity = entity_registry->create();
+
+        entity_registry->emplace<TransformComponent>(
+            entity, glm::vec3(0.f, 0.f, 0.f),
+            0.f, 0.f, 0.f,
+            glm::vec3(0.01f, 0.01f, 0.01f));
+
+        entity_registry->emplace<LinearVelocityComponent>(
+            entity, glm::vec3(1, 0, 0), (float(RandomInt(5, 20))));
+
+        entity_registry->emplace<MeshComponent>(entity, horseMesh);
+
+        entity_registry->emplace<AABBComponent>(entity);
+
+        entity_registry->emplace<NPCControllerComponent>(entity);
+        GeneratePath(entity);
+    }
+}
+
+void Game::CreateAnimEntity() 
+{
+    entt::entity entity;
+
+    entity = entity_registry->create();
+
+    entity_registry->emplace<TransformComponent>(
+        entity, glm::vec3(5.f, 0.f, 0.f),
+        0.f, 0.f, 0.f,
+        glm::vec3(0.03f, 0.03f, 0.03f));
+    entity_registry->emplace<MeshComponent>(entity, characterMesh);
+}
+
+void Game::InitPlayer() {
+    
+    auto entity = entity_registry->create();
+
+    entity_registry->emplace<TransformComponent>(
+        entity, glm::vec3(5.f, 0.f, 0.f),
+        0.f, 0.f, 0.f,
+        glm::vec3(0.03f, 0.03f, 0.03f));
+
+    //why am i trolling myself?
+    entity_registry->emplace<LinearVelocityComponent>(
+        entity, glm::vec3(0, 0, 0), (float(RandomInt(10, 20))));
+
+    character_speed = &entity_registry->get<LinearVelocityComponent>(entity).speed;
+
+    entity_registry->emplace<MeshComponent>(entity, characterMesh);
+
+    entity_registry->emplace<AABBComponent>(entity);
+
+    entity_registry->emplace<PlayerControllerComponent>(entity);
+
+    camera.lookAt = entity_registry->get<TransformComponent>(entity).translation;
+}
+
+void Game::GeneratePath(entt::entity& e)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distr(-100.0, 100.0);
+    
+    for (int i = 0; i < 5; ++i) {
+        entity_registry->get<NPCControllerComponent>(e).path_points.push_back({ distr(gen), 0, distr(gen)});
+    }
+}
+
+int Game::RandomInt(int min, int max)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distr(min, max);
+
+    return distr(gen);
+}
+
+void Game::Time(float time) {
+
+    time_seconds = (int)time % 60;
+
+    if (time_seconds % 60 > 0) {
+        minute_cooldown = true;
+    }
+
+    if (time_seconds % 60 == 0 && minute_cooldown) {
+        time_minutes++;
+        minute_cooldown = false;
+    }
+}
+
+void Game::BoneTest(float time) {
+    auto view = entity_registry->view<TransformComponent, MeshComponent, AABBComponent, PlayerControllerComponent>();
+
+    for (auto entity : view) {
+
+        auto [transform, mesh_ptr, aabb] = view.get<TransformComponent, MeshComponent, AABBComponent>(entity);
+
+        glm::mat4 T = glm_aux::T(transform.translation);
+        glm::mat4 R = glm_aux::R(transform.yaw, transform.pitch);
+        glm::mat4 S = glm_aux::S(transform.scale);
+        glm::mat4 TRS = T * R * S;
+
+        mesh_ptr.renderable_mesh->animate(9, time * 3);
+        forwardRenderer->renderMesh(mesh_ptr.renderable_mesh, TRS);
+        aabb.mesh_aabb = mesh_ptr.renderable_mesh->m_model_aabb.post_transform(TRS);
+
+        shapeRenderer->push_basis_basic(TRS, 1.0f);
+
+        shapeRenderer->push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
+        shapeRenderer->push_AABB(aabb.mesh_aabb.min, aabb.mesh_aabb.max);
+        shapeRenderer->pop_states<ShapeRendering::Color4u>();
+        boneGizmo->draw_bone_gizmo(mesh_ptr.renderable_mesh, shapeRenderer, TRS);
+    }
 }

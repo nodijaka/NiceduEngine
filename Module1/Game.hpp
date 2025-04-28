@@ -7,6 +7,9 @@
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 #include "ShapeRenderer.hpp"
+#include "component.h"
+#include <random>
+#include "BoneGizmo.h"
 
 /// @brief A Game may hold, update and render 3D geometry and GUI elements
 class Game : public eeng::GameBase
@@ -38,9 +41,13 @@ public:
     void destroy() override;
 
 private:
+
+    BoneGizmo* boneGizmo;
+    bool win_open;
+    bool* p_win_open;
     /// @brief For rendering of GUI elements
     void renderUI();
-
+    void renderMyWindow(bool* p_open);
     // Renderer for rendering imported animated or non-animated models
     eeng::ForwardRendererPtr forwardRenderer;
 
@@ -123,6 +130,25 @@ private:
     void updatePlayer(
         float deltaTime,
         InputManagerPtr input);
+
+    void MovementSystem(float deltaTime);
+    void PlayerControllerSystem(InputManagerPtr input);
+    void RenderSystem(float time);
+    void NPCControllerSystem();
+    void BoneTest(float time);
+
+    void CreateEntities();
+    void CreateAnimEntity();
+    void InitPlayer();
+    void GeneratePath(entt::entity& e);
+    int RandomInt(int min, int max);
+    void Time(float time);
+
+    int time_seconds = 0;
+    int time_minutes = 0;
+    bool minute_cooldown = false;
+
+    float* character_speed;
 };
 
 #endif
